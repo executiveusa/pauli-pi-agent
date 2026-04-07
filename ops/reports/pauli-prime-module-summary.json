@@ -1,0 +1,12 @@
+{
+  "system": "PAULI-PRIME",
+  "status": "design-and-skill-bootstrap",
+  "modules": [
+    {"name": "synthia-pretext skill", "path": ".agents/skills/synthia-pretext/SKILL.md", "state": "implemented"},
+    {"name": "architecture baseline", "path": "docs/pauli-prime/architecture.md", "state": "implemented"},
+    {"name": "ui ux baseline", "path": "docs/pauli-prime/ui-ux.md", "state": "implemented"}
+  ],
+  "blocked": [
+    "External GitHub fetch for https://github.com/executiveusa/synthia-pretext is blocked by outbound network policy (HTTP 403 tunnel failure)."
+  ]
+}
