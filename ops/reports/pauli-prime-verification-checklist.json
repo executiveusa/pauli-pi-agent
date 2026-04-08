@@ -1,0 +1,10 @@
+{
+  "system": "PAULI-PRIME",
+  "checklist": [
+    {"id": "skill_operationalized", "status": "pass"},
+    {"id": "operator_profile_template", "status": "pass"},
+    {"id": "phased_execution_checklist", "status": "pass"},
+    {"id": "voice_command_grammar", "status": "pass"},
+    {"id": "full_runtime_implementation", "status": "blocked", "reason": "Requires substantial new Rust services and deploy infrastructure not yet present in this TypeScript monorepo branch."}
+  ]
+}
