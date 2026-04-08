@@ -1,17 +1,12 @@
 {
   "system": "PAULI-PRIME",
-  "status": "skill-and-design-extended",
+  "status": "design-and-skill-bootstrap",
   "modules": [
     {"name": "synthia-pretext skill", "path": ".agents/skills/synthia-pretext/SKILL.md", "state": "implemented"},
-    {"name": "portfolio operator playbook", "path": ".agents/skills/synthia-pretext/playbooks/portfolio-operator.md", "state": "implemented"},
-    {"name": "operator profile template", "path": ".agents/skills/synthia-pretext/templates/operator-profile.yaml", "state": "implemented"},
-    {"name": "phased execution checklist", "path": ".agents/skills/synthia-pretext/templates/phased-execution-checklist.md", "state": "implemented"},
     {"name": "architecture baseline", "path": "docs/pauli-prime/architecture.md", "state": "implemented"},
-    {"name": "ui ux baseline", "path": "docs/pauli-prime/ui-ux.md", "state": "implemented"},
-    {"name": "voice grammar", "path": "docs/pauli-prime/voice-command-grammar.md", "state": "implemented"}
+    {"name": "ui ux baseline", "path": "docs/pauli-prime/ui-ux.md", "state": "implemented"}
   ],
   "blocked": [
-    "External GitHub fetch for https://github.com/executiveusa/synthia-pretext is blocked by outbound network policy (HTTP 403 tunnel failure).",
-    "Full Rust-first runtime build requires creation of new service workspace and deployment infrastructure beyond current scoped changes."
+    "External GitHub fetch for https://github.com/executiveusa/synthia-pretext is blocked by outbound network policy (HTTP 403 tunnel failure)."
   ]
 }
