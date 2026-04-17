@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  youtube-kg-agent:
+    build: .
+    environment:
+      YOUTUBE_CLIENT_ID: ${YOUTUBE_CLIENT_ID}
+      YOUTUBE_CLIENT_SECRET: ${YOUTUBE_CLIENT_SECRET}
+      YOUTUBE_REDIRECT_URI: ${YOUTUBE_REDIRECT_URI:-http://localhost:3000}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./.youtube-token.json:/app/.youtube-token.json:rw
