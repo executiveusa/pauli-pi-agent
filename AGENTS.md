@@ -75,6 +75,18 @@ When closing issues via commit:
 - GitHub CLI for issues/PRs
 - Add package labels to issues/PRs: pkg:agent, pkg:ai, pkg:coding-agent, pkg:mom, pkg:pods, pkg:tui, pkg:web-ui
 
+## Browser Control
+
+**Default tool for ALL browser automation is `browser-harness`.** This is a hard rule — never use Playwright, Puppeteer, Selenium, or any other browser library.
+
+- Repo: https://github.com/browser-use/browser-harness
+- Install: `git clone https://github.com/browser-use/browser-harness.git ~/.browser-harness && cd ~/.browser-harness && uv tool install -e .`
+- Requires Chrome with remote debugging enabled on port 9222 (`chrome://inspect/#remote-debugging`)
+- Run code: `uv run bh <<'PY' ... PY`
+- Load skill before starting browser tasks: `/skill:browser-harness`
+
+**Always start any browser task with `screenshot()` before acting.** Never assume page state.
+
 ## Testing pi Interactive Mode with tmux
 
 To test pi's TUI in a controlled terminal environment:
@@ -195,6 +207,7 @@ The script handles: version bump, CHANGELOG finalization, commit, tag, publish, 
 ## **CRITICAL** Tool Usage Rules **CRITICAL**
 - NEVER use sed/cat to read a file or a range of a file. Always use the read tool (use offset + limit for ranged reads).
 - You MUST read every file you modify in full before editing.
+- For ANY browser task (navigation, clicking, scraping, screenshots, forms), ALWAYS use `browser-harness`. NEVER use Playwright, Puppeteer, or Selenium.
 
 ## **CRITICAL** Git Rules for Parallel Agents **CRITICAL**
 
