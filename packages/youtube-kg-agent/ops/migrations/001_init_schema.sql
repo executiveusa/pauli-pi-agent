@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS youtube_videos (
   watched_at TIMESTAMPTZ,
   duration_seconds INTEGER,
   thumbnail_url TEXT,
-  embedding VECTOR(384),
+  embedding VECTOR(1024),
   topic_category TEXT,
   importance_score FLOAT DEFAULT 0.5,
   prerequisite_for TEXT[],
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS knowledge_concepts (
   name TEXT NOT NULL UNIQUE,
   description TEXT,
   category TEXT,
-  embedding VECTOR(384),
+  embedding VECTOR(1024),
   importance_score FLOAT DEFAULT 0.5,
   parent_concepts TEXT[],
   child_concepts TEXT[],
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS conversation_history_session_idx
   ON conversation_history(session_id);
 
 CREATE OR REPLACE FUNCTION search_youtube_videos(
-  query_embedding VECTOR(384),
+  query_embedding VECTOR(1024),
   match_count INT DEFAULT 10
 ) RETURNS TABLE(id TEXT, title TEXT, similarity FLOAT) AS $$
   SELECT id, title, (embedding <=> query_embedding) AS similarity

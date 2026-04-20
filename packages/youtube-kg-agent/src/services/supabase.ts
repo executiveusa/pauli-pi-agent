@@ -27,6 +27,16 @@ export class SupabaseService {
     return data as YouTubeVideo;
   }
 
+  async getVideosByIds(ids: string[]): Promise<YouTubeVideo[]> {
+    if (!ids.length) return [];
+    const { data, error } = await this.supabase
+      .from("youtube_videos")
+      .select("*")
+      .in("id", ids);
+    if (error) throw error;
+    return (data as YouTubeVideo[]) ?? [];
+  }
+
   async vectorSearch(embedding: number[], topK = 10): Promise<unknown[]> {
     const { data, error } = await this.supabase.rpc("search_youtube_videos", {
       query_embedding: embedding,
@@ -57,17 +67,39 @@ export class SupabaseService {
   }
 
   async getMetrics(): Promise<GraphMetrics> {
-    const videoCountRes = await this.supabase.from("youtube_videos").select("id");
-    const conceptCountRes = await this.supabase.from("knowledge_concepts").select("id");
+    const [videoRes, conceptRes, importanceRes, accuracyRes] = await Promise.all([
+      this.supabase.from("youtube_videos").select("id", { count: "exact", head: true }),
+      this.supabase.from("knowledge_concepts").select("id", { count: "exact", head: true }),
+      this.supabase.from("youtube_videos").select("importance_score"),
+      this.supabase.from("conversation_history").select("citation_accuracy"),
+    ]);
+
+    const totalVideos = (videoRes as { count: number | null }).count ?? 0;
+    const totalConcepts = (conceptRes as { count: number | null }).count ?? 0;
+
+    const importanceRows =
+      (importanceRes.data as Array<{ importance_score: number }> | null) ?? [];
+    const avgImportance = importanceRows.length
+      ? importanceRows.reduce((s, r) => s + (r.importance_score ?? 0), 0) /
+        importanceRows.length
+      : 0;
+
+    const accuracyRows =
+      (accuracyRes.data as Array<{ citation_accuracy: number }> | null) ?? [];
+    const avgAccuracy = accuracyRows.length
+      ? accuracyRows.reduce((s, r) => s + (r.citation_accuracy ?? 0), 0) /
+        accuracyRows.length
+      : 0;
+
     return {
-      totalVideos: (videoCountRes.data as unknown[] | null)?.length ?? 0,
-      totalConcepts: (conceptCountRes.data as unknown[] | null)?.length ?? 0,
+      totalVideos,
+      totalConcepts,
       totalRelationships: 0,
-      averageImportanceScore: 0.5,
-      citationAccuracy: 0.95,
-      responseQualityScore: 4.5,
+      averageImportanceScore: avgImportance,
+      citationAccuracy: avgAccuracy,
+      responseQualityScore: 0,
       learningVelocity: 0,
-      graphDensity: 0,
+      graphDensity: totalVideos > 0 ? totalConcepts / totalVideos : 0,
       generatedAt: new Date(),
     };
   }

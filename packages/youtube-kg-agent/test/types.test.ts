@@ -11,11 +11,11 @@ test("YouTubeVideo schema validation", () => {
     publishedAt: new Date(),
     watchedAt: new Date(),
     durationSeconds: 100,
-    embedding: new Array(384).fill(0),
+    embedding: new Array(1024).fill(0),
   };
   const result = YouTubeVideoSchema.parse(video);
   assert.strictEqual(result.id, "test");
-  assert.strictEqual(result.embedding.length, 384);
+  assert.strictEqual(result.embedding.length, 1024);
 });
 
 test("KnowledgeConcept schema validation", () => {
@@ -23,9 +23,9 @@ test("KnowledgeConcept schema validation", () => {
     id: "ml",
     name: "Machine Learning",
     description: "AI subcategory",
-    embedding: new Array(384).fill(0),
+    embedding: new Array(1024).fill(0),
   };
   const result = KnowledgeConceptSchema.parse(concept);
   assert.strictEqual(result.name, "Machine Learning");
-  assert.strictEqual(result.embedding.length, 384);
+  assert.strictEqual(result.embedding.length, 1024);
 });
