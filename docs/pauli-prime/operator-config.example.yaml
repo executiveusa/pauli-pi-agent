@@ -46,3 +46,10 @@ never_do:
   - treat_chat_as_canonical_truth
   - let_agents_edit_same_surface_without_isolation
   - wake_user_for_low_leverage_decisions
+
+external_connectors:
+  openchronicle:
+    enabled: true
+    repository: https://github.com/Einsia/OpenChronicle.git
+    role: episodic_memory_log
+    sync_mode: pull_then_append
