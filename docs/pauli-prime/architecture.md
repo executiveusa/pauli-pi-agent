@@ -12,6 +12,7 @@ This document defines a production-ready baseline for a Rust-first multi-tenant 
 - Agent Kernel: lifecycle, spawn templates, state machine, escalation routing.
 - Mail Service: mailbox/thread/message persistence with evidence linking.
 - Memory Service: layered memory with promotion jobs.
+- OpenChronicle Adapter: optional external episodic timeline backend via `https://github.com/Einsia/OpenChronicle.git`.
 - Policy Service: decision engine with allow/deny/approval outcomes.
 - Provider Router: BYOK model routing by tenant profile and budget.
 - Repo Runtime: worktree leases, bounded execution loops, evidence capture.
@@ -31,3 +32,8 @@ Persistence should be normalized and tenant-scoped with immutable evidence rows 
 
 ## Implementation Notes
 This repo currently ships TypeScript-first packages. The recommended integration path is to introduce Rust services under `services/pauli-prime-*` while exposing typed API contracts for existing `packages/web-ui` and `packages/coding-agent` consumers.
+
+## External Memory Integration
+- OpenChronicle can be attached as a non-canonical episodic log feed.
+- Canonical project truth remains in configured system-of-record (for example Notion); OpenChronicle is append-oriented memory support.
+- Sync strategy should be pull-then-append with tenant scoping and immutable evidence links.
