@@ -196,7 +196,7 @@ export class DocumentParser {
 				currentHeading = headingMatch[2];
 				currentContent = "";
 			} else if (line.trim()) {
-				currentContent += line + " ";
+				currentContent += `${line} `;
 			}
 		}
 

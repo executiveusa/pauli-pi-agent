@@ -76,7 +76,7 @@ export class VoiceInterface {
 		}
 	}
 
-	async synthesizeSpeech(text: string): Promise<string> {
+	async synthesizeSpeech(_text: string): Promise<string> {
 		// Placeholder - would use text-to-speech API
 		// Returns audio URL or base64
 		return `audio-${Date.now()}`;
