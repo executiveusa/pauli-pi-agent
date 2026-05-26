@@ -4,8 +4,11 @@
  */
 
 import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import type { Pool } from 'pg';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface MigrationResult {
   name: string;
