@@ -35,6 +35,13 @@ export interface WebSocketMessage {
 	timestamp: Date;
 }
 
+export interface WebSocketClient {
+	id: string;
+	connectedAt: Date;
+	lastActivity: Date;
+	isConnected: boolean;
+}
+
 export interface VoiceCommand {
 	text: string;
 	confidence: number;

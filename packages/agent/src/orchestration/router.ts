@@ -3,24 +3,7 @@
  * Routes tasks based on priority, load, and resource availability
  */
 
-import type { ExecutionContext, Task } from "./types.js";
-
-export interface RoutingDecision {
-	taskId: string;
-	queue: string;
-	priority: number;
-	estimatedDurationMs: number;
-	resources: Record<string, number>;
-}
-
-export interface QueueMetrics {
-	queueName: string;
-	taskCount: number;
-	averageWaitTimeMs: number;
-	averageDurationMs: number;
-	successRate: number;
-	load: number;
-}
+import type { ExecutionContext, QueueMetrics, RoutingDecision, Task } from "./types.js";
 
 export class WorkflowRouter {
 	private queues: Map<string, Task[]> = new Map();

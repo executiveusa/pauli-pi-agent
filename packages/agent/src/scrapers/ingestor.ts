@@ -177,7 +177,7 @@ export class SourceIngestor {
 			} catch (_error) {
 				errors.push({
 					source: source.value,
-					error: String(error),
+					error: String(_error),
 				});
 			}
 		}

@@ -3,14 +3,7 @@
  * Real-time bi-directional communication
  */
 
-import type { WebSocketMessage } from "./types.js";
-
-export interface WebSocketClient {
-	id: string;
-	connectedAt: Date;
-	lastActivity: Date;
-	isConnected: boolean;
-}
+import type { WebSocketClient, WebSocketMessage } from "./types.js";
 
 export class WebSocketServer {
 	private isRunning: boolean = false;
@@ -18,6 +11,10 @@ export class WebSocketServer {
 	private messageHandlers: Map<string, (message: WebSocketMessage) => Promise<void>> = new Map();
 	private messageHistory: WebSocketMessage[] = [];
 	private maxHistorySize: number = 1000;
+
+	constructor(_port?: number) {
+		// Placeholder - port would be used to configure WebSocket server
+	}
 
 	async start(): Promise<void> {
 		this.isRunning = true;

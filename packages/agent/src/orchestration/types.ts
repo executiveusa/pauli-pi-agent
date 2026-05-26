@@ -96,3 +96,20 @@ export interface ExecutionResult {
 	startedAt: Date;
 	completedAt: Date;
 }
+
+export interface RoutingDecision {
+	taskId: string;
+	queue: string;
+	priority: number;
+	estimatedDurationMs: number;
+	resources: Record<string, number>;
+}
+
+export interface QueueMetrics {
+	queueName: string;
+	taskCount: number;
+	averageWaitTimeMs: number;
+	averageDurationMs: number;
+	successRate: number;
+	load: number;
+}
