@@ -164,20 +164,20 @@ export class SecretRedactor {
 
 export const globalRedactor = new SecretRedactor();
 
-export function redact(input: string, placeholder?: string): string {
+export function redact(input: string | null | undefined, placeholder?: string): string {
   return globalRedactor.redact(input, placeholder);
 }
 
-export function containsSecrets(input: string): boolean {
+export function containsSecrets(input: string | null | undefined): boolean {
   return globalRedactor.containsSecrets(input);
 }
 
-export function detectSecretTypes(input: string): string[] {
+export function detectSecretTypes(input: string | null | undefined): string[] {
   return globalRedactor.detectSecretTypes(input);
 }
 
 export function redactObject(
-  obj: Record<string, any>,
+  obj: Record<string, any> | null | undefined,
   placeholder?: string
 ): Record<string, any> {
   return globalRedactor.redactObject(obj, placeholder);
