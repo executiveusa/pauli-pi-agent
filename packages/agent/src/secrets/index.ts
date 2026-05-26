@@ -12,7 +12,7 @@ export {
   getSecret,
   type InfisicalConfig,
   type SecretResolution,
-} from './infisical-client';
+} from './infisical-client.js';
 
 // Secret redaction
 export {
@@ -23,7 +23,7 @@ export {
   detectSecretTypes,
   redactObject,
   type RedactionConfig,
-} from './secret-redaction';
+} from './secret-redaction.js';
 
 // Secret resolver
 export {
@@ -34,4 +34,4 @@ export {
   logSecretStatus,
   type ProviderSecrets,
   type ApplicationSecrets,
-} from './secret-resolver';
+} from './secret-resolver.js';

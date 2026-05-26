@@ -3,8 +3,8 @@
  * Unified interface for resolving all application secrets
  */
 
-import { getSecretsClient } from './infisical-client';
-import { redactObject } from './secret-redaction';
+import { getSecretsClient } from './infisical-client.js';
+import { redactObject } from './secret-redaction.js';
 
 export interface ProviderSecrets {
   openai?: string;
