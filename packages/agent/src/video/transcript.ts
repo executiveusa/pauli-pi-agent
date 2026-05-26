@@ -97,7 +97,10 @@ export class TranscriptExtractor {
 		return segments.map((s) => s.text).join(" ");
 	}
 
-	filterByConfidence(segments: TranscriptSegment[], threshold: number = this.confidenceThreshold): TranscriptSegment[] {
+	filterByConfidence(
+		segments: TranscriptSegment[],
+		threshold: number = this.confidenceThreshold,
+	): TranscriptSegment[] {
 		return segments.filter((s) => (s.confidence ?? 1) >= threshold);
 	}
 

@@ -3,7 +3,7 @@
  * Verify REST API functionality and health checks
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { ApiServer } from "../../src/interfaces/api.js";
 
 describe("ApiServer", () => {
@@ -124,7 +124,7 @@ describe("ApiServer", () => {
 			timestamp: new Date(),
 		});
 
-		const health = (response.body as any);
+		const health = response.body as any;
 		expect(health.metrics).toHaveProperty("requestsPerSecond");
 		expect(health.metrics).toHaveProperty("avgResponseTimeMs");
 		expect(health.metrics).toHaveProperty("errorRate");

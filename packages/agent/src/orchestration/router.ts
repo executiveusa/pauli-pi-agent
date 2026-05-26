@@ -162,7 +162,7 @@ export class WorkflowRouter {
 
 		// Simple rebalancing logic
 		for (let i = 0; i < queues.length - 1; i++) {
-			const [queueName, tasks] = queues[i];
+			const [_queueName, tasks] = queues[i];
 			if (tasks.length > avgQueueSize * 1.5 && i < queues.length - 1) {
 				const nextQueueName = queues[i + 1][0];
 				const nextQueueTasks = this.queues.get(nextQueueName);

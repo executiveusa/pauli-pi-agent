@@ -108,9 +108,9 @@ export class YouTubeClient {
 			const durationMatch = contentDetails.duration?.match(/PT(\d+H)?(\d+M)?(\d+S)?/) ?? null;
 			let durationSeconds = 0;
 			if (durationMatch) {
-				if (durationMatch[1]) durationSeconds += parseInt(durationMatch[1]) * 3600;
-				if (durationMatch[2]) durationSeconds += parseInt(durationMatch[2]) * 60;
-				if (durationMatch[3]) durationSeconds += parseInt(durationMatch[3]);
+				if (durationMatch[1]) durationSeconds += parseInt(durationMatch[1], 10) * 3600;
+				if (durationMatch[2]) durationSeconds += parseInt(durationMatch[2], 10) * 60;
+				if (durationMatch[3]) durationSeconds += parseInt(durationMatch[3], 10);
 			}
 
 			return {

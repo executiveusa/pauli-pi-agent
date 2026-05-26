@@ -3,7 +3,7 @@
  * Verify entity and relationship extraction from text
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { EntityExtractor } from "../../src/knowledge/extractor.js";
 
 describe("EntityExtractor", () => {

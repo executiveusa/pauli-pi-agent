@@ -3,7 +3,7 @@
  * Verify transcript extraction, segmentation, and processing
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { TranscriptExtractor } from "../../src/video/transcript.js";
 
 describe("TranscriptExtractor", () => {

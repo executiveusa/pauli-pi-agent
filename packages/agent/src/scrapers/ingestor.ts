@@ -80,7 +80,7 @@ export class SourceIngestor {
 				processedAt: new Date(),
 				errors: [],
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -116,7 +116,7 @@ export class SourceIngestor {
 				processedAt: new Date(),
 				errors: [],
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -140,7 +140,7 @@ export class SourceIngestor {
 				processedAt: new Date(),
 				errors: [],
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -174,7 +174,7 @@ export class SourceIngestor {
 						error: "Processing failed",
 					});
 				}
-			} catch (error) {
+			} catch (_error) {
 				errors.push({
 					source: source.value,
 					error: String(error),

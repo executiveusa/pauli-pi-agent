@@ -3,7 +3,7 @@
  * Verify command-line interface functionality
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { CLIInterface } from "../../src/interfaces/cli.js";
 
 describe("CLIInterface", () => {

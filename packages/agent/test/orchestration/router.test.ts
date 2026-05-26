@@ -3,7 +3,7 @@
  * Verify task routing, queue management, and load balancing
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { WorkflowRouter } from "../../src/orchestration/router.js";
 import { TaskStatus } from "../../src/orchestration/types.js";
 

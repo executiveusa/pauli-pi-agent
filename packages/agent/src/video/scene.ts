@@ -33,7 +33,6 @@ export interface SceneAnalysis {
 }
 
 export class SceneDetector {
-	private readonly minSceneDuration: number = 1000; // 1 second minimum
 	private readonly transitionThreshold: number = 0.6; // 60% confidence threshold for scene transitions
 	private readonly maxKeyFramesPerScene: number = 3;
 

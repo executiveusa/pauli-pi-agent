@@ -154,7 +154,6 @@ describe("SourceIngestor", () => {
 
 	test("stores processed timestamp", async () => {
 		const result = await ingestor.ingestMarkdown("Content", "Test");
-		const before = Date.now();
 
 		expect(result?.processedAt).toBeDefined();
 		expect(result?.processedAt instanceof Date).toBe(true);

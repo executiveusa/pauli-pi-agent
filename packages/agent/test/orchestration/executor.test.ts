@@ -3,9 +3,9 @@
  * Verify workflow execution, task management, and error handling
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { WorkflowExecutor } from "../../src/orchestration/executor.js";
-import { TaskStatus, WorkflowStatus } from "../../src/orchestration/types.js";
+import { WorkflowStatus } from "../../src/orchestration/types.js";
 
 describe("WorkflowExecutor", () => {
 	let executor: WorkflowExecutor;

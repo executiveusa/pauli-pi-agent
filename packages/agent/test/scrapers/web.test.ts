@@ -25,7 +25,7 @@ describe("WebScraper", () => {
 		for (const url of validUrls) {
 			// Just verify it doesn't throw
 			expect(() => {
-				scraper["isValidUrl"](url);
+				(scraper as any).isValidUrl(url);
 			}).not.toThrow();
 		}
 	});
@@ -34,7 +34,7 @@ describe("WebScraper", () => {
 		const invalidUrls = ["not a url", "example", "ht!tp://example.com"];
 
 		for (const url of invalidUrls) {
-			const isValid = scraper["isValidUrl"](url);
+			const isValid = (scraper as any).isValidUrl(url);
 			expect(isValid).toBe(false);
 		}
 	});
@@ -236,7 +236,7 @@ describe("WebScraper", () => {
 		];
 
 		for (const error of retryableErrors) {
-			const isRetryable = scraper["isRetryableError"](error);
+			const isRetryable = (scraper as any).isRetryableError(error);
 			expect(isRetryable).toBe(true);
 		}
 	});
@@ -245,7 +245,7 @@ describe("WebScraper", () => {
 		const nonRetryableErrors = [new Error("Invalid URL"), new Error("Bad request")];
 
 		for (const error of nonRetryableErrors) {
-			const isRetryable = scraper["isRetryableError"](error);
+			const isRetryable = (scraper as any).isRetryableError(error);
 			expect(isRetryable).toBe(false);
 		}
 	});

@@ -3,8 +3,8 @@
  * Manages graph structure, storage, and operations
  */
 
-import type { Entity, Relationship, KnowledgeGraph, GraphQuery, GraphQueryResult } from "./types.js";
 import { EntityExtractor } from "./extractor.js";
+import type { Entity, GraphQuery, GraphQueryResult, KnowledgeGraph, Relationship } from "./types.js";
 
 export class GraphManager {
 	private graph: KnowledgeGraph;
@@ -36,7 +36,6 @@ export class GraphManager {
 		this.graph.relationships.push(relationship);
 
 		// Update relationship index
-		const sourceKey = `${relationship.sourceEntityId}_${relationship.targetEntityId}`;
 		if (!this.relationshipIndex.has(relationship.sourceEntityId)) {
 			this.relationshipIndex.set(relationship.sourceEntityId, new Set());
 		}
@@ -61,7 +60,7 @@ export class GraphManager {
 		const startTime = Date.now();
 		const maxDepth = query.maxDepth || 2;
 
-		let results: {
+		const results: {
 			entities: Entity[];
 			relationships: Relationship[];
 			paths: Array<{ entities: Entity[]; relationships: Relationship[]; distance: number }>;
@@ -139,8 +138,9 @@ export class GraphManager {
 			const entity = this.entityIndex.get(relatedId);
 			if (entity) {
 				const relationships = this.graph.relationships.filter(
-					(r) => (r.sourceEntityId === entityId && r.targetEntityId === relatedId) ||
-					       (r.targetEntityId === entityId && r.sourceEntityId === relatedId)
+					(r) =>
+						(r.sourceEntityId === entityId && r.targetEntityId === relatedId) ||
+						(r.targetEntityId === entityId && r.sourceEntityId === relatedId),
 				);
 				connections.push({ entity, relationships });
 			}
@@ -199,7 +199,10 @@ export class GraphManager {
 		for (const rel of other.relationships) {
 			// Check for duplicate relationships
 			const exists = this.graph.relationships.some(
-				(r) => r.sourceEntityId === rel.sourceEntityId && r.targetEntityId === rel.targetEntityId && r.type === rel.type,
+				(r) =>
+					r.sourceEntityId === rel.sourceEntityId &&
+					r.targetEntityId === rel.targetEntityId &&
+					r.type === rel.type,
 			);
 			if (!exists) {
 				this.graph.relationships.push(rel);

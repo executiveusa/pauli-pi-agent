@@ -3,7 +3,7 @@
  * Verify video processing, metadata extraction, and frame sampling
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { VideoProcessor } from "../../src/video/processor.js";
 
 describe("VideoProcessor", () => {

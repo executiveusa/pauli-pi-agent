@@ -5,17 +5,17 @@
 
 export { ApiServer, createApiServer } from "./api.js";
 export { CLIInterface, createCLIInterface } from "./cli.js";
-export { WebSocketServer, createWebSocketServer } from "./websocket.js";
-export { VoiceInterface, createVoiceInterface } from "./voice.js";
 export type {
 	ApiRequest,
 	ApiResponse,
 	CLICommand,
-	WebSocketMessage,
+	HealthStatus,
+	InterfaceConfig,
+	LogEntry,
 	VoiceCommand,
 	VoiceResponse,
-	InterfaceConfig,
-	HealthStatus,
-	LogEntry,
 	WebSocketClient,
+	WebSocketMessage,
 } from "./types.js";
+export { createVoiceInterface, VoiceInterface } from "./voice.js";
+export { createWebSocketServer, WebSocketServer } from "./websocket.js";

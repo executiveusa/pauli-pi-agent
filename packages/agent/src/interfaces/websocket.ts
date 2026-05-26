@@ -13,16 +13,11 @@ export interface WebSocketClient {
 }
 
 export class WebSocketServer {
-	private port: number;
 	private isRunning: boolean = false;
 	private clients: Map<string, WebSocketClient> = new Map();
 	private messageHandlers: Map<string, (message: WebSocketMessage) => Promise<void>> = new Map();
 	private messageHistory: WebSocketMessage[] = [];
 	private maxHistorySize: number = 1000;
-
-	constructor(port: number = 3001) {
-		this.port = port;
-	}
 
 	async start(): Promise<void> {
 		this.isRunning = true;
@@ -92,7 +87,7 @@ export class WebSocketServer {
 
 	async sendToClient(clientId: string, message: WebSocketMessage): Promise<boolean> {
 		const client = this.clients.get(clientId);
-		if (client && client.isConnected) {
+		if (client?.isConnected) {
 			this.addToHistory(message);
 			return true;
 		}

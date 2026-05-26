@@ -4,11 +4,11 @@
  */
 
 import type { ProcessingResult, VideoFrame } from "./processor.js";
-import type { ExtractedTranscript, TranscriptSegment } from "./transcript.js";
-import type { SceneAnalysis, DetectedScene } from "./scene.js";
 import { VideoProcessor } from "./processor.js";
-import { TranscriptExtractor } from "./transcript.js";
+import type { SceneAnalysis } from "./scene.js";
 import { SceneDetector } from "./scene.js";
+import type { ExtractedTranscript, TranscriptSegment } from "./transcript.js";
+import { TranscriptExtractor } from "./transcript.js";
 
 export interface VideoInsight {
 	keyMoments: Array<{ time: number; description: string; confidence: number }>;
@@ -141,7 +141,7 @@ export class VideoAnalyzer {
 		return results;
 	}
 
-	compareFrames(frame1: VideoFrame, frame2: VideoFrame): number {
+	compareFrames(_frame1: VideoFrame, _frame2: VideoFrame): number {
 		// Calculate similarity score between two frames (0-1)
 		// Placeholder implementation
 		return Math.random();
@@ -149,7 +149,10 @@ export class VideoAnalyzer {
 
 	extractSegmentSummary(segments: TranscriptSegment[]): string {
 		// Extract summary from transcript segments
-		return segments.map((s) => s.text).join(" ").substring(0, 500);
+		return segments
+			.map((s) => s.text)
+			.join(" ")
+			.substring(0, 500);
 	}
 
 	getAnalysisMetrics(result: AnalysisResult): {

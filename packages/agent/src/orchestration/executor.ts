@@ -3,7 +3,7 @@
  * Executes tasks and manages workflow state
  */
 
-import type { Task, Workflow, WorkflowStatus, ExecutionResult, ExecutionContext, WorkflowDefinition } from "./types.js";
+import type { ExecutionContext, ExecutionResult, Workflow, WorkflowDefinition, WorkflowStatus } from "./types.js";
 import { TaskStatus, WorkflowStatus as WFStatus } from "./types.js";
 
 export class WorkflowExecutor {
@@ -81,7 +81,7 @@ export class WorkflowExecutor {
 
 						if (task.retries < task.maxRetries) {
 							task.status = TaskStatus.RETRYING;
-							const delay = 1000 * Math.pow(2, task.retries - 1);
+							const delay = 1000 * 2 ** (task.retries - 1);
 							await new Promise((resolve) => setTimeout(resolve, delay));
 							task.status = TaskStatus.PENDING;
 						} else {
@@ -188,7 +188,9 @@ export class WorkflowExecutor {
 		return Array.from(this.workflows.values());
 	}
 
-	getWorkflowProgress(workflowId: string): { completed: number; failed: number; total: number; percentage: number } | null {
+	getWorkflowProgress(
+		workflowId: string,
+	): { completed: number; failed: number; total: number; percentage: number } | null {
 		const workflow = this.workflows.get(workflowId);
 		if (!workflow) return null;
 

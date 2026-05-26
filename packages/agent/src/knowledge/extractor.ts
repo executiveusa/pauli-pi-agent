@@ -3,12 +3,10 @@
  * Extracts entities and relationships from text
  */
 
-import type { Entity, Relationship, ExtractionResult } from "./types.js";
+import type { Entity, ExtractionResult, Relationship } from "./types.js";
 
 export class EntityExtractor {
 	private readonly minConfidence: number = 0.5;
-	private readonly entityTypes = ["PERSON", "ORGANIZATION", "LOCATION", "CONCEPT", "DATE", "PRODUCT"];
-	private readonly relationshipTypes = ["IS_A", "PART_OF", "WORKS_AT", "LOCATED_IN", "CREATED_BY", "RELATED_TO"];
 
 	async extract(text: string, sourceId: string): Promise<ExtractionResult> {
 		const startTime = Date.now();
@@ -18,9 +16,7 @@ export class EntityExtractor {
 			const relationships = await this.extractRelationships(text, entities);
 
 			const avgConfidence =
-				entities.length > 0
-					? entities.reduce((sum, e) => sum + e.confidence, 0) / entities.length
-					: 0;
+				entities.length > 0 ? entities.reduce((sum, e) => sum + e.confidence, 0) / entities.length : 0;
 
 			return {
 				entities: entities.filter((e) => e.confidence >= this.minConfidence),

@@ -3,7 +3,7 @@
  * Verify speech recognition and synthesis
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { VoiceInterface } from "../../src/interfaces/voice.js";
 
 describe("VoiceInterface", () => {

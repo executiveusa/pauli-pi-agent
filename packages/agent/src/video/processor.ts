@@ -39,7 +39,6 @@ export interface ProcessingResult {
 export class VideoProcessor {
 	private readonly sampleRate: number = 30; // Sample every 30 frames
 	private readonly maxFrames: number = 1000;
-	private readonly timeout: number = 300000; // 5 minutes
 
 	async process(filePath: string, sampleRate?: number): Promise<ProcessingResult> {
 		const startTime = Date.now();

@@ -3,7 +3,7 @@
  * Verify real-time communication functionality
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { WebSocketServer } from "../../src/interfaces/websocket.js";
 
 describe("WebSocketServer", () => {

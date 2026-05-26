@@ -3,7 +3,7 @@
  * Verify knowledge graph operations and querying
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { GraphManager } from "../../src/knowledge/graph.js";
 import type { Entity, Relationship } from "../../src/knowledge/types.js";
 

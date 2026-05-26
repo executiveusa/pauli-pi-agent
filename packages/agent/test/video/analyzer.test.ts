@@ -3,11 +3,11 @@
  * Verify comprehensive video analysis and coordination
  */
 
-import { describe, expect, test, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { VideoAnalyzer } from "../../src/video/analyzer.js";
 import { VideoProcessor } from "../../src/video/processor.js";
-import { TranscriptExtractor } from "../../src/video/transcript.js";
 import { SceneDetector } from "../../src/video/scene.js";
+import { TranscriptExtractor } from "../../src/video/transcript.js";
 
 describe("VideoAnalyzer", () => {
 	let analyzer: VideoAnalyzer;

@@ -3,7 +3,7 @@
  * Verify scene detection, transitions, and key frame extraction
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { SceneDetector } from "../../src/video/scene.js";
 
 describe("SceneDetector", () => {
