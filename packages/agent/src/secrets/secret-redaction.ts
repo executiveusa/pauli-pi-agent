@@ -10,7 +10,7 @@ export interface RedactionConfig {
   customPatterns?: RegExp[];
 }
 
-const SECRET_PATTERNS = {
+const SECRET_PATTERNS: Record<string, RegExp> = {
   // OpenAI/OpenRouter format: sk-* followed by alphanumeric
   openaiKey: /sk-[a-zA-Z0-9]{20,}/g,
   // Anthropic format: sk-ant-* or claude-*
