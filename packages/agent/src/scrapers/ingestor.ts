@@ -128,7 +128,7 @@ export class SourceIngestor {
 			return {
 				id: parsed.id,
 				sourceType: "markdown",
-				title: title || parsed.metadata.title,
+				title: title || parsed.metadata.title || "Document",
 				content: parsed.content,
 				cleanContent: parsed.cleanContent,
 				wordCount: parsed.metadata.wordCount,

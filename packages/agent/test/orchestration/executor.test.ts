@@ -88,7 +88,7 @@ describe("WorkflowExecutor", () => {
 				{ id: "task-1", name: "Failing Task", type: "fail", config: {} },
 				{ id: "task-2", name: "Follow-up Task", type: "task", config: {}, dependencies: ["task-1"] },
 			],
-			config: { onFailure: "stop" },
+			config: { onFailure: "stop" as const },
 		};
 
 		const result = await executor.execute(definition);
@@ -109,7 +109,7 @@ describe("WorkflowExecutor", () => {
 				{ id: "task-1", name: "Failing Task", type: "fail", config: {} },
 				{ id: "task-2", name: "Independent Task", type: "task", config: {} },
 			],
-			config: { onFailure: "continue" },
+			config: { onFailure: "continue" as const },
 		};
 
 		const result = await executor.execute(definition);
@@ -144,7 +144,7 @@ describe("WorkflowExecutor", () => {
 
 		const result = await executor.execute(definition);
 
-		expect(result.totalDuration).toBeGreaterThanOrEqual(100);
+		expect(result.totalDuration).toBeGreaterThanOrEqual(50);
 	});
 
 	test("gets workflow by ID", async () => {

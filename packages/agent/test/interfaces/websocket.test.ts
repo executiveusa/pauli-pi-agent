@@ -10,7 +10,7 @@ describe("WebSocketServer", () => {
 	let server: WebSocketServer;
 
 	beforeEach(() => {
-		server = new WebSocketServer(3001);
+		server = new WebSocketServer();
 	});
 
 	test("creates WebSocket server", () => {

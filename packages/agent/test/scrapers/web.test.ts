@@ -46,7 +46,7 @@ describe("WebScraper", () => {
 					setTimeout(() => reject(new Error("timeout")), 100);
 				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -62,10 +62,10 @@ describe("WebScraper", () => {
 						ok: false,
 						status: 404,
 						statusText: "Not Found",
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com/notfound");
 
@@ -83,10 +83,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve("<html><title>Test Page</title></html>"),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -104,10 +104,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve('<html><meta name="description" content="Test Description"></html>'),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -126,10 +126,10 @@ describe("WebScraper", () => {
 						},
 						text: () =>
 							Promise.resolve("<html><body><p>Hello World</p><script>alert('test')</script></body></html>"),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -151,10 +151,10 @@ describe("WebScraper", () => {
 							Promise.resolve(
 								'<html><body><a href="https://example.com/page1">Page 1</a><a href="/page2">Page 2</a></body></html>',
 							),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -173,10 +173,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve('<html lang="en"><title>Test</title></html>'),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -194,10 +194,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve('<html><meta charset="utf-8"><title>Test</title></html>'),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const result = await scraper.scrape("https://example.com");
 
@@ -215,10 +215,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve("<html><title>Test</title></html>"),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"];
 		const results = await scraper.scrapeMultiple(urls);
@@ -260,10 +260,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve("<html><title>Test</title></html>"),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		await scraper.scrape("https://example.com");
 
@@ -287,10 +287,10 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve("<html><title>Test</title></html>"),
-					});
-				}) as Promise<Response>,
+					} as Response);
+				}),
 		);
-		global.fetch = mockFetch;
+		global.fetch = mockFetch as typeof fetch;
 
 		const before = Date.now();
 		const result = await scraper.scrape("https://example.com");

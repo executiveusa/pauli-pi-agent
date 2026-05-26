@@ -28,9 +28,9 @@ describe("SourceIngestor", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () => Promise.resolve("<html><title>Test Page</title><body>Test content</body></html>"),
-					});
-				}) as Promise<Response>,
-		);
+					} as Response);
+				}),
+		) as typeof fetch;
 	});
 
 	test("creates source ingestor", () => {

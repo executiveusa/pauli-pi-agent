@@ -12,10 +12,6 @@ export class WebSocketServer {
 	private messageHistory: WebSocketMessage[] = [];
 	private maxHistorySize: number = 1000;
 
-	constructor(_port?: number) {
-		// Placeholder - port would be used to configure WebSocket server
-	}
-
 	async start(): Promise<void> {
 		this.isRunning = true;
 	}
@@ -116,6 +112,6 @@ export class WebSocketServer {
 	}
 }
 
-export function createWebSocketServer(port?: number): WebSocketServer {
-	return new WebSocketServer(port);
+export function createWebSocketServer(_port?: number): WebSocketServer {
+	return new WebSocketServer();
 }
