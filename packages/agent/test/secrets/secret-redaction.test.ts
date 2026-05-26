@@ -121,8 +121,8 @@ describe('SecretRedactor', () => {
   });
 
   test('handles null and undefined inputs gracefully', () => {
-    expect(redact(null as any)).toBe(null);
-    expect(redact(undefined as any)).toBe(undefined);
+    expect(redact(null as any)).toBe('');
+    expect(redact(undefined as any)).toBe('');
     expect(containsSecrets(null as any)).toBe(false);
     expect(containsSecrets(undefined as any)).toBe(false);
   });
