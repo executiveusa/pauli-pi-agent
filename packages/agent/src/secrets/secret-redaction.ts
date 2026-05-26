@@ -95,19 +95,27 @@ export class SecretRedactor {
     }
 
     const detected: string[] = [];
+    const patterns: Array<[string, RegExp]> = [
+      ['openai_key', SECRET_PATTERNS.openaiKey],
+      ['anthropic_key', SECRET_PATTERNS.anthropicKey],
+      ['aws_access_key', SECRET_PATTERNS.awsAccessKey],
+      ['aws_secret_key', SECRET_PATTERNS.awsSecretKey],
+      ['bearer_token', SECRET_PATTERNS.bearerToken],
+      ['basic_auth', SECRET_PATTERNS.basicAuth],
+      ['api_key', SECRET_PATTERNS.apiKey],
+      ['database_url', SECRET_PATTERNS.dbUrl],
+      ['jwt_token', SECRET_PATTERNS.jwtToken],
+      ['password', SECRET_PATTERNS.password],
+      ['firecrawl_key', SECRET_PATTERNS.firecrawlKey],
+      ['bright_data_key', SECRET_PATTERNS.brightDataKey],
+    ];
 
-    if (SECRET_PATTERNS.openaiKey.test(input)) detected.push('openai_key');
-    if (SECRET_PATTERNS.anthropicKey.test(input)) detected.push('anthropic_key');
-    if (SECRET_PATTERNS.awsAccessKey.test(input)) detected.push('aws_access_key');
-    if (SECRET_PATTERNS.awsSecretKey.test(input)) detected.push('aws_secret_key');
-    if (SECRET_PATTERNS.bearerToken.test(input)) detected.push('bearer_token');
-    if (SECRET_PATTERNS.basicAuth.test(input)) detected.push('basic_auth');
-    if (SECRET_PATTERNS.apiKey.test(input)) detected.push('api_key');
-    if (SECRET_PATTERNS.dbUrl.test(input)) detected.push('database_url');
-    if (SECRET_PATTERNS.jwtToken.test(input)) detected.push('jwt_token');
-    if (SECRET_PATTERNS.password.test(input)) detected.push('password');
-    if (SECRET_PATTERNS.firecrawlKey.test(input)) detected.push('firecrawl_key');
-    if (SECRET_PATTERNS.brightDataKey.test(input)) detected.push('bright_data_key');
+    for (const [name, pattern] of patterns) {
+      pattern.lastIndex = 0;
+      if (pattern.test(input)) {
+        detected.push(name);
+      }
+    }
 
     return detected;
   }
