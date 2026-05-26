@@ -1,0 +1,492 @@
+product:
+  name: "PI Agent Control Plane"
+  tagline: "Self-hosted multimodal agent studio for knowledge extraction, persona graphing, multi-agent reasoning, and dashboard operations"
+  version: "0.0.4"
+  deployment_target: "Hostinger VPS via Coolify"
+  primary_database: "PostgreSQL 15+ with pgvector"
+  secret_manager: "Infisical (with .env fallback for local dev)"
+  default_model_policy: "Free Mode first; explicit approval required for paid model fallback"
+  license: "MIT"
+
+vision: |
+  Enable teams to build production AI agent systems that scrape the web, analyze videos,
+  extract knowledge, generate source-grounded personas, orchestrate multi-persona reasoning,
+  and provide voice/chat interfaces—all from a unified control plane with audit logs,
+  cost tracking, and human approval gates for high-risk actions.
+
+goals:
+  - Scrape web pages, PDFs, documents, videos with visual analysis
+  - Convert learned knowledge into source-grounded entity/claim graphs
+  - Generate reasoning-capable personas from graph knowledge
+  - Coordinate multiple personas for multi-hop reasoning and synthesis
+  - Provide voice chat and text chat interaction
+  - Expose a dashboard for monitoring runs, personas, graphs, costs, and approvals
+  - Enforce budget limits and block silent paid model fallback
+  - Maintain complete audit trail of all data ingestion, model calls, and persona decisions
+
+non_negotiable_constraints:
+  - "Existing Pi monorepo architecture must be preserved and extended, not rebuilt"
+  - "No destructive git operations; files deleted only if explicitly declared unused"
+  - "No paid API calls in tests; all test data must be mocked or fixture-based"
+  - "No silent fallback from free models to paid models; always explicit and logged"
+  - "All secrets redacted from logs; secrets never hardcoded or stored in database"
+  - "Strict TypeScript; no `any` types unless commented and justified"
+  - "Circuit breakers required for high-risk actions (database writes, external API calls, irreversible ops)"
+  - "Every insight must link back to source evidence; traceability non-negotiable"
+  - "CLI-first design; any dashboard feature must have equivalent API/CLI path"
+
+personas:
+  enabled: true
+  definition: |
+    A persona is not a chatbot skin. It is a source-grounded reasoning profile derived
+    from knowledge graph material. Each persona captures domain expertise, belief claims,
+    decision rules, evidence links, and vocabulary/style learned from source material.
+  fields:
+    - name: string
+    - domain: string (e.g., "machine learning", "finance", "oncology")
+    - expertise: string[] (list of expert topics)
+    - traits: PersonaTrait[] (extracted belief statements with evidence links)
+    - decision_rules: string[] (reasoning heuristics derived from source material)
+    - knowledge_refs: string[] (IDs of knowledge graph entities this persona knows well)
+    - evidence_refs: string[] (source evidence IDs this persona was built from)
+    - agent_prompt: string (generated system prompt for persona agent)
+    - allowed_tools: string[] (which tools this persona can invoke)
+    - model_policy: "free" | "balanced" | "premium" | "local_only"
+    - confidence: float (0.0–1.0, estimated trustworthiness)
+    - created_at: ISO 8601 timestamp
+    - updated_at: ISO 8601 timestamp
+  source_inputs:
+    - web_pages (via Firecrawl, Playwright, readability)
+    - videos (YouTube, uploaded; transcript + frame analysis)
+    - transcripts (auto-extracted or provided)
+    - documents (PDF, DOCX, XLSX, PPTX via extraction)
+    - plain_text (markdown, JSON, YAML, structured notes)
+    - manual_annotations (human feedback and corrections)
+  outputs:
+    - persona_profile (structured YAML/JSON)
+    - knowledge_graph (entities, claims, relations, evidence)
+    - reasoning_agent_config (system prompt, tools, budget policy)
+    - evidence_index (all sources the persona was built from)
+
+capabilities:
+  scraping:
+    requirement: |
+      Multi-source ingestion with pluggable adapters. All scrapers must be optional
+      and key-gated. No API keys hardcoded. All scraped content normalized to
+      source records with title, URL, author, date, text, links, media URLs, screenshots.
+    adapters:
+      - name: Firecrawl
+        requirement: "API key configured via Infisical or .env; graceful fallback if unavailable"
+        features: "HTML→markdown, metadata extraction, screenshot capture"
+      - name: BrightData
+        requirement: "Optional; key-gated; for enterprise scraping"
+        features: "Residential proxies, anti-bot bypass, high-volume"
+      - name: PlaywrightBrowser
+        requirement: "First-class; always available"
+        features: "JavaScript execution, DOM inspection, network interception, headless or headed"
+      - name: Generic HTTP + Readability
+        requirement: "Fallback for simple pages"
+        features: "Basic extraction, no JavaScript"
+    compliance:
+      - robots.txt check with warning metadata
+      - terms-of-service awareness in audit log
+      - rate limiting with exponential backoff
+      - audit log event for every scrape attempt
+  video_analysis:
+    requirement: |
+      Analyze transcript, frames, visual concepts, on-screen text, scene changes, and speaker intent.
+      Not transcript-only. Must use multimodal vision model on sampled frames where available.
+      Fallback to transcript-only with explicit labeling.
+    pipeline:
+      - step: 1
+        name: Ingest
+        detail: "Accept video URL or uploaded/local video reference"
+      - step: 2
+        name: Metadata
+        detail: "Extract title, duration, channel, publish date, transcript URL if available"
+      - step: 3
+        name: Transcript
+        detail: "Download or auto-transcribe using speech-to-text"
+      - step: 4
+        name: Frame Sampling
+        detail: "Extract frames at configurable interval (e.g., every 5 seconds)"
+      - step: 5
+        name: Scene Detection
+        detail: "Detect cuts, fades, significant visual changes if available"
+      - step: 6
+        name: OCR
+        detail: "Extract on-screen text from frames using vision model or dedicated OCR"
+      - step: 7
+        name: Multimodal Analysis
+        detail: "Run vision model on sampled frames to extract concepts, entities, objects, teaching points"
+      - step: 8
+        name: Claim Extraction
+        detail: "Link speaker claims to timestamps and frame evidence"
+      - step: 9
+        name: Knowledge Report
+        detail: "Produce structured VideoKnowledgeReport with all observations linked to evidence"
+    output_shape:
+      video_id: string
+      title: string
+      duration_seconds: number
+      transcript_summary: string
+      visual_summary: string
+      key_claims: object[]
+      concepts: string[]
+      entities: string[]
+      tools_seen: string[] (products, frameworks, libraries mentioned or shown)
+      frame_observations: object[] (timestamp, observation, ocr_text, evidence_ref)
+      persona_seed_material: string[] (raw quotes and insights for persona building)
+      confidence: float
+      transcript_fallback: boolean (true if no frames analyzed)
+  graph_memory:
+    requirement: |
+      Store and retrieve source-grounded entities, claims, relations, evidence, embeddings,
+      and persona traits using knowledge graph patterns adapted from GraphRAG / LightRAG.
+      Support graph export, visualization API, content-gap detection, topic clustering.
+    schema:
+      entities: object[]
+        - id, name, description, type, embedding(384-dim), evidence_refs[], source_count, importance
+      claims: object[]
+        - id, subject_entity_id, predicate, object_entity_id, description, evidence_refs[], confidence
+      relations: object[]
+        - id, source_entity_id, relation_type, target_entity_id, weight, evidence_refs[], timestamp
+      evidence_spans: object[]
+        - id, source_id, span_text, start_offset, end_offset, entity_ids[], claim_ids[], timestamp
+      embeddings: vector(384) on entities, claims, evidence for similarity search
+    service_api:
+      - method: ingestSource(input)
+        returns: IngestionResult (id, entity_count, claim_count, relation_count, duration_ms)
+      - method: extractEntities(input)
+        returns: Entity[]
+      - method: extractClaims(input)
+        returns: Claim[]
+      - method: linkEvidence(input)
+        returns: EvidenceSpan[]
+      - method: upsertRelations(input)
+        returns: Relation[]
+      - method: retrieveContext(query, options)
+        returns: GraphContext (relevant entities, claims, relations, evidence for query)
+      - method: exportGraph(options)
+        returns: GraphExport (JSON, DOT format, or visual format)
+      - method: detectContentGaps(topicList)
+        returns: Gap[] (topics with few sources)
+      - method: clusterTopics()
+        returns: Cluster[] (entity groupings by semantic similarity)
+      - method: sourceGroundedRetrieval(query)
+        returns: (context, evidence_links)
+  multi_persona_reasoning:
+    requirement: |
+      Coordinator agent dispatches query to relevant personas, collects independent reasoning,
+      applies critic pass, synthesizes final answer, and outputs complete trace with evidence links.
+      No single-persona chatbot mode; all reasoning is multi-hop and persona-aware.
+    flow:
+      - step: 1
+        name: Query Reception
+        detail: "User provides question or task"
+      - step: 2
+        name: Graph Retrieval
+        detail: "Retrieve relevant entities, claims, relations from knowledge graph"
+      - step: 3
+        name: Persona Selection
+        detail: "Identify personas with expertise in retrieved topics"
+      - step: 4
+        name: Persona Dispatch
+        detail: "Send independent reasoning requests to selected personas with graph context"
+      - step: 5
+        name: Reasoning Collection
+        detail: "Collect structured persona responses with confidence and reasoning trace"
+      - step: 6
+        name: Disagreement Analysis
+        detail: "Identify and surface disagreements between personas"
+      - step: 7
+        name: Critic Pass
+        detail: "Third-party critique of collected reasoning"
+      - step: 8
+        name: Synthesis
+        detail: "Integrate persona responses into unified answer"
+      - step: 9
+        name: Evidence Linking
+        detail: "Attach source evidence refs, persona IDs, model routes to final output"
+      - step: 10
+        name: Trace Output
+        detail: "Return synthesis + full reasoning trace for dashboard and audit"
+    output_shape:
+      query: string
+      selected_personas: string[] (persona IDs)
+      persona_responses: object[]
+        - persona_id, reasoning, confidence, evidence_refs[]
+      disagreements: object[]
+        - persona_a_id, persona_b_id, position_a, position_b, severity
+      synthesis: string
+      evidence_refs: string[] (all sources used)
+      confidence: float
+      model_routes: object[] (which models used for which persona)
+      cost_summary: {input_tokens, output_tokens, estimated_cost_usd}
+      next_actions: string[] (clarifying questions, missing evidence)
+    circuit_breakers:
+      - name: loop_limit
+        detail: "Max 10 reasoning turns before blocking"
+      - name: budget_limit
+        detail: "Stop if estimated cost exceeds policy threshold"
+      - name: missing_evidence_warning
+        detail: "Flag queries where sources are sparse"
+      - name: no_secret_exposure_guard
+        detail: "Detect and redact any secret-like patterns from synthesis"
+      - name: irreversible_action_guard
+        detail: "Require human approval before taking destructive actions"
+      - name: production_deploy_approval_guard
+        detail: "Require explicit approval before code deployments via persona agents"
+  voice:
+    requirement: |
+      Speech-to-text and text-to-speech must be provider-pluggable with local fallback.
+      No paid speech API calls in tests. Support streaming conversation state.
+    adapters:
+      - name: speech_to_text
+        providers:
+          - OpenAI Whisper API (if key configured)
+          - Whisper.cpp local (free, offline)
+          - Generic OpenAI-compatible endpoint (Ollama + whisper.cpp)
+        requirement: "At least one free provider always available"
+      - name: text_to_speech
+        providers:
+          - OpenAI TTS (if key configured)
+          - ElevenLabs (if key configured)
+          - Local TTS via Piper or coqui-ai/TTS
+        requirement: "At least one free provider always available"
+    apis:
+      - POST /api/voice/transcribe
+        request: {audio_file_base64, language?, provider?}
+        response: {text, confidence, duration_ms}
+      - POST /api/voice/respond
+        request: {text_prompt}
+        response: {audio_base64, text, model_used}
+      - POST /api/voice/synthesize
+        request: {text, voice_id?, speed?, pitch?}
+        response: {audio_base64, duration_ms}
+      - WebSocket /api/voice/chat
+        detail: "Streaming voice conversation with state preservation"
+    cli_commands:
+      - "pi-agent voice transcribe <audio-file>"
+      - "pi-agent voice ask <question>"
+      - "pi-agent voice synthesize <text>"
+      - "pi-agent voice chat --interactive"
+  dashboard:
+    requirement: |
+      Show runs, agents, personas, graph, logs, approvals, costs, and model routing.
+      Real-time updates via SSE or WebSocket. Mobile-first layout. No generic chatbot skin;
+      premium, operational design focused on status first.
+    pages:
+      - path: /control-room
+        content: "Active runs, agent status, approvals, errors, cost summary"
+      - path: /ingest
+        content: "Add URL/video/document, see ingestion status, retry failed ingests"
+      - path: /videos
+        content: "Video reports, frame observations, transcript + visual analysis"
+      - path: /personas
+        content: "Persona list, detail view with evidence map, edit traits"
+      - path: /graph
+        content: "Interactive graph visualization, entity/relation browser, topic clusters"
+      - path: /reasoning
+        content: "Multi-persona reasoning runs, disagreements, synthesis evidence"
+      - path: /models
+        content: "Model router mode (free/balanced/premium), provider status, budget status, blocked paid events"
+      - path: /secrets
+        content: "Infisical connection status only; never show secret values"
+      - path: /audit
+        content: "Audit log with filtering, circuit-breaker events, user actions"
+      - path: /voice
+        content: "Voice chat UI, session history, transcript export"
+    requirements:
+      - real_time_updates: "SSE or WebSocket for run status, costs, approvals"
+      - mobile_first: "Responsive design, touch-friendly controls"
+      - no_chatbot_ui: "Not a generic chat interface; operational focus"
+      - status_first: "Show system health, costs, budgets prominently"
+      - component_reuse: "Use existing pi-web-ui components where available"
+      - mocked_data: "Dashboard must work with mocked data for development"
+      - graph_rendering: "Consider using Cytoscape.js or similar only if needed"
+  security:
+    requirement: |
+      Infisical for secrets, RBAC, audit logs, circuit breakers, no secret leakage,
+      no hardcoded credentials, no paid API fallback without approval.
+    secrets:
+      - OpenAI
+      - OpenRouter
+      - NVIDIA NIM
+      - Firecrawl
+      - BrightData
+      - Database URL (PostgreSQL)
+      - Speech provider keys
+      - Object storage provider credentials
+      - Browser session credentials (optional)
+    audit_events:
+      - ingest_start, ingest_success, ingest_failure
+      - persona_created, persona_updated, persona_deleted
+      - reasoning_run_started, reasoning_run_completed
+      - model_call_made (provider, model, tokens, cost estimate, latency)
+      - circuit_breaker_triggered
+      - approval_requested, approval_granted, approval_denied
+      - user_login, user_logout, user_action
+      - secret_access_attempt
+    guards:
+      - no_secret_logging: "All secrets redacted from audit and debug logs"
+      - no_hardcoded_keys: "Validated at startup; missing-secret error with remediation"
+      - no_silent_fallback: "Paid model usage requires explicit approval or policy override"
+      - rbac: "Roles (admin, reviewer, user) with scoped permissions"
+
+data_model:
+  tables:
+    sources:
+      fields: [id, url, source_type, title, author, published_date, ingested_at, ingestion_status, metadata_json]
+      purpose: "All ingestion sources (URL, video, document, raw text)"
+    source_items:
+      fields: [id, source_id, item_type, content, extracted_text, media_urls, created_at]
+      purpose: "Individual items within a source (e.g., chapters in a video, pages in a document)"
+    ingestion_runs:
+      fields: [id, source_id, status, started_at, completed_at, entity_count, claim_count, error_message]
+      purpose: "Track each ingestion attempt and result"
+    video_assets:
+      fields: [id, video_id, title, duration_seconds, transcript, thumbnail_url, imported_at]
+      purpose: "Video metadata and transcript storage"
+    video_observations:
+      fields: [id, video_asset_id, timestamp, observation_type, content, ocr_text, evidence_ref_id, confidence]
+      purpose: "Frame-by-frame visual observations"
+    transcripts:
+      fields: [id, source_id, language, content, speaker_segments, created_at]
+      purpose: "Full transcript storage with speaker markers"
+    documents:
+      fields: [id, source_id, doc_type, content, page_count, extracted_metadata, created_at]
+      purpose: "PDF, DOCX, EPUB storage"
+    entities:
+      fields: [id, name, description, entity_type, embedding(384), importance_score, evidence_ref_ids[], source_count, created_at]
+      purpose: "Knowledge graph entities with vector embeddings"
+    claims:
+      fields: [id, subject_entity_id, predicate, object_entity_id, description, evidence_ref_ids[], confidence, created_at]
+      purpose: "Knowledge graph claims linking entities"
+    relations:
+      fields: [id, source_entity_id, relation_type, target_entity_id, weight, evidence_ref_ids[], timestamp]
+      purpose: "Entity relations in graph"
+    evidence_spans:
+      fields: [id, source_id, span_text, start_offset, end_offset, entity_ids[], claim_ids[], timestamp]
+      purpose: "Mappings from text spans to extracted facts"
+    embeddings:
+      fields: [id, entity_id, embedding(384), similarity_index]
+      purpose: "Dense vectors for semantic search"
+    personas:
+      fields: [id, name, domain, expertise[], traits[], decision_rules[], knowledge_ref_ids[], evidence_ref_ids[], agent_prompt, allowed_tools[], model_policy, confidence, created_at, updated_at]
+      purpose: "Source-grounded reasoning profiles"
+    persona_traits:
+      fields: [id, persona_id, trait_description, evidence_ref_ids[], confidence]
+      purpose: "Individual traits extracted for each persona"
+    persona_sources:
+      fields: [persona_id, source_id]
+      purpose: "Many-to-many: which sources contributed to each persona"
+    persona_agent_configs:
+      fields: [id, persona_id, system_prompt, tools_json, model_policy, parameters_json, created_at]
+      purpose: "Agent configuration for persona reasoning"
+    reasoning_runs:
+      fields: [id, query, selected_persona_ids[], started_at, completed_at, status, cost_estimate, model_routes_json]
+      purpose: "Track multi-persona reasoning execution"
+    reasoning_votes:
+      fields: [id, reasoning_run_id, persona_id, response, confidence, evidence_ref_ids[], reasoning_trace]
+      purpose: "Individual persona contributions to a reasoning run"
+    reasoning_syntheses:
+      fields: [id, reasoning_run_id, synthesis_text, evidence_ref_ids[], model_used, cost_actual, created_at]
+      purpose: "Final synthesis output for each reasoning run"
+    feedback_events:
+      fields: [id, reasoning_run_id, feedback_type, rating, correction_text, user_id, created_at]
+      purpose: "User feedback for learning and improvement tracking"
+    audit_events:
+      fields: [id, event_type, user_id, resource_type, resource_id, action, details_json, ip_address, timestamp, redacted]
+      purpose: "Complete audit trail of all system actions"
+    model_calls:
+      fields: [id, reasoning_run_id, provider, model, input_tokens, output_tokens, cost_estimate, latency_ms, stop_reason, timestamp]
+      purpose: "Track all model calls for cost and performance analysis"
+    model_budgets:
+      fields: [id, period, budget_limit_usd, spent_usd, free_model_calls, paid_model_calls, updated_at]
+      purpose: "Budget tracking and enforcement"
+    approval_requests:
+      fields: [id, request_type, resource_id, requested_by, requester_context, status, approved_by, approval_reason, created_at, decided_at]
+      purpose: "High-risk action approval workflow"
+    secrets_references:
+      fields: [id, secret_name, provider, infisical_path, last_rotated, created_at]
+      purpose: "References only, never store actual secret values"
+
+deployment:
+  target: "Hostinger VPS via Coolify"
+  database: "PostgreSQL 15+ with pgvector extension"
+  containerization: "Docker (single image or multi-service docker-compose)"
+  secrets: "Infisical (with local .env fallback for development)"
+  api_gateway: "Optional Cloudflare DNS/CDN edge caching"
+  required_assets:
+    - Dockerfile
+    - docker-compose.coolify.yml
+    - PostgreSQL service or external DB config
+    - migration command and rollback support
+    - healthcheck endpoint (/health)
+    - readiness endpoint (/ready)
+    - .env.example (placeholders only, no secrets)
+    - Infisical setup documentation
+    - Coolify deployment walkthrough
+    - PostgreSQL backup/restore documentation
+  no_auto_deployment: "Manual Coolify trigger required; no auto-deploy from CI"
+
+testing:
+  unit:
+    - model router (free mode, budget blocking)
+    - secret redaction (secrets never logged)
+    - graph service (entity/claim extraction)
+    - persona builder (extraction and trait assignment)
+    - coordinator (persona selection, synthesis)
+    - video report generation (with frame observations)
+  integration:
+    - URL ingestion with fixture server
+    - video ingestion with fixture transcript and frames
+    - persona creation from fixture source
+    - multi-persona reasoning with mocked models
+    - Infisical missing-secret error behavior
+    - dashboard mocked run rendering
+  policy:
+    - free mode blocks paid fallback (no silent fallback)
+    - secrets are redacted in all outputs
+    - model calls are logged with provider, tokens, cost
+    - irreversible actions require approval
+    - transcript-only fallback is labeled
+  e2e_smoke:
+    - ingest fixture source (URL + document)
+    - build persona from ingested material
+    - ask question to coordinator
+    - synthesize multi-persona answer
+    - view run in dashboard and audit log
+  fixtures_required:
+    - sample HTML page (for scraping test)
+    - sample PDF and DOCX (for document parsing)
+    - sample video transcript (for video analysis)
+    - sample video frames (JPEG for OCR/vision test)
+    - sample knowledge graph entities/claims
+  no_live_apis: "All tests use mocked or fixture data"
+
+acceptance_criteria:
+  - "Existing repo architecture preserved"
+  - "Context scan exists"
+  - "PRD YAML exists"
+  - "Architecture docs exist"
+  - "PostgreSQL schema and migrations exist"
+  - "Infisical integration exists"
+  - "Model router supports Free Mode and blocks silent paid fallback"
+  - "Scraping adapters exist with fixture tests"
+  - "Browser-control adapter exists or documented extension point wired"
+  - "Video watcher produces visual observations from frames"
+  - "Knowledge graph service stores source-grounded entities, claims, relations, evidence"
+  - "Persona builder creates source-grounded persona configs"
+  - "Multi-persona coordinator produces traceable synthesis"
+  - "Voice APIs and CLI stubs/adapters exist with mocked tests"
+  - "Dashboard/control room pages exist or cleanly scaffolded with mocked data"
+  - "Feedback loop exists"
+  - "Audit logs exist"
+  - "Circuit breakers exist"
+  - "MCP tools or extension points exist"
+  - "Coolify deployment files exist"
+  - ".env.example contains no secrets"
+  - "Test plan passes using allowed commands"
+  - "Final report is generated"
