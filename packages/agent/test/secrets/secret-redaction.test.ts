@@ -10,7 +10,7 @@ import {
   containsSecrets,
   detectSecretTypes,
   redactObject,
-} from '../../src/secrets/secret-redaction';
+} from '../../src/secrets/secret-redaction.js';
 
 describe('SecretRedactor', () => {
   test('detects and redacts OpenAI API keys', () => {

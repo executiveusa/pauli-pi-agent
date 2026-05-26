@@ -9,7 +9,7 @@ import {
   getProviderSecret,
   redactSecretsFromObject,
   verifyRequiredSecrets,
-} from '../../src/secrets/secret-resolver';
+} from '../../src/secrets/secret-resolver.js';
 
 describe('Secret Resolver', () => {
   beforeEach(() => {

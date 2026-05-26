@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { InfisicalClient } from '../../src/secrets/infisical-client';
+import { InfisicalClient } from '../../src/secrets/infisical-client.js';
 
 describe('InfisicalClient', () => {
   beforeEach(() => {
