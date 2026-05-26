@@ -47,9 +47,9 @@ export class SecretRedactor {
   /**
    * Redact sensitive information from a string
    */
-  redact(input: string, placeholder = '***REDACTED***'): string {
+  redact(input: string | null | undefined, placeholder = '***REDACTED***'): string {
     if (!input || typeof input !== 'string') {
-      return input;
+      return '';
     }
 
     let result = input;
@@ -70,7 +70,7 @@ export class SecretRedactor {
   /**
    * Detect if a string contains secrets (without redacting)
    */
-  containsSecrets(input: string): boolean {
+  containsSecrets(input: string | null | undefined): boolean {
     if (!input || typeof input !== 'string') {
       return false;
     }
@@ -89,7 +89,7 @@ export class SecretRedactor {
   /**
    * Extract detected secret types from a string
    */
-  detectSecretTypes(input: string): string[] {
+  detectSecretTypes(input: string | null | undefined): string[] {
     if (!input || typeof input !== 'string') {
       return [];
     }
@@ -116,11 +116,11 @@ export class SecretRedactor {
    * Redact an object recursively (deep copy)
    */
   redactObject(
-    obj: Record<string, any>,
+    obj: Record<string, any> | null | undefined,
     placeholder = '***REDACTED***'
   ): Record<string, any> {
     if (!obj || typeof obj !== 'object') {
-      return obj;
+      return {};
     }
 
     const redacted: Record<string, any> = {};
