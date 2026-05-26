@@ -3,7 +3,7 @@
  * Verify web scraping, content extraction, and link parsing
  */
 
-import { describe, expect, test, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { WebScraper } from "../../src/scrapers/web.js";
 
 describe("WebScraper", () => {
@@ -103,8 +103,7 @@ describe("WebScraper", () => {
 						headers: {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
-						text: () =>
-							Promise.resolve('<html><meta name="description" content="Test Description"></html>'),
+						text: () => Promise.resolve('<html><meta name="description" content="Test Description"></html>'),
 					});
 				}) as Promise<Response>,
 		);
@@ -126,9 +125,7 @@ describe("WebScraper", () => {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
 						text: () =>
-							Promise.resolve(
-								"<html><body><p>Hello World</p><script>alert('test')</script></body></html>",
-							),
+							Promise.resolve("<html><body><p>Hello World</p><script>alert('test')</script></body></html>"),
 					});
 				}) as Promise<Response>,
 		);
@@ -196,10 +193,7 @@ describe("WebScraper", () => {
 						headers: {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
-						text: () =>
-							Promise.resolve(
-								'<html><meta charset="utf-8"><title>Test</title></html>',
-							),
+						text: () => Promise.resolve('<html><meta charset="utf-8"><title>Test</title></html>'),
 					});
 				}) as Promise<Response>,
 		);
@@ -226,11 +220,7 @@ describe("WebScraper", () => {
 		);
 		global.fetch = mockFetch;
 
-		const urls = [
-			"https://example.com/1",
-			"https://example.com/2",
-			"https://example.com/3",
-		];
+		const urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"];
 		const results = await scraper.scrapeMultiple(urls);
 
 		expect(results).toHaveLength(3);

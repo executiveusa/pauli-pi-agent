@@ -57,13 +57,13 @@ export class BudgetTracker {
 
 		let status: BudgetStatus;
 		if (result.rows.length > 0) {
-			const row = result.rows[0];
+			const row = result.rows[0] as Record<string, unknown>;
 			status = {
 				userId,
-				monthlyLimit: parseFloat(row.monthly_limit),
-				spent: parseFloat(row.spent),
-				remaining: parseFloat(row.monthly_limit) - parseFloat(row.spent),
-				percentageUsed: (parseFloat(row.spent) / parseFloat(row.monthly_limit)) * 100,
+				monthlyLimit: parseFloat(row.monthly_limit as string),
+				spent: parseFloat(row.spent as string),
+				remaining: parseFloat(row.monthly_limit as string) - parseFloat(row.spent as string),
+				percentageUsed: (parseFloat(row.spent as string) / parseFloat(row.monthly_limit as string)) * 100,
 				resetDate: this.getNextResetDate(),
 			};
 		} else {
@@ -164,12 +164,12 @@ export class BudgetTracker {
 			[userId],
 		);
 
-		return result.rows.map((row: Record<string, unknown>) => ({
+		return (result.rows as Array<Record<string, unknown>>).map((row) => ({
 			userId: row.user_id as string,
 			provider: row.provider as string,
 			modelId: row.model_id as string,
-			inputTokens: parseInt(row.input_tokens as string),
-			outputTokens: parseInt(row.output_tokens as string),
+			inputTokens: parseInt(row.input_tokens as string, 10),
+			outputTokens: parseInt(row.output_tokens as string, 10),
 			cost: parseFloat(row.cost as string),
 			timestamp: new Date(row.created_at as string),
 		}));
@@ -184,7 +184,8 @@ export class BudgetTracker {
 			[userId],
 		);
 
-		return parseFloat(result.rows[0].total);
+		const row = result.rows[0] as Record<string, unknown>;
+		return parseFloat(row.total as string);
 	}
 
 	private getNextResetDate(): Date {

@@ -69,7 +69,9 @@ describe("BudgetTracker", () => {
 
 		expect(status1).toEqual(status2);
 		// Should be called once for both requests (cached)
-		expect(spy.mock.calls.filter((call) => call[0].includes("personas"))).toHaveLength(1);
+		expect(spy.mock.calls.filter((call) => typeof call[0] === "string" && call[0].includes("personas"))).toHaveLength(
+			1,
+		);
 	});
 
 	test("records cost event", async () => {

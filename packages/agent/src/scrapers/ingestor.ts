@@ -3,10 +3,10 @@
  * Coordinates scraping, extraction, and ingestion of various sources
  */
 
-import { WebScraper } from "./web.js";
-import { PdfExtractor } from "./pdf.js";
+import type { PostgresClient } from "../database/index.js";
 import { DocumentParser } from "./parser.js";
-import { PostgresClient } from "../database/index.js";
+import { PdfExtractor } from "./pdf.js";
+import { WebScraper } from "./web.js";
 
 export interface ProcessedSource {
 	id: string;
@@ -145,7 +145,9 @@ export class SourceIngestor {
 		}
 	}
 
-	async ingestBatch(sources: Array<{ type: "url" | "pdf" | "markdown"; value: string; title?: string }>): Promise<IngestionResult> {
+	async ingestBatch(
+		sources: Array<{ type: "url" | "pdf" | "markdown"; value: string; title?: string }>,
+	): Promise<IngestionResult> {
 		const startTime = Date.now();
 		const results: ProcessedSource[] = [];
 		const errors: Array<{ source: string; error: string }> = [];

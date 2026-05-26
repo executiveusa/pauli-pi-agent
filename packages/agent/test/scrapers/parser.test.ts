@@ -3,7 +3,7 @@
  * Verify document parsing, cleaning, and structure extraction
  */
 
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { DocumentParser } from "../../src/scrapers/parser.js";
 
 describe("DocumentParser", () => {
@@ -75,7 +75,7 @@ describe("DocumentParser", () => {
 	});
 
 	test("extracts HTML links", () => {
-		const html = '[Example](https://example.com)';
+		const html = "[Example](https://example.com)";
 		const parsed = parser.parse(html, "text/html");
 
 		expect(parsed.links).toBeDefined();
@@ -153,7 +153,7 @@ describe("DocumentParser", () => {
 	});
 
 	test("handles special characters", () => {
-		const content = 'Content with "quotes" and \'apostrophes\' and …ellipsis';
+		const content = "Content with \"quotes\" and 'apostrophes' and …ellipsis";
 		const parsed = parser.parse(content, "text/plain");
 
 		expect(parsed.cleanContent).toBeDefined();

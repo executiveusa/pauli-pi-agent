@@ -3,9 +3,9 @@
  * Verify source ingestion, coordination, and storage
  */
 
-import { describe, expect, test, beforeEach, vi } from "vitest";
-import { SourceIngestor } from "../../src/scrapers/ingestor.js";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import type { PostgresClient } from "../../src/database/index.js";
+import { SourceIngestor } from "../../src/scrapers/ingestor.js";
 
 describe("SourceIngestor", () => {
 	let ingestor: SourceIngestor;
@@ -27,10 +27,7 @@ describe("SourceIngestor", () => {
 						headers: {
 							get: (key: string) => (key === "content-type" ? "text/html" : null),
 						},
-						text: () =>
-							Promise.resolve(
-								"<html><title>Test Page</title><body>Test content</body></html>",
-							),
+						text: () => Promise.resolve("<html><title>Test Page</title><body>Test content</body></html>"),
 					});
 				}) as Promise<Response>,
 		);
@@ -139,11 +136,7 @@ describe("SourceIngestor", () => {
 	});
 
 	test("handles concurrent processing", async () => {
-		const urls = [
-			"https://example.com/1",
-			"https://example.com/2",
-			"https://example.com/3",
-		];
+		const urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"];
 
 		// Ingest multiple URLs
 		const results = await Promise.all(urls.map((url) => ingestor.ingestUrl(url)));

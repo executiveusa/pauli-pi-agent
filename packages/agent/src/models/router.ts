@@ -4,7 +4,6 @@
  */
 
 import type { PostgresClient } from "../database/index.js";
-import { getSecret } from "../secrets/index.js";
 
 export type RoutingMode = "free" | "balanced" | "premium" | "local_only";
 
@@ -152,9 +151,9 @@ export class ModelRouter {
 	}
 
 	private selectFreeTierModel(
-		request: RoutingRequest,
+		_request: RoutingRequest,
 		estimatedTokens: number,
-		policy: Record<string, unknown>,
+		_policy: Record<string, unknown>,
 	): RoutedModel {
 		// Prefer Gemini for free tier (cheaper)
 		if (estimatedTokens < 50000) {
@@ -164,10 +163,10 @@ export class ModelRouter {
 	}
 
 	private selectBalancedModel(
-		request: RoutingRequest,
+		_request: RoutingRequest,
 		estimatedTokens: number,
 		budget: { monthlyLimit: number; spent: number },
-		policy: Record<string, unknown>,
+		_policy: Record<string, unknown>,
 	): RoutedModel {
 		const remaining = budget.monthlyLimit - budget.spent;
 		const estimatedCost =
@@ -184,7 +183,7 @@ export class ModelRouter {
 		request: RoutingRequest,
 		estimatedTokens: number,
 		budget: { monthlyLimit: number; spent: number },
-		policy: Record<string, unknown>,
+		_policy: Record<string, unknown>,
 	): RoutedModel {
 		const remaining = budget.monthlyLimit - budget.spent;
 		const estimatedCost = (estimatedTokens / 1000000) * this.modelCatalog.get("premium-claude-opus")!.costPerMToken;
@@ -213,7 +212,8 @@ export class ModelRouter {
 		try {
 			const result = await this.db.query(`SELECT model_policy FROM personas WHERE id = $1`, [userId]);
 			if (result.rows.length > 0) {
-				return result.rows[0].model_policy || {};
+				const row = result.rows[0] as Record<string, unknown>;
+				return (row.model_policy as Record<string, unknown>) || {};
 			}
 		} catch {
 			// Policy not found, use defaults
@@ -231,10 +231,11 @@ export class ModelRouter {
        WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days'`,
 				[userId],
 			);
-			const spent = result.rows[0]?.spent || 0;
+			const row = result.rows[0] as Record<string, unknown> | undefined;
+			const spent = (row?.spent as string | number | undefined) || 0;
 			return {
 				monthlyLimit: 100, // Default $100 monthly limit
-				spent: parseFloat(spent),
+				spent: typeof spent === "string" ? parseFloat(spent) : spent,
 			};
 		} catch {
 			return { monthlyLimit: 100, spent: 0 };

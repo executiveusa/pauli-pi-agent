@@ -39,11 +39,7 @@ export interface ParsedDocument {
 export class DocumentParser {
 	private readonly minSectionLength: number = 50;
 
-	parse(
-		content: string,
-		contentType: string,
-		metadata?: Partial<DocumentMetadata>,
-	): ParsedDocument {
+	parse(content: string, contentType: string, metadata?: Partial<DocumentMetadata>): ParsedDocument {
 		const id = this.generateId();
 		const cleanContent = this.cleanContent(content, contentType);
 		const sections = this.extractSections(cleanContent);
@@ -125,14 +121,12 @@ export class DocumentParser {
 		// Remove markdown formatting
 		cleaned = cleaned.replace(/^#+\s+/gm, ""); // Remove headings
 		cleaned = cleaned.replace(/[*_`~]/g, ""); // Remove formatting marks
-		cleaned = cleaned.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1"); // Convert links to plain text
+		cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // Convert links to plain text
 		cleaned = cleaned.replace(/\s+/g, " "); // Normalize whitespace
 		return cleaned.trim();
 	}
 
-	private extractSections(
-		content: string,
-	): Array<{
+	private extractSections(content: string): Array<{
 		heading: string;
 		content: string;
 		level: number;
@@ -159,7 +153,7 @@ export class DocumentParser {
 				currentLevel = 1;
 				currentContent = "";
 			} else if (line.match(/^[A-Z]\w+.*[.!?]$/)) {
-				currentContent += line + " ";
+				currentContent += `${line} `;
 			}
 		}
 
@@ -175,9 +169,7 @@ export class DocumentParser {
 		return sections;
 	}
 
-	private extractMarkdownSections(
-		markdown: string,
-	): Array<{
+	private extractMarkdownSections(markdown: string): Array<{
 		heading: string;
 		content: string;
 		level: number;
@@ -224,12 +216,13 @@ export class DocumentParser {
 		const links: Array<{ text: string; url: string }> = [];
 		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 
-		let match;
-		while ((match = linkRegex.exec(content)) !== null) {
+		let match = linkRegex.exec(content);
+		while (match !== null) {
 			links.push({
 				text: match[1],
 				url: match[2],
 			});
+			match = linkRegex.exec(content);
 		}
 
 		return links;
@@ -243,12 +236,13 @@ export class DocumentParser {
 		const images: Array<{ src: string; alt: string }> = [];
 		const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
 
-		let match;
-		while ((match = imgRegex.exec(content)) !== null) {
+		let match = imgRegex.exec(content);
+		while (match !== null) {
 			images.push({
 				alt: match[1],
 				src: match[2],
 			});
+			match = imgRegex.exec(content);
 		}
 
 		return images;

@@ -66,7 +66,7 @@ export class WebScraper {
 				}
 
 				// Wait before retrying
-				await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+				await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 1000));
 			}
 		}
 
@@ -170,8 +170,8 @@ export class WebScraper {
 		const links: LinkInfo[] = [];
 		const linkRegex = /<a\s+(?:[^>]*?\s+)?href=["']([^"']+)["'](?:[^>]*?>)?([^<]*)<\/a>/gi;
 
-		let match;
-		while ((match = linkRegex.exec(html)) !== null) {
+		let match = linkRegex.exec(html);
+		while (match !== null) {
 			const href = match[1];
 			const text = match[2].replace(/<[^>]+>/g, "").trim();
 
@@ -186,6 +186,7 @@ export class WebScraper {
 					// Invalid URL, skip
 				}
 			}
+			match = linkRegex.exec(html);
 		}
 
 		return links;
