@@ -5,33 +5,33 @@
 
 // Infisical client
 export {
-  InfisicalClient,
-  initializeSecrets,
-  getSecretsClient,
-  resolveSecret,
-  getSecret,
-  type InfisicalConfig,
-  type SecretResolution,
-} from './infisical-client.js';
+	getSecret,
+	getSecretsClient,
+	InfisicalClient,
+	type InfisicalConfig,
+	initializeSecrets,
+	resolveSecret,
+	type SecretResolution,
+} from "./infisical-client.js";
 
 // Secret redaction
 export {
-  SecretRedactor,
-  globalRedactor,
-  redact,
-  containsSecrets,
-  detectSecretTypes,
-  redactObject,
-  type RedactionConfig,
-} from './secret-redaction.js';
+	containsSecrets,
+	detectSecretTypes,
+	globalRedactor,
+	type RedactionConfig,
+	redact,
+	redactObject,
+	SecretRedactor,
+} from "./secret-redaction.js";
 
 // Secret resolver
 export {
-  resolveApplicationSecrets,
-  getProviderSecret,
-  redactSecretsFromObject,
-  verifyRequiredSecrets,
-  logSecretStatus,
-  type ProviderSecrets,
-  type ApplicationSecrets,
-} from './secret-resolver.js';
+	type ApplicationSecrets,
+	getProviderSecret,
+	logSecretStatus,
+	type ProviderSecrets,
+	redactSecretsFromObject,
+	resolveApplicationSecrets,
+	verifyRequiredSecrets,
+} from "./secret-resolver.js";

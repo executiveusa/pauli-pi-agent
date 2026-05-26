@@ -25,7 +25,7 @@
 		"lucide": "^0.544.0",
 		"ollama": "^0.6.0",
 		"pdfjs-dist": "5.4.394",
-		"xlsx": "^0.20.3"
+		"xlsx": "^0.18.0"
 	},
 	"peerDependencies": {
 		"@mariozechner/mini-lit": "^0.2.0",
