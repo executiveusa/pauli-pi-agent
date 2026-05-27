@@ -1,0 +1,11 @@
+goals:
+  company: "future-proof-autonomous-agency"
+  timeframes:
+    - label: "30-day"
+      target: "Establish local environment, wire smart routing proxy, scaffold adapters, and compile core skills database."
+    - label: "90-day"
+      target: "Deploy the Puerto Vallarta luxury directory showcase, seed B2B prospects, and launch initial affiliate monetization links."
+    - label: "1-year"
+      target: "Onboard first 25 recurring local business Care retainer subscriptions managed autonomously."
+    - label: "5-year"
+      target: "Operate completely decentralized 24/7 swarms generating automated media, leads, and custom Smart Sites."

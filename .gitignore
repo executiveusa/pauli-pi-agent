@@ -41,3 +41,10 @@ plans/
 .pi/hf-sessions/
 .pi/hf-sessions-backup/
 collect.sh
+
+# Proxy and Browser Harness
+.fcc/
+.tools/
+screenshots/
+test-results/
+playwright-report/

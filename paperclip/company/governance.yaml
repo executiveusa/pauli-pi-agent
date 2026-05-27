@@ -1,0 +1,11 @@
+governance:
+  compliance:
+    dnc_check: true
+    privacy_compliance: "GDPR/CCPA compliant storage"
+    deception_policy: "No deceptive user testimonials or identity spoofing"
+  data_protection:
+    secret_vault: "Infisical for secret keys"
+    logging_policy: "Anonymize private user payloads"
+  system_resilience:
+    timeouts: "Timeout and fallback grace loops"
+    fallback_message: "System temporarily degraded. Retrying loop."

@@ -1,0 +1,81 @@
+agents:
+  - id: pi-ceo
+    name: "PI CEO Agent"
+    role: "Autonomous Agency CEO"
+    budget: 30.00
+    heartbeat: "daily-executive-heartbeat"
+  - id: pi-coo
+    name: "PI COO Agent"
+    role: "Operations Coordinator"
+    budget: 20.00
+    heartbeat: "weekly-systems-review"
+  - id: pi-cto
+    name: "PI CTO Agent"
+    role: "Rust Infrastructure Architect"
+    budget: 30.00
+    heartbeat: "daily-skill-compiler"
+  - id: cynthia-design
+    name: "Cynthia Design Director"
+    role: "Synthia Visual Authority"
+    budget: 15.00
+    heartbeat: "daily-synthia-production"
+  - id: product-smart-site
+    name: "Smart Site Product Agent"
+    role: "Smart Sites Product Lead"
+    budget: 10.00
+    heartbeat: "weekly-productization-review"
+  - id: revenue-strategist
+    name: "Revenue Strategist Agent"
+    role: "Offer and Monetization Lead"
+    budget: 15.00
+    heartbeat: "daily-revenue-scan"
+  - id: lead-researcher
+    name: "Lead Research Agent"
+    role: "Prospecting and Market Intelligence"
+    budget: 15.00
+    heartbeat: "daily-lead-scrape"
+  - id: build-agent
+    name: "Build Agent"
+    role: "Full-Stack Product Builder"
+    budget: 40.00
+    heartbeat: "asynchronous-tickets"
+  - id: automation-agent
+    name: "Automation Agent"
+    role: "Workflow Automation Engineer"
+    budget: 10.00
+    heartbeat: "asynchronous-triggers"
+  - id: content-ugc
+    name: "Content/UGC Agent"
+    role: "UGC Character and Content Producer"
+    budget: 15.00
+    heartbeat: "daily-content-machine"
+  - id: postiz-distribution
+    name: "Postiz Distribution Agent"
+    role: "Social Distribution Operator"
+    budget: 10.00
+    heartbeat: "daily-postiz-queue"
+  - id: voice-concierge
+    name: "Voice and Concierge Agent"
+    role: "Voice/Chat Experience Builder"
+    budget: 10.00
+    heartbeat: "asynchronous-calls"
+  - id: qa-slopless-guard
+    name: "QA and Slopless Guard Agent"
+    role: "Quality, Security, and Anti-Slop Reviewer"
+    budget: 10.00
+    heartbeat: "pre-delivery-gates"
+  - id: memory-knowledge
+    name: "Memory and Knowledge Agent"
+    role: "Knowledge Graph Librarian"
+    budget: 10.00
+    heartbeat: "daily-skill-compiler"
+  - id: finance-metrics
+    name: "Finance and Metrics Agent"
+    role: "Budget, Pricing, and Signal Analyst"
+    budget: 10.00
+    heartbeat: "monthly-board-report"
+  - id: client-success
+    name: "Client Success Agent"
+    role: "Delivery and Retention Operator"
+    budget: 10.00
+    heartbeat: "asynchronous-onboarding"

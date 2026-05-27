@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@chrome-devtools/mcp"],
+      "description": "Chrome DevTools — browser control, console, network, DOM inspection"
+    }
+  },
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(npx:*)",
+      "Bash(fcc-server:*)",
+      "Bash(fcc-claude:*)"
+    ]
+  }
+}

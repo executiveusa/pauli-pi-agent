@@ -1,0 +1,31 @@
+routines:
+  daily_executive_heartbeat:
+    schedule: "08:00 America/Mexico_City"
+    owner: "pi-ceo"
+  daily_revenue_scan:
+    schedule: "09:00 America/Mexico_City"
+    owner: "revenue-strategist"
+  daily_lead_scrape:
+    schedule: "10:00 America/Mexico_City"
+    owner: "lead-researcher"
+  daily_synthia_production:
+    schedule: "11:00 America/Mexico_City"
+    owner: "cynthia-design"
+  daily_content_machine:
+    schedule: "13:00 America/Mexico_City"
+    owner: "content-ugc"
+  daily_postiz_queue:
+    schedule: "15:00 America/Mexico_City"
+    owner: "postiz-distribution"
+  daily_skill_compiler:
+    schedule: "17:00 America/Mexico_City"
+    owner: "memory-knowledge"
+  weekly_systems_review:
+    schedule: "Monday 08:30 America/Mexico_City"
+    owner: "pi-ceo"
+  weekly_productization_review:
+    schedule: "Friday 14:00 America/Mexico_City"
+    owner: "revenue-strategist"
+  monthly_board_report:
+    schedule: "1st of month 09:00 America/Mexico_City"
+    owner: "finance-metrics"
