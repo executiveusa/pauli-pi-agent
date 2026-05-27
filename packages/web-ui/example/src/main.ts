@@ -18,6 +18,7 @@ import {
 	SettingsDialog,
 	SettingsStore,
 	setAppStorage,
+	VoiceFlipbook,
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
 import { Bell, History, Plus, Settings } from "lucide";
@@ -68,6 +69,7 @@ let isEditingTitle = false;
 let agent: Agent;
 let chatPanel: ChatPanel;
 let agentUnsubscribe: (() => void) | undefined;
+let showFlipbook = false;
 
 const generateTitle = (messages: AgentMessage[]): string => {
 	const firstUserMsg = messages.find((m) => m.role === "user" || m.role === "user-with-attachments");
@@ -284,6 +286,16 @@ const renderApp = () => {
 						onClick: newSession,
 						title: "New Session",
 					})}
+					${Button({
+						variant: "ghost",
+						size: "sm",
+						children: html`<span style="font-size:16px;">📖</span>`,
+						onClick: () => {
+							showFlipbook = !showFlipbook;
+							renderApp();
+						},
+						title: "Toggle Onboarding Flipbook",
+					})}
 
 					${
 						currentTitle
@@ -366,8 +378,8 @@ const renderApp = () => {
 				</div>
 			</div>
 
-			<!-- Chat Panel -->
-			${chatPanel}
+			<!-- Chat Panel / Voice Flipbook -->
+			${showFlipbook ? html`<voice-flipbook></voice-flipbook>` : chatPanel}
 		</div>
 	`;
 
