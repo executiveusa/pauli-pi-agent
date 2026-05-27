@@ -1,0 +1,55 @@
+{
+  "name": "@executiveusa/youtube-kg-agent",
+  "version": "1.0.0",
+  "description": "YouTube Knowledge Graph Agent — MCP server for semantic search, concept extraction, multi-hop reasoning",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/server.d.ts",
+      "import": "./dist/mcp/server.js"
+    }
+  },
+  "bin": {
+    "youtube-kg": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SKILL.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "check": "tsc --noEmit",
+    "test": "node --test --import tsx test/**/*.test.ts",
+    "test:watch": "node --test --import tsx --watch test/**/*.test.ts"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "mcp",
+    "youtube",
+    "knowledge-graph",
+    "second-brain"
+  ],
+  "author": "Executive USA",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.73.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "googleapis": "^139.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.7.3",
+    "tsx": "^4.16.2"
+  }
+}

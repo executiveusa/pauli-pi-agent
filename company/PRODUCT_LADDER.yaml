@@ -1,0 +1,28 @@
+product_ladder:
+  company: "future-proof-autonomous-agency"
+  offers:
+    - id: synthia-smart-site
+      name: "Synthia Smart Site"
+      setup_fee: 1500
+      retainer_monthly: 150
+      description: "Premium AI-powered local business website with location/service pages, custom lead forms, and local SEO optimizations."
+    - id: tool-enhanced-site
+      name: "AI Tool-Enhanced Smart Site"
+      setup_fee: 2500
+      retainer_monthly: 250
+      description: "Smart Site containing an embedded custom business tool (e.g. spa booking calculator, rewards portal, quote builder)."
+    - id: receptionist-follow-up
+      name: "AI Receptionist + Follow-up System"
+      setup_fee: 1000
+      retainer_monthly: 350
+      description: "Inbound voice/chat receptionist with missed-call text-back, CRM pipeline sync, and automated SMS appointment calendars."
+    - id: ugc-social-calendar
+      name: "UGC Character + Content Engine"
+      setup_fee: 1200
+      retainer_monthly: 400
+      description: "Fictional brand-avatar scripts, weekly short-form content generation, and Postiz scheduled publishing operations."
+    - id: concierge-directory
+      name: "AI Local Directory / Concierge Microsite"
+      setup_fee: 3000
+      retainer_monthly: 500
+      description: "Tourism/Niche business directory equipped with semantic search, affiliate referral links, and sponsorship ad integrations."

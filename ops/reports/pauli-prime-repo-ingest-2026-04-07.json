@@ -1,0 +1,90 @@
+{
+  "system": "PAULI-PRIME",
+  "run_date": "2026-04-07",
+  "objective": "Repository ingest and autonomous execution bootstrap for continuous production operation.",
+  "repo_map": {
+    "workspace": "npm monorepo using workspaces packages/*",
+    "packages": [
+      "packages/ai",
+      "packages/agent",
+      "packages/coding-agent",
+      "packages/mom",
+      "packages/pods",
+      "packages/tui",
+      "packages/web-ui"
+    ],
+    "runtime": [
+      "Node.js >=20",
+      "TypeScript",
+      "ESM"
+    ],
+    "quality_commands": {
+      "check": "npm run check",
+      "tests": "./test.sh",
+      "smoke": "npm run check:browser-smoke"
+    },
+    "ci_cd": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/pr-gate.yml",
+      ".github/workflows/oss-weekend-issues.yml"
+    ],
+    "ops_artifacts": [
+      "ops/reports/"
+    ],
+    "boundaries": {
+      "workspace": "package-scoped build and checks",
+      "secrets": "provider credentials sourced via environment variables",
+      "deploy": "package-level publish and release scripts"
+    }
+  },
+  "task_graph": [
+    {
+      "id": "WU-1",
+      "objective": "Ingest repository architecture and constraints",
+      "inputs": [
+        "README.md",
+        "package.json",
+        "AGENTS.md",
+        "ops/reports/pauli-prime-module-summary.json"
+      ],
+      "outputs": [
+        "ops/reports/pauli-prime-repo-ingest-2026-04-07.json"
+      ],
+      "validation": "JSON parse",
+      "risk": "low",
+      "parallel": false
+    },
+    {
+      "id": "WU-2",
+      "objective": "Update module summary with current execution state",
+      "inputs": [
+        "ops/reports/pauli-prime-module-summary.json"
+      ],
+      "outputs": [
+        "ops/reports/pauli-prime-module-summary.json"
+      ],
+      "validation": "JSON parse",
+      "risk": "low",
+      "parallel": false
+    }
+  ],
+  "implementation": {
+    "reused_patterns": [
+      "Machine-readable reporting under ops/reports",
+      "Package-oriented repository architecture declared in README and workspace manifest"
+    ],
+    "guardrails_respected": [
+      "No destructive git operations",
+      "No dependency changes",
+      "No functional module behavior changes"
+    ]
+  },
+  "validation": {
+    "commands": [
+      "python -m json.tool ops/reports/pauli-prime-repo-ingest-2026-04-07.json",
+      "python -m json.tool ops/reports/pauli-prime-module-summary.json"
+    ],
+    "status": "passed"
+  },
+  "next_auto_step": "Select one package vertical slice and implement a concrete capability with package-level validation."
+}

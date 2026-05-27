@@ -1,0 +1,10 @@
+.env
+.env.local
+.youtube-token.json
+node_modules
+dist
+*.log
+.DS_Store
+.idea
+.vscode
+*.swp

@@ -11,6 +11,9 @@ packages/*/dist-firefox/
 
 # Environment
 .env
+.env.local
+.env.*.local
+.env.test.local
 
 # Editor files
 .vscode/
@@ -36,4 +39,12 @@ packages/coding-agent/binaries/
 todo.md
 plans/
 .pi/hf-sessions/
+.pi/hf-sessions-backup/
 collect.sh
+
+# Proxy and Browser Harness
+.fcc/
+.tools/
+screenshots/
+test-results/
+playwright-report/

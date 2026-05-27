@@ -1,0 +1,18 @@
+budgets:
+  currency: "USD"
+  thresholds:
+    monthly_max: 200.00
+    alert_percentage: 80.0
+  agents:
+    pi-ceo: 30.00
+    pi-coo: 20.00
+    pi-cto: 30.00
+    cynthia-design: 15.00
+    build-agent: 40.00
+    lead-researcher: 15.00
+    content-ugc: 15.00
+  routines:
+    daily-executive-heartbeat: 0.50
+    daily-lead-scrape: 1.50
+    daily-skill-compiler: 0.75
+    monthly-board-report: 2.00

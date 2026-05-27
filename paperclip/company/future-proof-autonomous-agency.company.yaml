@@ -1,0 +1,24 @@
+company:
+  name: "Future-Proof Autonomous Agency"
+  slug: "future-proof-autonomous-agency"
+  board:
+    owner: "Bambu"
+    authority: "final_approval_gate"
+  mission: "Build an autonomous AI agency that creates, sells, fulfills, and improves digital products every day."
+  north_star:
+    metric: "Monthly Recurring Revenue from autonomous digital assets"
+    first_target: "First 5 sellable offers shipped as reusable systems"
+  control_mode: "human-supervised-autonomy"
+  autonomy_policy:
+    allowed:
+      - research
+      - planning
+      - scaffolding
+      - code_generation
+      - local_testing
+    denied:
+      - spend_capital
+      - publish_public_content
+      - contact_live_leads
+      - sign_client_contracts
+      - infrastructure_deployment_production
