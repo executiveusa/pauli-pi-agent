@@ -1,0 +1,49 @@
+{
+	"name": "@executiveusa/mythos-kernel",
+	"version": "1.0.0",
+	"description": "Mythos Kernel — Meta-reasoning orchestration system for PI Agent with depth-aware loop control",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/types.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+		"check": "tsc --noEmit",
+		"test": "node --test --import tsx test/**/*.test.ts",
+		"test:watch": "node --test --import tsx --watch test/**/*.test.ts"
+	},
+	"keywords": [
+		"ai",
+		"agent",
+		"reasoning",
+		"meta-cognition",
+		"orchestration"
+	],
+	"author": "Executive USA",
+	"license": "MIT",
+	"dependencies": {
+		"@mariozechner/pi-agent-core": "*",
+		"@mariozechner/pi-ai": "*",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"typescript": "^5.7.3",
+		"tsx": "^4.16.2"
+	}
+}
