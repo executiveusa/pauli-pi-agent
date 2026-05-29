@@ -1,5 +1,5 @@
-import type { PostizPost } from "./postiz.types";
-import { PostizClient } from "./postiz.client";
+import type { PostizPost } from "./postiz.types.js";
+import { PostizClient } from "./postiz.client.js";
 
 export class PostizScheduler {
   private client = new PostizClient();

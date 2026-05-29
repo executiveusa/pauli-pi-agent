@@ -1,10 +1,10 @@
 export async function verifyPageLoads(url: string): Promise<boolean> {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    return res.ok;
-  } catch {
-    return false;
-  }
+	try {
+		const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+		return res.ok;
+	} catch {
+		return false;
+	}
 }
 
 export const BROWSER_AGENT_INSTRUCTIONS = `

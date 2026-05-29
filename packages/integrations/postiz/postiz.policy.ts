@@ -1,4 +1,4 @@
-import type { PostizPost } from "./postiz.types";
+import type { PostizPost } from "./postiz.types.js";
 
 export interface PublishPolicy {
   requireApprovalByDefault: boolean;

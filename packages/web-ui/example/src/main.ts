@@ -18,7 +18,6 @@ import {
 	SettingsDialog,
 	SettingsStore,
 	setAppStorage,
-	VoiceFlipbook,
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
 import { Bell, History, Plus, Settings } from "lucide";
@@ -171,7 +170,7 @@ Available tools:
 - Artifacts: Create interactive HTML, SVG, Markdown, and text artifacts
 
 Feel free to use these tools when needed to provide accurate and helpful responses.`,
-			model: getModel("anthropic", "claude-sonnet-4-5-20250929"),
+			model: getModel("anthropic", "claude-sonnet-4-6"),
 			thinkingLevel: "off",
 			messages: [],
 			tools: [],
