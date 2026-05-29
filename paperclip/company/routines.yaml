@@ -1,0 +1,51 @@
+routines:
+  - id: daily-executive-heartbeat
+    schedule: "0 8 * * *"
+    timezone: "America/Mexico_City"
+    owner: "pi-ceo"
+    goal: "Review company progress, allocate actions, and log blockers."
+  - id: daily-revenue-scan
+    schedule: "0 9 * * *"
+    timezone: "America/Mexico_City"
+    owner: "revenue-strategist"
+    goal: "Evaluate sellable offers, check niche strategy, and push marketing loops."
+  - id: daily-lead-scrape
+    schedule: "0 10 * * 1-5"
+    timezone: "America/Mexico_City"
+    owner: "lead-researcher"
+    goal: "Collect ranked prospect records from maps/Apollo."
+  - id: daily-synthia-production
+    schedule: "0 11 * * 1-5"
+    timezone: "America/Mexico_City"
+    owner: "cynthia-design"
+    goal: "Iterate on design tokens and dashboard views."
+  - id: daily-content-machine
+    schedule: "0 13 * * 1-5"
+    timezone: "America/Mexico_City"
+    owner: "content-ugc"
+    goal: "Script UGC avatars and draft social media calendars."
+  - id: daily-postiz-queue
+    schedule: "0 15 * * 1-5"
+    timezone: "America/Mexico_City"
+    owner: "postiz-distribution"
+    goal: "Draft social queues inside Postiz adapter workspace."
+  - id: daily-skill-compiler
+    schedule: "0 17 * * *"
+    timezone: "America/Mexico_City"
+    owner: "memory-knowledge"
+    goal: "Convert successful sessions to modular compiled skills."
+  - id: weekly-systems-review
+    schedule: "30 8 * * 1"
+    timezone: "America/Mexico_City"
+    owner: "pi-ceo"
+    goal: "Graph system loops, bottlenecks, and stocks."
+  - id: weekly-productization-review
+    schedule: "0 14 * * 5"
+    timezone: "America/Mexico_City"
+    owner: "revenue-strategist"
+    goal: "Package recurring offers and optimize retainers."
+  - id: monthly-board-report
+    schedule: "0 9 1 * *"
+    timezone: "America/Mexico_City"
+    owner: "finance-metrics"
+    goal: "Compile cost/revenue ratios and signal reports for Bambu."

@@ -1,0 +1,67 @@
+org:
+  name: "Future-Proof Autonomous Agency"
+  roles:
+    - id: pi-ceo
+      title: "Autonomous Agency CEO"
+      manager: "Bambu"
+      escalation: "Bambu"
+    - id: pi-coo
+      title: "Operations Coordinator"
+      manager: "pi-ceo"
+      escalation: "pi-ceo"
+    - id: pi-cto
+      title: "Rust Infrastructure Architect"
+      manager: "pi-ceo"
+      escalation: "pi-ceo"
+    - id: cynthia-design
+      title: "Synthia Visual Authority"
+      manager: "pi-ceo"
+      escalation: "pi-ceo"
+    - id: product-smart-site
+      title: "Smart Sites Product Lead"
+      manager: "pi-coo"
+      escalation: "pi-coo"
+    - id: revenue-strategist
+      title: "Offer and Monetization Lead"
+      manager: "pi-ceo"
+      escalation: "pi-ceo"
+    - id: lead-researcher
+      title: "Prospecting and Market Intelligence"
+      manager: "revenue-strategist"
+      escalation: "revenue-strategist"
+    - id: build-agent
+      title: "Full-Stack Product Builder"
+      manager: "pi-cto"
+      escalation: "pi-cto"
+    - id: automation-agent
+      title: "Workflow Automation Engineer"
+      manager: "pi-coo"
+      escalation: "pi-coo"
+    - id: content-ugc
+      title: "UGC Character and Content Producer"
+      manager: "revenue-strategist"
+      escalation: "revenue-strategist"
+    - id: postiz-distribution
+      title: "Social Distribution Operator"
+      manager: "content-ugc"
+      escalation: "content-ugc"
+    - id: voice-concierge
+      title: "Voice/Chat Experience Builder"
+      manager: "automation-agent"
+      escalation: "automation-agent"
+    - id: qa-slopless-guard
+      title: "Quality, Security, and Anti-Slop Reviewer"
+      manager: "pi-coo"
+      escalation: "pi-coo"
+    - id: memory-knowledge
+      title: "Knowledge Graph Librarian"
+      manager: "pi-cto"
+      escalation: "pi-cto"
+    - id: finance-metrics
+      title: "Budget, Pricing, and Signal Analyst"
+      manager: "pi-ceo"
+      escalation: "pi-ceo"
+    - id: client-success
+      title: "Delivery and Retention Operator"
+      manager: "pi-coo"
+      escalation: "pi-coo"

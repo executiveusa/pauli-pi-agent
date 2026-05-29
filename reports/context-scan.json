@@ -1,0 +1,37 @@
+{
+  "repo_type": "npm monorepo",
+  "package_manager": "npm",
+  "primary_languages": ["typescript", "javascript", "yaml"],
+  "existing_agent_runtime": {
+    "packages": ["packages/agent", "packages/coding-agent"],
+    "configuration": "tsconfig.json"
+  },
+  "existing_design_system": {
+    "packages": ["packages/web-ui", "packages/tui"]
+  },
+  "existing_paperclip_support": {
+    "yaml_path": "paperclip/company/"
+  },
+  "existing_postiz_support": {
+    "adapter_path": "packages/integrations/postiz/"
+  },
+  "existing_database": {
+    "client": "supabase"
+  },
+  "existing_deployment": {
+    "platform": "coolify"
+  },
+  "safe_commands": ["npm run build", "npm run check", "./test.sh"],
+  "forbidden_commands": ["git reset --hard", "git checkout .", "git stash"],
+  "files_to_modify": [".gitignore"],
+  "files_to_create": [
+    "skills.md",
+    "WIKI.md",
+    "docs/00_CONTEXT_SCAN.md",
+    "packages/agent/src/lib/llm.ts",
+    "packages/agent/src/lib/browser.ts",
+    "packages/agent/src/app/api/chat/route.ts",
+    ".claude/settings.json"
+  ],
+  "highest_leverage_path": "packages/agent"
+}

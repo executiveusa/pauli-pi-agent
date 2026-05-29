@@ -1,0 +1,14 @@
+metrics:
+  north_star:
+    name: "Monthly Recurring Revenue"
+    abbreviation: "MRR"
+    unit: "USD"
+  sub_signals:
+    - name: "Fulfillment Velocity"
+      description: "Hours from lead research intake to site launch ready"
+    - name: "Lead Conversion Ratio"
+      description: "Percent of claimed profiles converted to paid Care plan retainers"
+    - name: "Cost-to-Token Efficiency"
+      description: "Ratio of reasoning tokens routed through free local proxy vs direct APIs"
+    - name: "Synthia UDEC Average"
+      description: "Mean score of all deployed web pages"

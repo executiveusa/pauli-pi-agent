@@ -1,0 +1,15 @@
+approval_policy:
+  authority: "Bambu"
+  categories:
+    financial:
+      requires_approval: true
+      description: "Any money movement or tool billing activation"
+    contracts:
+      requires_approval: true
+      description: "Signing client agreements or care retentions"
+    publishing:
+      requires_approval: true
+      description: "Deploying to live production, DNS modifications, or publishing social media accounts"
+    outbound:
+      requires_approval: true
+      description: "Contacting cold prospects or initiating calls outside of staging sandboxes"
