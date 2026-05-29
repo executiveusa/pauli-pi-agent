@@ -3,13 +3,13 @@
 export type { Agent, AgentMessage, AgentState, ThinkingLevel } from "@mariozechner/pi-agent-core";
 export type { Model } from "@mariozechner/pi-ai";
 export { ChatPanel } from "./ChatPanel.js";
-export { VoiceFlipbook } from "./components/FlipbookComponent.js";
 // Components
 export { AgentInterface } from "./components/AgentInterface.js";
 export { AttachmentTile } from "./components/AttachmentTile.js";
 export { ConsoleBlock } from "./components/ConsoleBlock.js";
 export { CustomProviderCard } from "./components/CustomProviderCard.js";
 export { ExpandableSection } from "./components/ExpandableSection.js";
+export { VoiceFlipbook } from "./components/FlipbookComponent.js";
 export { Input } from "./components/Input.js";
 export { MessageEditor } from "./components/MessageEditor.js";
 export { MessageList } from "./components/MessageList.js";
