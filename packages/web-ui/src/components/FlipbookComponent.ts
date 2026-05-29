@@ -1,233 +1,241 @@
-import { i18n } from "../utils/i18n.js";
-
 export class FlipbookComponent extends HTMLElement {
-  private currentPage = 0;
-  private isRecording = false;
-  private isSpeaking = false;
-  private isTranscribing = false;
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioChunks: Blob[] = [];
-  private audioContext: AudioContext | null = null;
-  private activeUtterance: HTMLAudioElement | null = null;
+	private currentPage = 0;
+	private isRecording = false;
+	private isSpeaking = false;
+	private isTranscribing = false;
+	private mediaRecorder: MediaRecorder | null = null;
+	private audioChunks: Blob[] = [];
+	private audioContext: AudioContext | null = null;
+	private activeUtterance: HTMLAudioElement | null = null;
 
-  private pages = [
-    {
-      title: "1. The Agent Swarm",
-      analogy: "An AI Agent is not a chatbot; it is a company. Just like a premium restaurant has a Head Chef (PI CEO), Kitchen Coordinator (PI COO), and specialized Line Cooks (Full-Stack Builders), your Future-Proof Agency divides complex deliverables into organized teammate pipelines.",
-      details: "Our Paperclip engine orchestrates 16 distinct agent roles, assigning routines and budgets to achieve monthly recurring revenue targets autonomously."
-    },
-    {
-      title: "2. Deployed Synapses",
-      analogy: "Think of your agency as a living nervous system. The BFF backend is the brain, Supabase is the permanent memory vault, Twilio voice APIs are the ears and mouth for receptionist calls, and Postiz is the social publication hand.",
-      details: "These synapses are fully wired. Sofia, our UGC Character Concierge, drafts and queues travel campaigns autonomously, while the Lead Engine scores active med-spa prospects."
-    },
-    {
-      title: "3. Token Energy",
-      analogy: "Tokens are the electricity of your agency swarms. To keep operational costs virtually zero, we utilize a custom local routing proxy. Lightweight code and chat sweeps are dispatched to free tiers (Groq/Mistral), reserving premium Claude engines only for complex multi-step reasoning.",
-      details: "This dual-routing token-saving layer is automated server-side, protecting your local API keys inside gitignored vault environments."
-    },
-    {
-      title: "4. The Sentinel Gate",
-      analogy: "Autonomy makes the swarm tireless, but governance makes it secure. Your agents operate under Human-Supervised Autonomy. They scaffold, write, and test code freely in isolated staging sandboxes, but stop at the Bambu gate before moving money, emailing prospects, or publishing live content.",
-      details: "This approval sentinel ensures complete brand safety and regulatory compliance while maintaining 24/7 background productivity."
-    }
-  ];
+	private pages = [
+		{
+			title: "1. The Agent Swarm",
+			analogy:
+				"An AI Agent is not a chatbot; it is a company. Just like a premium restaurant has a Head Chef (PI CEO), Kitchen Coordinator (PI COO), and specialized Line Cooks (Full-Stack Builders), your Future-Proof Agency divides complex deliverables into organized teammate pipelines.",
+			details:
+				"Our Paperclip engine orchestrates 16 distinct agent roles, assigning routines and budgets to achieve monthly recurring revenue targets autonomously.",
+		},
+		{
+			title: "2. Deployed Synapses",
+			analogy:
+				"Think of your agency as a living nervous system. The BFF backend is the brain, Supabase is the permanent memory vault, Twilio voice APIs are the ears and mouth for receptionist calls, and Postiz is the social publication hand.",
+			details:
+				"These synapses are fully wired. Sofia, our UGC Character Concierge, drafts and queues travel campaigns autonomously, while the Lead Engine scores active med-spa prospects.",
+		},
+		{
+			title: "3. Token Energy",
+			analogy:
+				"Tokens are the electricity of your agency swarms. To keep operational costs virtually zero, we utilize a custom local routing proxy. Lightweight code and chat sweeps are dispatched to free tiers (Groq/Mistral), reserving premium Claude engines only for complex multi-step reasoning.",
+			details:
+				"This dual-routing token-saving layer is automated server-side, protecting your local API keys inside gitignored vault environments.",
+		},
+		{
+			title: "4. The Sentinel Gate",
+			analogy:
+				"Autonomy makes the swarm tireless, but governance makes it secure. Your agents operate under Human-Supervised Autonomy. They scaffold, write, and test code freely in isolated staging sandboxes, but stop at the Bambu gate before moving money, emailing prospects, or publishing live content.",
+			details:
+				"This approval sentinel ensures complete brand safety and regulatory compliance while maintaining 24/7 background productivity.",
+		},
+	];
 
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
+	constructor() {
+		super();
+		this.attachShadow({ mode: "open" });
+	}
 
-  connectedCallback() {
-    this.render();
-    this.setupListeners();
-    this.initAudioContext();
-  }
+	connectedCallback() {
+		this.render();
+		this.setupListeners();
+		this.initAudioContext();
+	}
 
-  private initAudioContext() {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (AudioContextClass) {
-      this.audioContext = new AudioContextClass();
-    }
-  }
+	private initAudioContext() {
+		const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+		if (AudioContextClass) {
+			this.audioContext = new AudioContextClass();
+		}
+	}
 
-  private setupListeners() {
-    const shadow = this.shadowRoot!;
-    
-    shadow.querySelector("#prev-btn")?.addEventListener("click", () => this.flipPage(-1));
-    shadow.querySelector("#next-btn")?.addEventListener("click", () => this.flipPage(1));
-    
-    const micBtn = shadow.querySelector("#mic-btn");
-    micBtn?.addEventListener("click", () => this.handleMicrophoneToggle());
-  }
+	private setupListeners() {
+		const shadow = this.shadowRoot!;
 
-  private playPageFlipSound() {
-    if (!this.audioContext) return;
-    const ctx = this.audioContext;
-    if (ctx.state === "suspended") {
-      ctx.resume();
-    }
+		shadow.querySelector("#prev-btn")?.addEventListener("click", () => this.flipPage(-1));
+		shadow.querySelector("#next-btn")?.addEventListener("click", () => this.flipPage(1));
 
-    try {
-      // Synthesize a beautiful paper swoosh sound
-      const bufferSize = ctx.sampleRate * 0.35;
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1; // White noise
-      }
+		const micBtn = shadow.querySelector("#mic-btn");
+		micBtn?.addEventListener("click", () => this.handleMicrophoneToggle());
+	}
 
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
+	private playPageFlipSound() {
+		if (!this.audioContext) return;
+		const ctx = this.audioContext;
+		if (ctx.state === "suspended") {
+			ctx.resume();
+		}
 
-      const filter = ctx.createBiquadFilter();
-      filter.type = "bandpass";
+		try {
+			// Synthesize a beautiful paper swoosh sound
+			const bufferSize = ctx.sampleRate * 0.35;
+			const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+			const data = buffer.getChannelData(0);
+			for (let i = 0; i < bufferSize; i++) {
+				data[i] = Math.random() * 2 - 1; // White noise
+			}
 
-      const gain = ctx.createGain();
+			const source = ctx.createBufferSource();
+			source.buffer = buffer;
 
-      source.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
+			const filter = ctx.createBiquadFilter();
+			filter.type = "bandpass";
 
-      const now = ctx.currentTime;
-      filter.Q.setValueAtTime(4.0, now);
-      filter.frequency.setValueAtTime(800, now);
-      filter.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
-      filter.frequency.exponentialRampToValueAtTime(250, now + 0.35);
+			const gain = ctx.createGain();
 
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.12, now + 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+			source.connect(filter);
+			filter.connect(gain);
+			gain.connect(ctx.destination);
 
-      source.start(now);
-      source.stop(now + 0.35);
-    } catch (e) {
-      console.warn("Audio synthesis error: ", e);
-    }
-  }
+			const now = ctx.currentTime;
+			filter.Q.setValueAtTime(4.0, now);
+			filter.frequency.setValueAtTime(800, now);
+			filter.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
+			filter.frequency.exponentialRampToValueAtTime(250, now + 0.35);
 
-  private flipPage(dir: number) {
-    const nextVal = this.currentPage + dir;
-    if (nextVal < 0 || nextVal >= this.pages.length) return;
-    
-    this.playPageFlipSound();
-    this.currentPage = nextVal;
-    
-    // Stop any playing spoken responses on page flip
-    if (this.activeUtterance) {
-      this.activeUtterance.pause();
-      this.activeUtterance = null;
-      this.isSpeaking = false;
-    }
-    
-    this.render();
-    this.setupListeners();
-  }
+			gain.gain.setValueAtTime(0.001, now);
+			gain.gain.linearRampToValueAtTime(0.12, now + 0.06);
+			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
 
-  private async handleMicrophoneToggle() {
-    if (this.isRecording) {
-      this.stopRecording();
-    } else {
-      await this.startRecording();
-    }
-  }
+			source.start(now);
+			source.stop(now + 0.35);
+		} catch (e) {
+			console.warn("Audio synthesis error: ", e);
+		}
+	}
 
-  private async startRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.mediaRecorder = new MediaRecorder(stream);
-      this.audioChunks = [];
+	private flipPage(dir: number) {
+		const nextVal = this.currentPage + dir;
+		if (nextVal < 0 || nextVal >= this.pages.length) return;
 
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) this.audioChunks.push(event.data);
-      };
+		this.playPageFlipSound();
+		this.currentPage = nextVal;
 
-      this.mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
-        await this.sendVoicePayload(audioBlob);
-      };
+		// Stop any playing spoken responses on page flip
+		if (this.activeUtterance) {
+			this.activeUtterance.pause();
+			this.activeUtterance = null;
+			this.isSpeaking = false;
+		}
 
-      this.mediaRecorder.start();
-      this.isRecording = true;
-      this.render();
-      this.setupListeners();
-    } catch (e) {
-      console.error("Microphone access blocked: ", e);
-      alert("Please enable microphone permissions in your browser settings.");
-    }
-  }
+		this.render();
+		this.setupListeners();
+	}
 
-  private stopRecording() {
-    if (this.mediaRecorder && this.isRecording) {
-      this.mediaRecorder.stop();
-      this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-      this.isRecording = false;
-      this.isTranscribing = true;
-      this.render();
-      this.setupListeners();
-    }
-  }
+	private async handleMicrophoneToggle() {
+		if (this.isRecording) {
+			this.stopRecording();
+		} else {
+			await this.startRecording();
+		}
+	}
 
-  private async sendVoicePayload(blob: Blob) {
-    const formData = new FormData();
-    formData.append("file", blob, "voice.webm");
-    formData.append("pageTitle", this.pages[this.currentPage].title);
-    formData.append("contextAnalogy", this.pages[this.currentPage].analogy);
+	private async startRecording() {
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			this.mediaRecorder = new MediaRecorder(stream);
+			this.audioChunks = [];
 
-    try {
-      const response = await fetch("/api/voice", {
-        method: "POST",
-        body: formData
-      });
+			this.mediaRecorder.ondataavailable = (event) => {
+				if (event.data.size > 0) this.audioChunks.push(event.data);
+			};
 
-      if (!response.ok) throw new Error("Voice synthesis failure");
-      
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      this.isTranscribing = false;
-      this.isSpeaking = true;
-      this.render();
-      this.setupListeners();
+			this.mediaRecorder.onstop = async () => {
+				const audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
+				await this.sendVoicePayload(audioBlob);
+			};
 
-      if (this.activeUtterance) this.activeUtterance.pause();
-      
-      this.activeUtterance = new Audio(audioUrl);
-      this.activeUtterance.onended = () => {
-        this.isSpeaking = false;
-        this.render();
-        this.setupListeners();
-      };
-      
-      await this.activeUtterance.play();
-    } catch (e) {
-      console.error("Voice assistant error: ", e);
-      this.isTranscribing = false;
-      this.isSpeaking = false;
-      this.render();
-      this.setupListeners();
-      alert("Unable to process voice assistant request. Please check keys.");
-    }
-  }
+			this.mediaRecorder.start();
+			this.isRecording = true;
+			this.render();
+			this.setupListeners();
+		} catch (e) {
+			console.error("Microphone access blocked: ", e);
+			alert("Please enable microphone permissions in your browser settings.");
+		}
+	}
 
-  private render() {
-    const page = this.pages[this.currentPage];
-    
-    // Status visual maps
-    let statusClass = "idle";
-    let statusText = "Tap Mic to Talk to Sophia";
-    if (this.isRecording) {
-      statusClass = "recording";
-      statusText = "Recording Voice Input...";
-    } else if (this.isTranscribing) {
-      statusClass = "transcribing";
-      statusText = "Analyzing & Synthesizing response...";
-    } else if (this.isSpeaking) {
-      statusClass = "speaking";
-      statusText = "Sophia Speaking...";
-    }
+	private stopRecording() {
+		if (this.mediaRecorder && this.isRecording) {
+			this.mediaRecorder.stop();
+			this.mediaRecorder.stream.getTracks().forEach((track) => {
+				track.stop();
+			});
+			this.isRecording = false;
+			this.isTranscribing = true;
+			this.render();
+			this.setupListeners();
+		}
+	}
 
-    this.shadowRoot!.innerHTML = `
+	private async sendVoicePayload(blob: Blob) {
+		const formData = new FormData();
+		formData.append("file", blob, "voice.webm");
+		formData.append("pageTitle", this.pages[this.currentPage].title);
+		formData.append("contextAnalogy", this.pages[this.currentPage].analogy);
+
+		try {
+			const response = await fetch("/api/voice", {
+				method: "POST",
+				body: formData,
+			});
+
+			if (!response.ok) throw new Error("Voice synthesis failure");
+
+			const audioBlob = await response.blob();
+			const audioUrl = URL.createObjectURL(audioBlob);
+
+			this.isTranscribing = false;
+			this.isSpeaking = true;
+			this.render();
+			this.setupListeners();
+
+			if (this.activeUtterance) this.activeUtterance.pause();
+
+			this.activeUtterance = new Audio(audioUrl);
+			this.activeUtterance.onended = () => {
+				this.isSpeaking = false;
+				this.render();
+				this.setupListeners();
+			};
+
+			await this.activeUtterance.play();
+		} catch (e) {
+			console.error("Voice assistant error: ", e);
+			this.isTranscribing = false;
+			this.isSpeaking = false;
+			this.render();
+			this.setupListeners();
+			alert("Unable to process voice assistant request. Please check keys.");
+		}
+	}
+
+	private render() {
+		const page = this.pages[this.currentPage];
+
+		// Status visual maps
+		let statusClass = "idle";
+		let statusText = "Tap Mic to Talk to Sophia";
+		if (this.isRecording) {
+			statusClass = "recording";
+			statusText = "Recording Voice Input...";
+		} else if (this.isTranscribing) {
+			statusClass = "transcribing";
+			statusText = "Analyzing & Synthesizing response...";
+		} else if (this.isSpeaking) {
+			statusClass = "speaking";
+			statusText = "Sophia Speaking...";
+		}
+
+		this.shadowRoot!.innerHTML = `
       <style>
         :host {
           display: block;
@@ -486,7 +494,7 @@ export class FlipbookComponent extends HTMLElement {
         </button>
       </div>
     `;
-  }
+	}
 }
 
 customElements.define("voice-flipbook", FlipbookComponent);

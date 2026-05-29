@@ -18,7 +18,6 @@ import {
 	SettingsDialog,
 	SettingsStore,
 	setAppStorage,
-	VoiceFlipbook,
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
 import { Bell, History, Plus, Settings } from "lucide";
