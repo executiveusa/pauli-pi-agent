@@ -23,8 +23,8 @@ import type { ChannelInfo, SlackContext, UserInfo } from "./slack.js";
 import type { ChannelStore } from "./store.js";
 import { createMomTools, setUploadFunction } from "./tools/index.js";
 
-// Hardcoded model for now - TODO: make configurable (issue #63)
-const model = getModel("anthropic", "claude-sonnet-4-5");
+const DEFAULT_MODEL_PROVIDER = "anthropic";
+const DEFAULT_MODEL_ID = "claude-sonnet-4-5";
 
 export interface PendingMessage {
 	userName: string;
@@ -425,6 +425,14 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 	const contextFile = join(channelDir, "context.jsonl");
 	const sessionManager = SessionManager.open(contextFile, channelDir);
 	const settingsManager = createMomSettingsManager(join(channelDir, ".."));
+
+	// Resolve model from workspace settings, falling back to defaults
+	const configuredProvider = settingsManager.getDefaultProvider() ?? DEFAULT_MODEL_PROVIDER;
+	const configuredModelId = settingsManager.getDefaultModel() ?? DEFAULT_MODEL_ID;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const model = ((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined)
+		?? getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
+	log.logInfo(`[${channelId}] Using model: ${model.provider}/${model.id}`);
 
 	// Create AuthStorage and ModelRegistry
 	// Auth stored outside workspace so agent can't access it
