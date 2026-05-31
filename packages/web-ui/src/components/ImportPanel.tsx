@@ -34,7 +34,14 @@ export const ImportPanel: React.FC<ImportPanelProps> = ({
 		}
 
 		try {
-			await onImport(selectedType, file || undefined);
+			const importInput =
+				selectedType === 'sync_notion'
+					? { apiKey: notionApiKey }
+					: file
+						? file
+						: undefined;
+
+			await onImport(selectedType, importInput);
 			setFile(null);
 			setSelectedType(null);
 			setNotionApiKey('');

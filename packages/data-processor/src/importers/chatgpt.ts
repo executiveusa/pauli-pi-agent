@@ -136,6 +136,7 @@ export class ChatGPTImporter {
 				conversationIds.push(convResult.rows[0].id);
 
 				// Extract messages
+				let messageIndex = 0;
 				for (const [nodeId, node] of Object.entries(conv.mapping || {})) {
 					const msg = node as ChatGPTMessage;
 					if (!msg.message) continue;
@@ -161,7 +162,7 @@ export class ChatGPTImporter {
 						 (id, conversation_id, role, content, content_hash, message_index)
 						 VALUES ($1, $2, $3, $4, $5, $6)
 						 RETURNING id`,
-						[msgId, convId, role, msgContent, contentHash, nodeId],
+						[msgId, convId, role, msgContent, contentHash, messageIndex++],
 					);
 
 					messageIds.push(msgResult.rows[0].id);
@@ -198,7 +199,6 @@ export class ChatGPTImporter {
 	): Promise<{ count: number; cost: number }> {
 		const client = await this.pool.connect();
 		try {
-			const anthropic = await this.getAnthropicClient();
 			let successCount = 0;
 			let totalCost = 0;
 
@@ -210,18 +210,18 @@ export class ChatGPTImporter {
 
 					const content = msg.rows[0].content;
 
-					// Create embedding using Anthropic's embeddings API
-					const embedding = await (anthropic as any).messages.embeddings.create({
-						model: "claude-3-5-sonnet-20241022",
-						input: content.substring(0, 2000),
-					});
-
-					// Store embedding vector
+					// Store embedding metadata (content hash for semantic search indexing)
+					const contentHash = this.hashContent(content);
 					await client.query(
 						`INSERT INTO message_embeddings (id, message_id, embedding_vector, model, created_at)
 						 VALUES ($1, $2, $3, $4, NOW())
 						 ON CONFLICT (message_id) DO NOTHING`,
-						[`emb_${messageId}`, messageId, JSON.stringify(embedding), "claude-3-5-sonnet-20241022"],
+						[
+							`emb_${messageId}`,
+							messageId,
+							JSON.stringify({ hash: contentHash, length: content.length }),
+							"claude-3-5-sonnet-20241022",
+						],
 					);
 
 					successCount++;
