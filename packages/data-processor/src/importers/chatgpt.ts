@@ -221,12 +221,7 @@ export class ChatGPTImporter {
 						`INSERT INTO message_embeddings (id, message_id, embedding_vector, model, created_at)
 						 VALUES ($1, $2, $3, $4, NOW())
 						 ON CONFLICT (message_id) DO NOTHING`,
-						[
-							`emb_${messageId}`,
-							messageId,
-							JSON.stringify(embedding),
-							"claude-3-5-sonnet-20241022",
-						],
+						[`emb_${messageId}`, messageId, JSON.stringify(embedding), "claude-3-5-sonnet-20241022"],
 					);
 
 					successCount++;
