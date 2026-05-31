@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RevenueSystemOffer",
+  "type": "object",
+  "properties": {
+    "offer_name": {
+      "type": "string"
+    },
+    "niche": {
+      "type": "string"
+    },
+    "primary_result": {
+      "type": "string"
+    },
+    "secondary_result": {
+      "type": "string"
+    },
+    "pain_points_solved": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "system_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "monthly_value_loop": {
+      "type": "string"
+    },
+    "recommended_pricing": {
+      "type": "object",
+      "properties": {
+        "setup_fee": {
+          "type": "string"
+        },
+        "monthly_subscription": {
+          "type": "string"
+        },
+        "premium_tier": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "offer_name",
+    "niche",
+    "primary_result",
+    "pain_points_solved",
+    "system_components",
+    "monthly_value_loop"
+  ]
+}
