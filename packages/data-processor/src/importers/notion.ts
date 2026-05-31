@@ -47,16 +47,63 @@ export class NotionImporter {
 		}
 	}
 
-	private async fetchPages(taskId: string, _apiKey: string, _userId: string): Promise<{ pages: NotionPage[] }> {
+	private async fetchPages(taskId: string, apiKey: string, _userId: string): Promise<{ pages: NotionPage[] }> {
 		try {
-			// Placeholder: In production, this would call Notion API
-			// For now, we'll record the step and return empty pages
-			// Real implementation would use notion-client or fetch Notion API
 			const pages: NotionPage[] = [];
+
+			// Fetch from Notion API
+			const response = await fetch("https://api.notion.com/v1/search", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${apiKey}`,
+					"Notion-Version": "2024-05-15",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					filter: { value: "page", property: "object" },
+					sort: { direction: "descending", timestamp: "last_edited_time" },
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Notion API error: ${response.statusText}`);
+			}
+
+			const data = (await response.json()) as any;
+
+			// Process each page
+			for (const result of data.results || []) {
+				if (result.object === "page") {
+					const page: NotionPage = {
+						id: result.id,
+						created_time: result.created_time,
+						last_edited_time: result.last_edited_time,
+						archived: result.archived,
+						url: result.url,
+						properties: result.properties,
+					};
+
+					// Fetch page content (blocks)
+					const blockResponse = await fetch(`https://api.notion.com/v1/blocks/${result.id}/children`, {
+						headers: {
+							Authorization: `Bearer ${apiKey}`,
+							"Notion-Version": "2024-05-15",
+						},
+					});
+
+					if (blockResponse.ok) {
+						const blockData = (await blockResponse.json()) as any;
+						const content = this.extractBlockContent(blockData.results || []);
+						page.content = content;
+					}
+
+					pages.push(page);
+				}
+			}
 
 			await this.recordStep(taskId, 1, "fetch_pages", "completed", {
 				count: pages.length,
-				message: "Notion API integration requires apiKey configuration",
+				message: `Synced ${pages.length} pages from Notion`,
 			});
 
 			return { pages };
@@ -71,6 +118,24 @@ export class NotionImporter {
 			);
 			throw error;
 		}
+	}
+
+	private extractBlockContent(blocks: any[]): string {
+		const contents: string[] = [];
+
+		for (const block of blocks) {
+			if (block.type === "paragraph" && block.paragraph?.rich_text) {
+				contents.push(block.paragraph.rich_text.map((t: any) => t.plain_text).join(""));
+			} else if (block.type === "heading_1" && block.heading_1?.rich_text) {
+				contents.push(`# ${block.heading_1.rich_text.map((t: any) => t.plain_text).join("")}`);
+			} else if (block.type === "heading_2" && block.heading_2?.rich_text) {
+				contents.push(`## ${block.heading_2.rich_text.map((t: any) => t.plain_text).join("")}`);
+			} else if (block.type === "bulleted_list_item" && block.bulleted_list_item?.rich_text) {
+				contents.push(`- ${block.bulleted_list_item.rich_text.map((t: any) => t.plain_text).join("")}`);
+			}
+		}
+
+		return contents.join("\n");
 	}
 
 	private async extractPages(
