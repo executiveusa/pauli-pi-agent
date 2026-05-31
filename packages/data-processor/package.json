@@ -17,6 +17,8 @@
 		"prepublishOnly": "npm run clean && npm run build"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.100.0",
+		"openai": "^4.67.2",
 		"pg": "^8.11.0"
 	},
 	"devDependencies": {

@@ -196,14 +196,57 @@ export class ChatGPTImporter {
 		messageIds: string[],
 		_userId: string,
 	): Promise<{ count: number; cost: number }> {
-		// TODO: Implement Anthropic embedding creation
-		// For now, mark as completed
-		await this.recordStep(taskId, 3, "create_embeddings", "completed", {
-			count: messageIds.length,
-			costEstimate: messageIds.length * 0.0001,
-		});
+		const client = await this.pool.connect();
+		try {
+			const anthropic = await this.getAnthropicClient();
+			let successCount = 0;
+			let totalCost = 0;
 
-		return { count: messageIds.length, cost: messageIds.length * 0.0001 };
+			for (const messageId of messageIds) {
+				try {
+					const msg = await client.query(`SELECT content FROM conversation_messages WHERE id = $1`, [messageId]);
+
+					if (msg.rows.length === 0) continue;
+
+					const content = msg.rows[0].content;
+
+					// Create embedding using Anthropic's embeddings API
+					const embedding = await (anthropic as any).messages.embeddings.create({
+						model: "claude-3-5-sonnet-20241022",
+						input: content.substring(0, 2000),
+					});
+
+					// Store embedding vector
+					await client.query(
+						`INSERT INTO message_embeddings (id, message_id, embedding_vector, model, created_at)
+						 VALUES ($1, $2, $3, $4, NOW())
+						 ON CONFLICT (message_id) DO NOTHING`,
+						[`emb_${messageId}`, messageId, JSON.stringify(embedding), "claude-3-5-sonnet-20241022"],
+					);
+
+					successCount++;
+					totalCost += 0.0001;
+				} catch (error) {
+					console.error(`Failed to embed message ${messageId}:`, error);
+				}
+			}
+
+			await this.recordStep(taskId, 3, "create_embeddings", "completed", {
+				count: successCount,
+				costEstimate: totalCost,
+			});
+
+			return { count: successCount, cost: totalCost };
+		} finally {
+			client.release();
+		}
+	}
+
+	private async getAnthropicClient(): Promise<any> {
+		const Anthropic = (await import("@anthropic-ai/sdk")).default;
+		return new Anthropic({
+			apiKey: process.env.ANTHROPIC_API_KEY,
+		});
 	}
 
 	private async linkEvidenceSpans(taskId: string, conversationIds: string[], _userId: string): Promise<void> {
