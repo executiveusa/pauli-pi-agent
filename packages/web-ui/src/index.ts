@@ -5,12 +5,16 @@ export type { Model } from "@mariozechner/pi-ai";
 export { ChatPanel } from "./ChatPanel.js";
 // Components
 export { AgentInterface } from "./components/AgentInterface.js";
+// Mercury Voice Agent components
+export { type AssetItem, AssetPanel } from "./components/AssetPanel.js";
 export { AttachmentTile } from "./components/AttachmentTile.js";
 export { ConsoleBlock } from "./components/ConsoleBlock.js";
 export { CustomProviderCard } from "./components/CustomProviderCard.js";
 export { ExpandableSection } from "./components/ExpandableSection.js";
 export { VoiceFlipbook } from "./components/FlipbookComponent.js";
 export { Input } from "./components/Input.js";
+export { MercuryAgentShell } from "./components/MercuryAgentShell.js";
+export { type DiffusionState, MercuryDiffusionBubble } from "./components/MercuryDiffusionBubble.js";
 export { MessageEditor } from "./components/MessageEditor.js";
 export { MessageList } from "./components/MessageList.js";
 // Message components
@@ -54,6 +58,9 @@ export { RuntimeMessageBridge } from "./components/sandbox/RuntimeMessageBridge.
 export { RUNTIME_MESSAGE_ROUTER } from "./components/sandbox/RuntimeMessageRouter.js";
 export type { SandboxRuntimeProvider } from "./components/sandbox/SandboxRuntimeProvider.js";
 export { ThinkingBlock } from "./components/ThinkingBlock.js";
+export { ToolDock, type ToolDockItem } from "./components/ToolDock.js";
+export { type UsageData, UsageMeter } from "./components/UsageMeter.js";
+export { VoiceOrb, type VoiceOrbState } from "./components/VoiceOrb.js";
 export { ApiKeyPromptDialog } from "./dialogs/ApiKeyPromptDialog.js";
 export { AttachmentOverlay } from "./dialogs/AttachmentOverlay.js";
 export { CustomProviderDialog } from "./dialogs/CustomProviderDialog.js";

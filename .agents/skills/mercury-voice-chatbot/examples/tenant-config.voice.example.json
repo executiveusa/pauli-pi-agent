@@ -1,0 +1,31 @@
+{
+  "tenantId": "acme_voice",
+  "clientName": "Acme Corp Voice",
+  "plan": "voice",
+  "branding": {
+    "botName": "Acme Voice Agent",
+    "primaryColor": "#1A1A2E",
+    "accentColor": "#E94560",
+    "voiceName": "nova"
+  },
+  "routing": {
+    "defaultModel": "mercury-2",
+    "reasoningEffort": "instant",
+    "diffusionEnabled": false,
+    "voiceEnabled": true
+  },
+  "billing": {
+    "mode": "client_byok",
+    "usagePaidByClient": true,
+    "setupFee": 1000,
+    "monthlyMaintenanceFee": 299
+  },
+  "permissions": {
+    "canUseBrowser": false,
+    "canGenerateImages": false,
+    "canGenerateVideo": false,
+    "canSendEmail": false,
+    "canBookAppointments": true,
+    "requiresApprovalForMoneyMovement": true
+  }
+}

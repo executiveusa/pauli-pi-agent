@@ -1,0 +1,30 @@
+{
+  "tenantId": "acme_clean",
+  "clientName": "Acme Corp",
+  "plan": "clean",
+  "branding": {
+    "botName": "Acme Assistant",
+    "primaryColor": "#0047AB",
+    "accentColor": "#FFD700"
+  },
+  "routing": {
+    "defaultModel": "mercury-2",
+    "reasoningEffort": "low",
+    "diffusionEnabled": false,
+    "voiceEnabled": false
+  },
+  "billing": {
+    "mode": "client_byok",
+    "usagePaidByClient": true,
+    "setupFee": 500,
+    "monthlyMaintenanceFee": 149
+  },
+  "permissions": {
+    "canUseBrowser": false,
+    "canGenerateImages": false,
+    "canGenerateVideo": false,
+    "canSendEmail": false,
+    "canBookAppointments": false,
+    "requiresApprovalForMoneyMovement": true
+  }
+}
