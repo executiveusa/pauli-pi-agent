@@ -20,12 +20,96 @@ import {
 	setAppStorage,
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
-import { Bell, History, Plus, Settings } from "lucide";
+import { Bell, Globe, History, Plus, Settings } from "lucide";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
 import { Input } from "@mariozechner/mini-lit/dist/Input.js";
 import { createSystemNotification, customConvertToLlm, registerCustomMessageRenderers } from "./custom-messages.js";
+
+// ============================================================================
+// DEEP RESEARCH MODE
+// ============================================================================
+
+const DEEP_RESEARCH_API = (import.meta as any).env?.VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
+
+const DEEP_RESEARCH_SYSTEM_PROMPT = `You are a deep research agent specializing in comprehensive, globally balanced analysis.
+
+When given a topic or question, produce a thorough research report that:
+1. Draws from sources spanning multiple world regions — not just US or Western European perspectives
+2. Actively seeks viewpoints from Asia, Africa, Latin America, Middle East, Eastern Europe, and Oceania
+3. Distinguishes between facts, expert opinions, and popular sentiment
+4. Presents minority or dissenting views alongside mainstream positions
+5. Cites every claim with a numbered reference [1], [2], etc.
+
+Output Format — always return a structured Markdown document:
+
+# [Topic]
+
+## Summary
+2-3 sentence overview from a neutral, global perspective.
+
+## Key Findings
+...with inline citations [1][2]...
+
+## Regional Perspectives
+Explicitly cover how this topic is viewed in different parts of the world.
+
+## Contested Areas
+Note where evidence is disputed or where perspectives sharply diverge.
+
+## References
+[1] Title — Source, Region, URL, Date
+[2] ...
+
+Search strategy:
+- Run searches from multiple geographic perspectives (US, Brazil, India, Japan, Nigeria, Germany)
+- Seek primary sources: government data, academic papers, NGO reports, local journalism
+- Do not weight US/UK sources more heavily than others
+- Label speculation vs. established fact clearly
+
+If a deep-research backend is available you can trigger it via: POST ${DEEP_RESEARCH_API}/api/research with {query: string}`;
+
+// Web search tool (browser-native fetch, no API key required for basic use)
+function createWebSearchTool() {
+	return {
+		name: "web_search",
+		description:
+			"Search the web for current information. Use geo_hint to indicate desired regional perspective (e.g. 'global', 'asia', 'africa', 'latin-america').",
+		parameters: {
+			type: "object" as const,
+			properties: {
+				query: { type: "string", description: "Search query" },
+				geo_hint: {
+					type: "string",
+					description:
+						"Desired regional perspective: global, us, uk, eu, asia, africa, latin-america, middle-east",
+				},
+			},
+			required: ["query"],
+		},
+		async execute({ query, geo_hint }: { query: string; geo_hint?: string }) {
+			// When the deep-research backend is running it handles geo-diverse search.
+			// Fallback: delegate to the backend API or return a prompt for the LLM.
+			try {
+				const resp = await fetch(`${DEEP_RESEARCH_API}/api/research`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ query }),
+					signal: AbortSignal.timeout(5000),
+				});
+				if (resp.ok) {
+					const data = (await resp.json()) as { taskId: string; status: string };
+					return `Deep research task queued (ID: ${data.taskId}). The workflow will search from regions: US, Brazil, India, Japan, Nigeria, Germany. Poll GET ${DEEP_RESEARCH_API}/api/research/${data.taskId} for results, or synthesize from your training data in the meantime.`;
+				}
+			} catch {
+				// Backend not running — instruct LLM to reason from knowledge
+			}
+			const hint = geo_hint ? ` Focus on ${geo_hint} perspectives.` : "";
+			return `[web_search] Query: "${query}"${hint}\n\nThe deep-research backend is not available. Please synthesize from your training knowledge, making sure to explicitly represent viewpoints from Asia, Africa, Latin America, and the Middle East alongside Western sources. Mark all facts with [source needed] where you cannot cite a specific URL.`;
+		},
+	};
+}
 
 // Register custom message renderers
 registerCustomMessageRenderers();
@@ -69,6 +153,7 @@ let agent: Agent;
 let chatPanel: ChatPanel;
 let agentUnsubscribe: (() => void) | undefined;
 let showFlipbook = false;
+let isDeepResearch = false;
 
 const generateTitle = (messages: AgentMessage[]): string => {
 	const firstUserMsg = messages.find((m) => m.role === "user" || m.role === "user-with-attachments");
@@ -161,17 +246,21 @@ const createAgent = async (initialState?: Partial<AgentState>) => {
 		agentUnsubscribe();
 	}
 
-	agent = new Agent({
-		initialState: initialState || {
-			systemPrompt: `You are a helpful AI assistant with access to various tools.
+	const baseSystemPrompt = isDeepResearch
+		? DEEP_RESEARCH_SYSTEM_PROMPT
+		: `You are a helpful AI assistant with access to various tools.
 
 Available tools:
 - JavaScript REPL: Execute JavaScript code in a sandboxed browser environment (can do calculations, get time, process data, create visualizations, etc.)
 - Artifacts: Create interactive HTML, SVG, Markdown, and text artifacts
 
-Feel free to use these tools when needed to provide accurate and helpful responses.`,
+Feel free to use these tools when needed to provide accurate and helpful responses.`;
+
+	agent = new Agent({
+		initialState: initialState || {
+			systemPrompt: baseSystemPrompt,
 			model: getModel("anthropic", "claude-sonnet-4-6"),
-			thinkingLevel: "off",
+			thinkingLevel: isDeepResearch ? "auto" : "off",
 			messages: [],
 			tools: [],
 		},
@@ -208,9 +297,11 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			return await ApiKeyPromptDialog.prompt(provider);
 		},
 		toolsFactory: (_agent, _agentInterface, _artifactsPanel, runtimeProvidersFactory) => {
-			// Create javascript_repl tool with access to attachments + artifacts
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
+			if (isDeepResearch) {
+				return [replTool, createWebSearchTool() as any];
+			}
 			return [replTool];
 		},
 	});
@@ -366,6 +457,27 @@ const renderApp = () => {
 						},
 						title: "Demo: Add Custom Notification",
 					})}
+
+					<!-- Deep Research toggle -->
+					<button
+						class="flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium transition-colors ${
+							isDeepResearch
+								? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 ring-1 ring-blue-500/50"
+								: "text-muted-foreground hover:bg-secondary hover:text-foreground"
+						}"
+						@click=${async () => {
+							isDeepResearch = !isDeepResearch;
+							// Start a fresh session in the new mode
+							await createAgent();
+							renderApp();
+						}}
+						title="${isDeepResearch ? "Deep Research ON — click to disable" : "Enable Deep Research mode (global, multi-source, cited)"}"
+					>
+						${icon(Globe, "sm")}
+						<span class="hidden sm:inline">${isDeepResearch ? "Research" : "Research"}</span>
+						${isDeepResearch ? html`<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>` : ""}
+					</button>
+
 					<theme-toggle></theme-toggle>
 					${Button({
 						variant: "ghost",

@@ -1,0 +1,31 @@
+{
+  "name": "@executiveusa/deep-research",
+  "version": "0.1.0",
+  "description": "Durable deep research agent: Absurd workflow engine + Firecrawl + BrightData",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsgo -p tsconfig.build.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "clean": "shx rm -rf dist"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "absurd-sdk": "^0.4.0",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/pg": "^8.11.0",
+    "shx": "^0.3.4",
+    "tsx": "^4.19.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
