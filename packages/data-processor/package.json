@@ -1,0 +1,50 @@
+{
+	"name": "@mariozechner/pi-data-processor",
+	"version": "0.0.3",
+	"description": "Durable data processing pipeline for PAULI second brain (ChatGPT/Claude/Notion/Files)",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"clean": "shx rm -rf dist",
+		"build": "tsgo -p tsconfig.build.json",
+		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
+		"test": "vitest --run",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.100.0",
+		"openai": "^4.67.2",
+		"pg": "^8.11.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"@types/pg": "^8.11.0",
+		"typescript": "^5.7.3",
+		"vitest": "^3.2.4",
+		"shx": "^0.4.0"
+	},
+	"keywords": [
+		"data-processing",
+		"durable-execution",
+		"second-brain",
+		"chatgpt",
+		"claude",
+		"notion",
+		"absurd"
+	],
+	"author": "PAULI Agent",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/executiveusa/pauli-pi-agent.git",
+		"directory": "packages/data-processor"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

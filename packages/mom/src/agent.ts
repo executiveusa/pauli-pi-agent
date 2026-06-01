@@ -42,17 +42,6 @@ export interface AgentRunner {
 	abort(): void;
 }
 
-async function getAnthropicApiKey(authStorage: AuthStorage): Promise<string> {
-	const key = await authStorage.getApiKey("anthropic");
-	if (!key) {
-		throw new Error(
-			"No API key found for anthropic.\n\n" +
-				"Set an API key environment variable, or use /login with Anthropic and link to auth.json from " +
-				join(homedir(), ".pi", "mom", "auth.json"),
-		);
-	}
-	return key;
-}
 
 const IMAGE_MIME_TYPES: Record<string, string> = {
 	jpg: "image/jpeg",
@@ -430,9 +419,8 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 	const configuredProvider = settingsManager.getDefaultProvider() ?? DEFAULT_MODEL_PROVIDER;
 	const configuredModelId = settingsManager.getDefaultModel() ?? DEFAULT_MODEL_ID;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const model =
-		((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined) ??
-		getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
+	const model = ((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined)
+		?? getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
 	log.logInfo(`[${channelId}] Using model: ${model.provider}/${model.id}`);
 
 	// Create AuthStorage and ModelRegistry
@@ -449,7 +437,17 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 			tools,
 		},
 		convertToLlm,
-		getApiKey: async () => getAnthropicApiKey(authStorage),
+		getApiKey: async (provider: string) => {
+			const key = await authStorage.getApiKey(provider);
+			if (!key) {
+				const hint =
+					provider === "anthropic"
+						? `\n\nSet an API key environment variable, or use /login with Anthropic and link to auth.json from ${join(homedir(), ".pi", "mom", "auth.json")}`
+						: `\n\nUse /login to configure an API key for ${provider}.`;
+				throw new Error(`No API key found for ${provider}.${hint}`);
+			}
+			return key;
+		},
 	});
 
 	// Load existing messages
