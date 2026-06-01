@@ -418,12 +418,9 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 	// Resolve model from workspace settings, falling back to defaults
 	const configuredProvider = settingsManager.getDefaultProvider() ?? DEFAULT_MODEL_PROVIDER;
 	const configuredModelId = settingsManager.getDefaultModel() ?? DEFAULT_MODEL_ID;
-	let model: ReturnType<typeof getModel>;
-	try {
-		model = getModel(configuredProvider as Parameters<typeof getModel>[0], configuredModelId as Parameters<typeof getModel>[1]);
-	} catch {
-		model = getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
-	}
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const model = ((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined)
+		?? getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
 	log.logInfo(`[${channelId}] Using model: ${model.provider}/${model.id}`);
 
 	// Create AuthStorage and ModelRegistry

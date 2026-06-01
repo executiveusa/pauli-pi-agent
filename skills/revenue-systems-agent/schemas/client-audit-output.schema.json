@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClientAuditOutput",
+  "type": "object",
+  "properties": {
+    "business_snapshot": {
+      "type": "object"
+    },
+    "current_funnel": {
+      "type": "string"
+    },
+    "likely_pain_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pain_scorecard": {
+      "type": "object"
+    },
+    "recommended_system": {
+      "type": "object"
+    },
+    "demo_spec": {
+      "type": "object"
+    },
+    "offer": {
+      "type": "object"
+    },
+    "outreach_message": {
+      "type": "object"
+    },
+    "sales_call_script": {
+      "type": "string"
+    },
+    "monthly_subscription_package": {
+      "type": "object"
+    },
+    "reusable_niche_template": {
+      "type": "object"
+    },
+    "next_build_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_document_slug": {
+      "type": "string",
+      "description": "proof-sdk document slug for this audit's provenance record"
+    }
+  },
+  "required": [
+    "business_snapshot",
+    "current_funnel",
+    "likely_pain_points",
+    "pain_scorecard",
+    "recommended_system",
+    "demo_spec",
+    "offer",
+    "outreach_message",
+    "monthly_subscription_package",
+    "next_build_steps"
+  ]
+}

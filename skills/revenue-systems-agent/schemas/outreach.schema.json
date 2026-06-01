@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OutreachMessage",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "specific_observation": {
+      "type": "string"
+    },
+    "business_problem": {
+      "type": "string"
+    },
+    "primary_result": {
+      "type": "string"
+    },
+    "call_to_action": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_name",
+    "subject",
+    "message",
+    "specific_observation",
+    "business_problem",
+    "primary_result",
+    "call_to_action"
+  ]
+}

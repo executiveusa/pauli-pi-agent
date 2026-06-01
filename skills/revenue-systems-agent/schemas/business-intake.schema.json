@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BusinessIntake",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "google_business_profile_url": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "niche": {
+      "type": "string",
+      "enum": [
+        "real_estate_foreign_buyer",
+        "construction_lead_generation",
+        "eco_tours_hotels_resorts",
+        "plumbers_hvac",
+        "anime_digital_products",
+        "medical_dental_cosmetic_tourism",
+        "destination_weddings_events_retreats",
+        "other"
+      ]
+    },
+    "location": {
+      "type": "string"
+    },
+    "current_site_notes": {
+      "type": "string"
+    },
+    "known_problem": {
+      "type": "string"
+    },
+    "desired_offer_type": {
+      "type": "string",
+      "enum": [
+        "subscription",
+        "one_time_build",
+        "hybrid",
+        "unknown"
+      ]
+    },
+    "pauli_sent_me_fit": {
+      "type": "boolean"
+    },
+    "proof_document_slug": {
+      "type": "string",
+      "description": "proof-sdk document slug for partner verification record"
+    }
+  },
+  "required": [
+    "business_name"
+  ]
+}
