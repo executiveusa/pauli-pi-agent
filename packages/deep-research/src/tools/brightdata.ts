@@ -40,20 +40,22 @@ export class BrightDataTool {
 		this.zone = config.zone ?? "serp";
 	}
 
-	// Search via BrightData SERP API with geo-targeting
+	// Search via BrightData SERP API with geo-targeting.
+	// Uses POST with zone/url/format body as required by the BrightData REST API.
 	async searchFromRegion(query: string, region: GeoRegion, limit = 5): Promise<BrightDataSearchResult[]> {
-		const params = new URLSearchParams({
-			engine: "google",
-			q: query,
-			gl: region,
-			num: String(limit),
-		});
+		const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${region}&num=${limit}`;
 
-		const response = await fetch(`https://api.brightdata.com/request?${params}`, {
+		const response = await fetch("https://api.brightdata.com/request", {
+			method: "POST",
 			headers: {
 				Authorization: `Bearer ${this.apiKey}`,
 				"Content-Type": "application/json",
 			},
+			body: JSON.stringify({
+				zone: this.zone,
+				url: googleUrl,
+				format: "json",
+			}),
 		});
 
 		if (!response.ok) {

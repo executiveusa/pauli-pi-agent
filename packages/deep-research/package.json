@@ -2,6 +2,7 @@
   "name": "@executiveusa/deep-research",
   "version": "0.1.0",
   "description": "Durable deep research agent: Absurd workflow engine + Firecrawl + BrightData",
+  "private": true,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -449,7 +449,17 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 			tools,
 		},
 		convertToLlm,
-		getApiKey: async () => getAnthropicApiKey(authStorage),
+		getApiKey: async (provider: string) => {
+			const key = await authStorage.getApiKey(provider);
+			if (!key) {
+				const hint =
+					provider === "anthropic"
+						? `\n\nSet an API key environment variable, or use /login with Anthropic and link to auth.json from ${join(homedir(), ".pi", "mom", "auth.json")}`
+						: `\n\nUse /login to configure an API key for ${provider}.`;
+				throw new Error(`No API key found for ${provider}.${hint}`);
+			}
+			return key;
+		},
 	});
 
 	// Load existing messages
