@@ -506,14 +506,15 @@ const renderApp = () => {
 						}"
 						@click=${async () => {
 							isDeepResearch = !isDeepResearch;
-							// Start a fresh session in the new mode
+							currentSessionId = undefined;
+							currentTitle = "";
 							await createAgent();
 							renderApp();
 						}}
 						title="${isDeepResearch ? "Deep Research ON — click to disable" : "Enable Deep Research mode (global, multi-source, cited)"}"
 					>
 						${icon(Globe, "sm")}
-						<span class="hidden sm:inline">${isDeepResearch ? "Research" : "Research"}</span>
+						<span class="hidden sm:inline">${isDeepResearch ? "Researching" : "Research"}</span>
 						${isDeepResearch ? html`<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>` : ""}
 					</button>
 
