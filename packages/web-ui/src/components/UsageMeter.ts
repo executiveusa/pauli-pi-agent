@@ -1,6 +1,16 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
+/** Client-safe usage summary passed to <usage-meter>. */
+export interface UsageData {
+	model?: string;
+	mode?: string;
+	inputTokens?: number;
+	outputTokens?: number;
+	sessionCount?: number;
+	monthlyTokenLimit?: number;
+}
+
 /**
  * UsageMeter — client-safe usage display.
  *
