@@ -430,8 +430,9 @@ function createRunner(sandboxConfig: SandboxConfig, channelId: string, channelDi
 	const configuredProvider = settingsManager.getDefaultProvider() ?? DEFAULT_MODEL_PROVIDER;
 	const configuredModelId = settingsManager.getDefaultModel() ?? DEFAULT_MODEL_ID;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const model = ((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined)
-		?? getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
+	const model =
+		((getModel as any)(configuredProvider, configuredModelId) as ReturnType<typeof getModel> | undefined) ??
+		getModel(DEFAULT_MODEL_PROVIDER, DEFAULT_MODEL_ID);
 	log.logInfo(`[${channelId}] Using model: ${model.provider}/${model.id}`);
 
 	// Create AuthStorage and ModelRegistry
