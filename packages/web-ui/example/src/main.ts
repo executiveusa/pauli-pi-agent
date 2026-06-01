@@ -31,7 +31,7 @@ import { createSystemNotification, customConvertToLlm, registerCustomMessageRend
 // DEEP RESEARCH MODE
 // ============================================================================
 
-const DEEP_RESEARCH_API = (import.meta as any).env?.VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
+const DEEP_RESEARCH_API = (import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
 
 const DEEP_RESEARCH_SYSTEM_PROMPT = `You are a deep research agent specializing in comprehensive, globally balanced analysis.
 
@@ -70,9 +70,22 @@ Search strategy:
 
 If a deep-research backend is available you can trigger it via: POST ${DEEP_RESEARCH_API}/api/research with {query: string}`;
 
-// Web search tool (browser-native fetch, no API key required for basic use)
+// Geo hint → BrightData GeoRegion codes
+const GEO_HINT_MAP: Record<string, string[]> = {
+	global: ["us", "br", "in", "jp", "ng", "de", "za", "mx"],
+	asia: ["in", "jp", "id", "mx"],
+	africa: ["ng", "za"],
+	"latin-america": ["br", "mx"],
+	"middle-east": ["in", "ng"],
+	eu: ["de", "gb"],
+	us: ["us"],
+	uk: ["gb"],
+};
+
+// Web search tool — conforms to AgentTool<any> for the ChatPanel toolsFactory
 function createWebSearchTool() {
 	return {
+		label: "Web Search",
 		name: "web_search",
 		description:
 			"Search the web for current information. Use geo_hint to indicate desired regional perspective (e.g. 'global', 'asia', 'africa', 'latin-america').",
@@ -88,25 +101,51 @@ function createWebSearchTool() {
 			},
 			required: ["query"],
 		},
-		async execute({ query, geo_hint }: { query: string; geo_hint?: string }) {
-			// When the deep-research backend is running it handles geo-diverse search.
-			// Fallback: delegate to the backend API or return a prompt for the LLM.
+		async execute(
+			_toolCallId: string,
+			params: { query: string; geo_hint?: string },
+		): Promise<{ content: Array<{ type: "text"; text: string }>; details: string }> {
+			const { query, geo_hint } = params;
+			const regions = geo_hint ? (GEO_HINT_MAP[geo_hint] ?? ["us", "br", "in", "jp", "ng", "de"]) : undefined;
 			try {
-				const resp = await fetch(`${DEEP_RESEARCH_API}/api/research`, {
+				const spawnResp = await fetch(`${DEEP_RESEARCH_API}/api/research`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ query }),
-					signal: AbortSignal.timeout(5000),
+					body: JSON.stringify({ query, ...(regions ? { regions } : {}) }),
+					signal: AbortSignal.timeout(10_000),
 				});
-				if (resp.ok) {
-					const data = (await resp.json()) as { taskId: string; status: string };
-					return `Deep research task queued (ID: ${data.taskId}). The workflow will search from regions: US, Brazil, India, Japan, Nigeria, Germany. Poll GET ${DEEP_RESEARCH_API}/api/research/${data.taskId} for results, or synthesize from your training data in the meantime.`;
+				if (spawnResp.ok) {
+					const { taskId } = (await spawnResp.json()) as { taskId: string };
+					// Poll for the completed report (up to 3 minutes)
+					const deadline = Date.now() + 180_000;
+					while (Date.now() < deadline) {
+						await new Promise((r) => setTimeout(r, 4_000));
+						const pollResp = await fetch(`${DEEP_RESEARCH_API}/api/research/${taskId}`, {
+							signal: AbortSignal.timeout(10_000),
+						});
+						if (!pollResp.ok) break;
+						const snapshot = (await pollResp.json()) as {
+							status: string;
+							result?: { document: string };
+							error?: string;
+						};
+						if (snapshot.status === "completed" && snapshot.result?.document) {
+							return { content: [{ type: "text", text: snapshot.result.document }], details: snapshot.result.document };
+						}
+						if (snapshot.status === "failed") {
+							const msg = `Deep research task failed: ${snapshot.error ?? "unknown error"}`;
+							return { content: [{ type: "text", text: msg }], details: msg };
+						}
+					}
+					const timeoutMsg = `Deep research timed out for task ${taskId}. Synthesizing from training knowledge.`;
+					return { content: [{ type: "text", text: timeoutMsg }], details: timeoutMsg };
 				}
 			} catch {
-				// Backend not running — instruct LLM to reason from knowledge
+				// Backend not running — fall through to offline message
 			}
 			const hint = geo_hint ? ` Focus on ${geo_hint} perspectives.` : "";
-			return `[web_search] Query: "${query}"${hint}\n\nThe deep-research backend is not available. Please synthesize from your training knowledge, making sure to explicitly represent viewpoints from Asia, Africa, Latin America, and the Middle East alongside Western sources. Mark all facts with [source needed] where you cannot cite a specific URL.`;
+			const offlineMsg = `[web_search] Query: "${query}"${hint}\n\nThe deep-research backend is not available. Please synthesize from your training knowledge, explicitly representing viewpoints from Asia, Africa, Latin America, and the Middle East alongside Western sources. Mark all facts with [source needed] where you cannot cite a specific URL.`;
+			return { content: [{ type: "text", text: offlineMsg }], details: offlineMsg };
 		},
 	};
 }
@@ -300,7 +339,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
 			if (isDeepResearch) {
-				return [replTool, createWebSearchTool() as any];
+				return [replTool, createWebSearchTool() as typeof replTool];
 			}
 			return [replTool];
 		},

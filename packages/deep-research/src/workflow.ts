@@ -13,7 +13,7 @@
 //   const { taskId } = await workflow.spawn(query);
 
 import type { Absurd } from "absurd-sdk";
-import type { BrightDataTool, GeoRegion } from "./tools/brightdata.js";
+import { GEO_REGIONS, type BrightDataTool, type GeoRegion } from "./tools/brightdata.js";
 import type { FirecrawlTool } from "./tools/firecrawl.js";
 
 export const RESEARCH_TASK = "deep-research";
@@ -42,7 +42,8 @@ export class ResearchWorkflow {
 
 	register() {
 		this.absurd.registerTask<ResearchParams, ResearchResult>({ name: RESEARCH_TASK }, async (params, ctx) => {
-			const { query, regions = ["us", "br", "in", "jp", "ng", "de"], maxSources = 12 } = params;
+			const { query, regions = [...GEO_REGIONS], maxSources = 12 } = params;
+			const safeMaxSources = Math.min(Math.max(maxSources, 1), 25);
 
 			// Step 1: Plan search queries from multiple angles
 			const queries = await ctx.step("plan-queries", async () => {
@@ -58,7 +59,7 @@ export class ResearchWorkflow {
 			});
 
 			// Step 3: Deep-crawl top URLs via Firecrawl
-			const topUrls = deduplicateUrls(geoResults.map((r) => r.url)).slice(0, maxSources);
+			const topUrls = deduplicateUrls(geoResults.map((r) => r.url)).slice(0, safeMaxSources);
 			const crawledPages = await ctx.step("deep-crawl", async () => {
 				const results = await Promise.allSettled(topUrls.map((url) => this.firecrawl.scrape(url)));
 				return results

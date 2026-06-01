@@ -29,6 +29,7 @@ export class FirecrawlTool {
 	async search(query: string, limit = 10): Promise<FirecrawlSearchResult[]> {
 		const response = await fetch(`${this.baseUrl}/v1/search`, {
 			method: "POST",
+			signal: AbortSignal.timeout(15_000),
 			headers: {
 				Authorization: `Bearer ${this.apiKey}`,
 				"Content-Type": "application/json",
@@ -47,6 +48,7 @@ export class FirecrawlTool {
 	async scrape(url: string): Promise<FirecrawlScrapeResult> {
 		const response = await fetch(`${this.baseUrl}/v1/scrape`, {
 			method: "POST",
+			signal: AbortSignal.timeout(15_000),
 			headers: {
 				Authorization: `Bearer ${this.apiKey}`,
 				"Content-Type": "application/json",
