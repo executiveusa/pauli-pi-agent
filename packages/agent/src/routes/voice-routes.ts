@@ -1,6 +1,6 @@
 import OpenAI from "openai";
+import { canUseFeature, getTenantConfig } from "../tenants/tenant-config.js";
 import { StabilityGate } from "../voice/stability-gate.js";
-import { getTenantConfig, canUseFeature, getPermission } from "../tenants/tenant-config.js";
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY,

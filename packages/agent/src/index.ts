@@ -1,13 +1,5 @@
 // Core Agent
 
-// Mercury Voice Chatbot
-export * from "./mercury/mercury-client.js";
-export type * from "./mercury/mercury-types.js";
-export * from "./tenants/tenant-config.js";
-export type * from "./tenants/tenant-schema.js";
-export { StabilityGate } from "./voice/stability-gate.js";
-export * from "./routes/index.js";
-
 // Data Processing (ABSURD-based durable workflows)
 export {
 	ChatGPTImporter,
@@ -26,9 +18,16 @@ export * from "./agent.js";
 export * from "./agent-loop.js";
 // Database
 export * from "./database/index.js";
+// Mercury Voice Chatbot
+export * from "./mercury/mercury-client.js";
+export type * from "./mercury/mercury-types.js";
 // Proxy utilities
 export * from "./proxy.js";
+export * from "./routes/index.js";
 // Secrets Management
 export * from "./secrets/index.js";
+export * from "./tenants/tenant-config.js";
+export type * from "./tenants/tenant-schema.js";
 // Types
 export * from "./types.js";
+export { StabilityGate } from "./voice/stability-gate.js";

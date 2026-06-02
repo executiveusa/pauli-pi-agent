@@ -1,6 +1,6 @@
-import type { MercuryMessage } from "../mercury/mercury-types.js";
 import { createMercuryClient, streamMercuryChat, streamMercuryDiffusion } from "../mercury/mercury-client.js";
-import { getTenantConfig, canUseFeature } from "../tenants/tenant-config.js";
+import type { MercuryMessage } from "../mercury/mercury-types.js";
+import { canUseFeature, getTenantConfig } from "../tenants/tenant-config.js";
 
 export interface ChatRequest {
 	tenantId: string;
@@ -9,9 +9,7 @@ export interface ChatRequest {
 	reasoningEffort?: "instant" | "low" | "medium" | "high";
 }
 
-export async function* handleMercuryChat(
-	req: ChatRequest,
-): AsyncGenerator<string, void, unknown> {
+export async function* handleMercuryChat(req: ChatRequest): AsyncGenerator<string, void, unknown> {
 	const config = getTenantConfig();
 
 	if (!canUseFeature("mercury")) {
