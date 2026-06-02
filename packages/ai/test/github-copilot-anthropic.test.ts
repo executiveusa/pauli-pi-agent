@@ -48,9 +48,16 @@ describe("Copilot Claude via Anthropic Messages", () => {
 		messages: [{ role: "user", content: "Hello", timestamp: Date.now() }],
 	};
 
+	const COPILOT_HEADERS = {
+		"User-Agent": "GitHubCopilotChat/0.35.0",
+		"Editor-Version": "vscode/1.107.0",
+		"Editor-Plugin-Version": "copilot-chat/0.35.0",
+		"Copilot-Integration-Id": "vscode-chat",
+	};
+
 	const createCopilotModel = (modelId: string) => {
 		const baseModel = getModel("anthropic", modelId)!;
-		return { ...baseModel, provider: "github-copilot" as const };
+		return { ...baseModel, provider: "github-copilot" as const, headers: COPILOT_HEADERS };
 	};
 
 	it("uses Bearer auth, Copilot headers, and valid Anthropic Messages payload", async () => {
@@ -91,7 +98,8 @@ describe("Copilot Claude via Anthropic Messages", () => {
 		expect(Array.isArray(params.messages)).toBe(true);
 	});
 
-	it("includes interleaved-thinking beta when reasoning is enabled", async () => {
+	it("skips interleaved-thinking beta for adaptive thinking models (Sonnet/Opus 4.6)", async () => {
+		// Adaptive thinking models like Sonnet 4.6 don't need the beta header
 		const model = createCopilotModel("claude-sonnet-4-6");
 		const { streamAnthropic } = await import("../src/providers/anthropic.js");
 		const s = streamAnthropic(model as any, context, {
@@ -102,7 +110,8 @@ describe("Copilot Claude via Anthropic Messages", () => {
 			if (event.type === "error") break;
 		}
 
-		const headers = mockState.constructorOpts!.defaultHeaders as Record<string, string>;
-		expect(headers["anthropic-beta"]).toContain("interleaved-thinking-2025-05-14");
+		const headers = mockState.constructorOpts!.defaultHeaders as Record<string, string | undefined>;
+		// Adaptive thinking models don't include the beta header since they have adaptive thinking built-in
+		expect(headers["anthropic-beta"]).toBeUndefined();
 	});
 });

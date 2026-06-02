@@ -145,12 +145,17 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("maps groq qwen3 reasoning levels to default reasoning_effort", async () => {
-		const baseModel = getModel("openai", "gpt-5-chat-latest")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = {
 			...baseModel,
+			api: "openai-completions" as const,
+			reasoning: true,
 			provider: "groq" as const,
 			id: "qwen/qwen3-32b",
-			compat: { qwenReasoningUnsupported: true },
+			compat: {
+				supportsReasoningEffort: true,
+				reasoningEffortMap: { high: "default", medium: "default", low: "default" },
+			},
 		} as const;
 		let payload: unknown;
 
@@ -179,11 +184,16 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("keeps normal reasoning_effort for groq models without compat mapping", async () => {
-		const baseModel = getModel("openai", "gpt-5-chat-latest")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = {
 			...baseModel,
+			api: "openai-completions" as const,
+			reasoning: true,
 			provider: "groq" as const,
 			id: "openai/gpt-oss-20b",
+			compat: {
+				supportsReasoningEffort: true,
+			},
 		} as const;
 		let payload: unknown;
 
@@ -212,7 +222,8 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("enables tool_stream for supported z.ai models with tools", async () => {
-		const model = getModel("xai", "grok-code-fast-1")!;
+		const baseModel = getModel("xai", "grok-code-fast-1")!;
+		const model = { ...baseModel, compat: { zaiToolStream: true } } as any;
 		const tools: Tool[] = [
 			{
 				name: "ping",
@@ -249,10 +260,13 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("stores z.ai tool_stream support in model compat metadata", () => {
-		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
+		const baseModel = getModel("xai", "grok-code-fast-1") as any;
+		const modelWithZaiToolStream = { ...baseModel, compat: { ...baseModel.compat, zaiToolStream: true } };
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		// xai models without explicit zaiToolStream compat have undefined zaiToolStream
 		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBeUndefined();
 	});
 
