@@ -91,7 +91,7 @@ import MercuryShell from "@/components/MercuryShell";
 export default function Home() {
   return (
     <main style={{ height: "100dvh" }}>
-      <MercuryShell tenantId={process.env.NEXT_PUBLIC_TENANT_ID ?? "client_demo"} />
+      <MercuryShell tenantId={process.env.NEXT_PUBLIC_TENANT_ID ?? "demo-sandbox"} />
     </main>
   );
 }
@@ -102,7 +102,7 @@ export default function Home() {
 ```
 INCEPTION_API_KEY=sk-...          # never expose to browser
 MERCURY_BASE_URL=https://api.inceptionlabs.ai/v1
-NEXT_PUBLIC_TENANT_ID=client_demo
+NEXT_PUBLIC_TENANT_ID=demo-sandbox
 ```
 
 ## `next.config.mjs`

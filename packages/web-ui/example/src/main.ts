@@ -31,7 +31,8 @@ import { createSystemNotification, customConvertToLlm, registerCustomMessageRend
 // DEEP RESEARCH MODE
 // ============================================================================
 
-const DEEP_RESEARCH_API = (import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
+const DEEP_RESEARCH_API =
+	(import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
 
 const DEEP_RESEARCH_SYSTEM_PROMPT = `You are a deep research agent specializing in comprehensive, globally balanced analysis.
 
@@ -130,7 +131,10 @@ function createWebSearchTool() {
 							error?: string;
 						};
 						if (snapshot.status === "completed" && snapshot.result?.document) {
-							return { content: [{ type: "text", text: snapshot.result.document }], details: snapshot.result.document };
+							return {
+								content: [{ type: "text", text: snapshot.result.document }],
+								details: snapshot.result.document,
+							};
 						}
 						if (snapshot.status === "failed") {
 							const msg = `Deep research task failed: ${snapshot.error ?? "unknown error"}`;
@@ -299,7 +303,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 		initialState: initialState || {
 			systemPrompt: baseSystemPrompt,
 			model: getModel("anthropic", "claude-sonnet-4-6"),
-			thinkingLevel: isDeepResearch ? "auto" : "off",
+			thinkingLevel: "off",
 			messages: [],
 			tools: [],
 		},
@@ -339,7 +343,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
 			if (isDeepResearch) {
-				return [replTool, createWebSearchTool() as typeof replTool];
+				return [replTool, createWebSearchTool() as any];
 			}
 			return [replTool];
 		},

@@ -30,7 +30,7 @@ async function expectResponseId<TApi extends Api>(model: Model<TApi>, options: S
 
 describe("responseId E2E Tests", () => {
 	describe.skipIf(!process.env.GEMINI_API_KEY)("Google Provider", () => {
-		const llm = getModel("google", "gemini-2.5-flash");
+		const llm = getModel("google", "gemini-3.1-flash-lite-preview");
 
 		it("should expose responseId", { retry: 3, timeout: 30000 }, async () => {
 			await expectResponseId(llm);
@@ -43,7 +43,7 @@ describe("responseId E2E Tests", () => {
 		const vertexApiKey = process.env.GOOGLE_CLOUD_API_KEY;
 		const isVertexConfigured = Boolean(vertexProject && vertexLocation);
 		const vertexOptions = { project: vertexProject, location: vertexLocation } as const;
-		const llm = getModel("google-vertex", "gemini-3-flash-preview");
+		const llm = getModel("google-vertex", "gemini-3.1-flash-lite-preview");
 
 		it.skipIf(!isVertexConfigured)("should expose responseId with ADC", { retry: 3, timeout: 30000 }, async () => {
 			await expectResponseId(llm, vertexOptions);
@@ -55,7 +55,7 @@ describe("responseId E2E Tests", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Completions Provider", () => {
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini");
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest");
 		void _compat;
 		const llm: Model<"openai-completions"> = {
 			...baseModel,
@@ -68,7 +68,7 @@ describe("responseId E2E Tests", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses Provider", () => {
-		const llm = getModel("openai", "gpt-5-mini");
+		const llm = getModel("openai", "gpt-5-chat-latest");
 
 		it("should expose responseId", { retry: 3, timeout: 30000 }, async () => {
 			await expectResponseId(llm);
@@ -76,7 +76,7 @@ describe("responseId E2E Tests", () => {
 	});
 
 	describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic Provider", () => {
-		const llm = getModel("anthropic", "claude-sonnet-4-5");
+		const llm = getModel("anthropic", "claude-sonnet-4-6");
 
 		it("should expose responseId", { retry: 3, timeout: 30000 }, async () => {
 			await expectResponseId(llm);
@@ -84,7 +84,7 @@ describe("responseId E2E Tests", () => {
 	});
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses Provider", () => {
-		const llm = getModel("azure-openai-responses", "gpt-4o-mini");
+		const llm = getModel("azure-openai-responses", "gpt-5-chat-latest");
 		const azureDeploymentName = resolveAzureDeploymentName(llm.id);
 		const azureOptions = azureDeploymentName ? { azureDeploymentName } : {};
 
@@ -111,7 +111,7 @@ describe("responseId E2E Tests", () => {
 			"Anthropic path should expose responseId",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4-6");
 				await expectResponseId(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -119,7 +119,7 @@ describe("responseId E2E Tests", () => {
 
 	describe("Google Gemini CLI Provider", () => {
 		it.skipIf(!geminiCliToken)("should expose responseId", { retry: 3, timeout: 30000 }, async () => {
-			const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+			const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 			await expectResponseId(llm, { apiKey: geminiCliToken });
 		});
 	});

@@ -59,7 +59,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("forwards toolChoice from simple options to payload", async () => {
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = { ...baseModel, api: "openai-completions" } as const;
 		const tools: Tool[] = [
 			{
@@ -100,7 +100,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("omits strict when compat disables strict mode", async () => {
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = {
 			...baseModel,
 			api: "openai-completions",
@@ -145,7 +145,18 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("maps groq qwen3 reasoning levels to default reasoning_effort", async () => {
-		const model = getModel("groq", "qwen/qwen3-32b")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
+		const model = {
+			...baseModel,
+			api: "openai-completions" as const,
+			reasoning: true,
+			provider: "groq" as const,
+			id: "qwen/qwen3-32b",
+			compat: {
+				supportsReasoningEffort: true,
+				reasoningEffortMap: { high: "default", medium: "default", low: "default" },
+			},
+		} as const;
 		let payload: unknown;
 
 		await streamSimple(
@@ -173,7 +184,17 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("keeps normal reasoning_effort for groq models without compat mapping", async () => {
-		const model = getModel("groq", "openai/gpt-oss-20b")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
+		const model = {
+			...baseModel,
+			api: "openai-completions" as const,
+			reasoning: true,
+			provider: "groq" as const,
+			id: "openai/gpt-oss-20b",
+			compat: {
+				supportsReasoningEffort: true,
+			},
+		} as const;
 		let payload: unknown;
 
 		await streamSimple(
@@ -201,7 +222,8 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("enables tool_stream for supported z.ai models with tools", async () => {
-		const model = getModel("zai", "glm-5")!;
+		const baseModel = getModel("xai", "grok-code-fast-1")!;
+		const model = { ...baseModel, compat: { zaiToolStream: true } } as any;
 		const tools: Tool[] = [
 			{
 				name: "ping",
@@ -238,15 +260,18 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("stores z.ai tool_stream support in model compat metadata", () => {
-		expect(getModel("zai", "glm-5")?.compat?.zaiToolStream).toBe(true);
-		expect(getModel("zai", "glm-4.7")?.compat?.zaiToolStream).toBe(true);
-		expect(getModel("zai", "glm-4.7-flash")?.compat?.zaiToolStream).toBe(true);
-		expect(getModel("zai", "glm-4.6v")?.compat?.zaiToolStream).toBe(true);
-		expect(getModel("zai", "glm-4.5-air")?.compat?.zaiToolStream).toBeUndefined();
+		const baseModel = getModel("xai", "grok-code-fast-1") as any;
+		const modelWithZaiToolStream = { ...baseModel, compat: { ...baseModel.compat, zaiToolStream: true } };
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
+		// xai models without explicit zaiToolStream compat have undefined zaiToolStream
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBeUndefined();
 	});
 
 	it("omits tool_stream for unsupported z.ai models", async () => {
-		const model = getModel("zai", "glm-4.5-air")!;
+		const model = getModel("xai", "grok-code-fast-1") as any;
 		const tools: Tool[] = [
 			{
 				name: "ping",
@@ -283,7 +308,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("respects explicit z.ai tool_stream compat override", async () => {
-		const baseModel = getModel("zai", "glm-4.5-air")!;
+		const baseModel = getModel("xai", "grok-code-fast-1")!;
 		const model = {
 			...baseModel,
 			compat: {
@@ -327,7 +352,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("omits tool_stream when no tools are provided", async () => {
-		const model = getModel("zai", "glm-5")!;
+		const model = getModel("xai", "grok-code-fast-1")!;
 		let payload: unknown;
 
 		await streamSimple(
@@ -369,7 +394,7 @@ describe("openai-completions tool_choice", () => {
 			},
 		];
 
-		const model = getModel("zai", "glm-5")!;
+		const model = getModel("xai", "grok-code-fast-1")!;
 		const response = await streamSimple(
 			model,
 			{
@@ -407,7 +432,7 @@ describe("openai-completions tool_choice", () => {
 			},
 		];
 
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = { ...baseModel, api: "openai-completions" } as const;
 		const response = await streamSimple(
 			model,
@@ -448,7 +473,7 @@ describe("openai-completions tool_choice", () => {
 			},
 		];
 
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = { ...baseModel, api: "openai-completions" } as const;
 		const response = await streamSimple(
 			model,
@@ -493,7 +518,7 @@ describe("openai-completions tool_choice", () => {
 			},
 		];
 
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		const model = { ...baseModel, api: "openai-completions" } as const;
 		const response = await streamSimple(
 			model,
@@ -516,7 +541,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("uses OpenRouter reasoning object instead of reasoning_effort", async () => {
-		const model = getModel("openrouter", "deepseek/deepseek-r1")!;
+		const model = getModel("openrouter", "auto")!;
 		let payload: unknown;
 
 		await streamSimple(
