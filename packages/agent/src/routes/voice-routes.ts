@@ -19,8 +19,6 @@ export interface TranscribeResponse {
 }
 
 export async function handleTranscribe(req: TranscribeRequest): Promise<TranscribeResponse> {
-	const config = getTenantConfig();
-
 	if (!canUseFeature("voice")) {
 		throw new Error("Voice feature not enabled for this tenant");
 	}
