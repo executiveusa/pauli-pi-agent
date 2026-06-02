@@ -39,7 +39,7 @@ describe("google-shared convertMessages — Gemini 3 unsigned tool calls", () =>
 					],
 					api: "google-gemini-cli",
 					provider: "google-antigravity",
-					model: "claude-sonnet-4-20250514",
+					model: "claude-sonnet-4-6",
 					usage: {
 						input: 0,
 						output: 0,
@@ -118,7 +118,7 @@ describe("google-shared convertMessages — Gemini 3 unsigned tool calls", () =>
 
 	it("does not add sentinel for non-Gemini-3 models", () => {
 		const model: Model<"google-generative-ai"> = {
-			id: "gemini-2.5-flash",
+			id: "gemini-3.1-flash-lite-preview",
 			name: "Gemini 2.5 Flash",
 			api: "google-generative-ai",
 			provider: "google",
@@ -146,7 +146,7 @@ describe("google-shared convertMessages — Gemini 3 unsigned tool calls", () =>
 					],
 					api: "google-gemini-cli",
 					provider: "google-antigravity",
-					model: "claude-sonnet-4-20250514",
+					model: "claude-sonnet-4-6",
 					usage: {
 						input: 0,
 						output: 0,

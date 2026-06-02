@@ -13,7 +13,7 @@ function anthropicNormalizeToolCallId(
 
 function makeCopilotClaudeModel(): Model<"anthropic-messages"> {
 	return {
-		id: "claude-sonnet-4",
+		id: "claude-sonnet-4-6",
 		name: "Claude Sonnet 4",
 		api: "anthropic-messages",
 		provider: "github-copilot",
@@ -43,7 +43,7 @@ describe("OpenAI to Anthropic session migration for Copilot Claude", () => {
 				],
 				api: "openai-completions",
 				provider: "github-copilot",
-				model: "gpt-4o",
+				model: "gpt-5-chat-latest",
 				usage: {
 					input: 0,
 					output: 0,

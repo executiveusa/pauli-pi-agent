@@ -61,7 +61,7 @@ describe("google-gemini-cli empty stream retry", () => {
 		global.fetch = fetchMock as typeof fetch;
 
 		const model: Model<"google-gemini-cli"> = {
-			id: "gemini-2.5-flash",
+			id: "gemini-3.1-flash-lite-preview",
 			name: "Gemini 2.5 Flash",
 			api: "google-gemini-cli",
 			provider: "google-gemini-cli",

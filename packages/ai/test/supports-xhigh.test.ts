@@ -9,7 +9,7 @@ describe("supportsXhigh", () => {
 	});
 
 	it("returns false for non-Opus Anthropic models", () => {
-		const model = getModel("anthropic", "claude-sonnet-4-5");
+		const model = getModel("anthropic", "claude-sonnet-4-6");
 		expect(model).toBeDefined();
 		expect(supportsXhigh(model!)).toBe(false);
 	});
