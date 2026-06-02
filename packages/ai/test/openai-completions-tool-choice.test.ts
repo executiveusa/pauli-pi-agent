@@ -145,7 +145,13 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("maps groq qwen3 reasoning levels to default reasoning_effort", async () => {
-		const model = getModel("groq", "qwen/qwen3-32b")!;
+		const baseModel = getModel("openai", "gpt-5-chat-latest")!;
+		const model = {
+			...baseModel,
+			provider: "groq" as const,
+			id: "qwen/qwen3-32b",
+			compat: { qwenReasoningUnsupported: true },
+		} as const;
 		let payload: unknown;
 
 		await streamSimple(
@@ -173,7 +179,12 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("keeps normal reasoning_effort for groq models without compat mapping", async () => {
-		const model = getModel("groq", "openai/gpt-oss-20b")!;
+		const baseModel = getModel("openai", "gpt-5-chat-latest")!;
+		const model = {
+			...baseModel,
+			provider: "groq" as const,
+			id: "openai/gpt-oss-20b",
+		} as const;
 		let payload: unknown;
 
 		await streamSimple(
@@ -201,7 +212,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("enables tool_stream for supported z.ai models with tools", async () => {
-		const model = getModel("zai", "glm-5")!;
+		const model = getModel("xai", "grok-code-fast-1")!;
 		const tools: Tool[] = [
 			{
 				name: "ping",
@@ -238,15 +249,15 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("stores z.ai tool_stream support in model compat metadata", () => {
-		expect((getModel("zai", "glm-5") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("zai", "glm-4.7") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("zai", "glm-4.7-flash") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("zai", "glm-4.6v") as any)?.compat?.zaiToolStream).toBe(true);
-		expect((getModel("zai", "glm-4.5-air") as any)?.compat?.zaiToolStream).toBeUndefined();
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBe(true);
+		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBeUndefined();
 	});
 
 	it("omits tool_stream for unsupported z.ai models", async () => {
-		const model = getModel("zai", "glm-4.5-air") as any;
+		const model = getModel("xai", "grok-code-fast-1") as any;
 		const tools: Tool[] = [
 			{
 				name: "ping",
@@ -283,7 +294,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("respects explicit z.ai tool_stream compat override", async () => {
-		const baseModel = getModel("zai", "glm-4.5-air")!;
+		const baseModel = getModel("xai", "grok-code-fast-1")!;
 		const model = {
 			...baseModel,
 			compat: {
@@ -327,7 +338,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("omits tool_stream when no tools are provided", async () => {
-		const model = getModel("zai", "glm-5")!;
+		const model = getModel("xai", "grok-code-fast-1")!;
 		let payload: unknown;
 
 		await streamSimple(
@@ -369,7 +380,7 @@ describe("openai-completions tool_choice", () => {
 			},
 		];
 
-		const model = getModel("zai", "glm-5")!;
+		const model = getModel("xai", "grok-code-fast-1")!;
 		const response = await streamSimple(
 			model,
 			{
@@ -516,7 +527,7 @@ describe("openai-completions tool_choice", () => {
 	});
 
 	it("uses OpenRouter reasoning object instead of reasoning_effort", async () => {
-		const model = getModel("openrouter", "deepseek/deepseek-r1")!;
+		const model = getModel("openrouter", "auto")!;
 		let payload: unknown;
 
 		await streamSimple(

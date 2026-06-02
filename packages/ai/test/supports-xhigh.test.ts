@@ -21,8 +21,12 @@ describe("supportsXhigh", () => {
 	});
 
 	it("returns true for OpenRouter Opus 4.6 (openai-completions API)", () => {
-		const model = getModel("openrouter", "anthropic/claude-opus-4.6");
+		const baseModel = getModel("openrouter", "auto")!;
+		const model = {
+			...baseModel,
+			id: "anthropic/claude-opus-4.6",
+		};
 		expect(model).toBeDefined();
-		expect(supportsXhigh(model!)).toBe(true);
+		expect(supportsXhigh(model)).toBe(true);
 	});
 });

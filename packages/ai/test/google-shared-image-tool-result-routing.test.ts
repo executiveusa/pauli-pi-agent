@@ -77,7 +77,7 @@ function makeContext(model: { api: string; provider: string; id: string }): Cont
 
 describe("google-shared image tool result routing", () => {
 	it("keeps separate synthetic image turn for Gemini 2.x Google API models", () => {
-		const model = makeModel("google-generative-ai", "google", "gemini-3.1-flash-lite-preview");
+		const model = makeModel("google-generative-ai", "google", "gemini-2.5-flash");
 		const contents = convertMessages(model, makeContext(model));
 
 		expect(contents).toHaveLength(5);
@@ -114,7 +114,7 @@ describe("google-shared image tool result routing", () => {
 	});
 
 	it("keeps separate synthetic image turn for Gemini 2.x Cloud Code Assist models", () => {
-		const model = makeModel("google-gemini-cli", "google-gemini-cli", "gemini-3.1-flash-lite-preview");
+		const model = makeModel("google-gemini-cli", "google-gemini-cli", "gemini-2.5-flash");
 		const contents = convertMessages(model, makeContext(model));
 
 		expect(contents).toHaveLength(5);

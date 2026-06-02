@@ -55,7 +55,8 @@ describe("openai-responses provider defaults", () => {
 	});
 
 	it("omits reasoning when no reasoning is requested", async () => {
-		const model = getModel("github-copilot", "gpt-5-chat-latest") as any;
+		const baseModel = getModel("openai", "gpt-5-chat-latest")!;
+		const model = { ...baseModel, provider: "github-copilot" as const } as any;
 		let capturedPayload: unknown;
 
 		vi.spyOn(globalThis, "fetch").mockResolvedValue(

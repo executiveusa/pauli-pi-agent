@@ -118,7 +118,7 @@ describe("google-shared convertMessages — Gemini 3 unsigned tool calls", () =>
 
 	it("does not add sentinel for non-Gemini-3 models", () => {
 		const model: Model<"google-generative-ai"> = {
-			id: "gemini-3.1-flash-lite-preview",
+			id: "gemini-2.5-flash",
 			name: "Gemini 2.5 Flash",
 			api: "google-generative-ai",
 			provider: "google",

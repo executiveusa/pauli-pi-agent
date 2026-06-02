@@ -46,7 +46,7 @@ import { getModel } from "../src/models.js";
 import { streamGoogleVertex } from "../src/providers/google-vertex.js";
 import type { Context } from "../src/types.js";
 
-const model = getModel("google-vertex", "gemini-3.1-flash-lite-preview") as any;
+const model = getModel("google-vertex", "gemini-2.5-pro") as any;
 const context: Context = {
 	messages: [{ role: "user", content: "hello", timestamp: Date.now() }],
 };
