@@ -42,7 +42,6 @@ export interface AgentRunner {
 	abort(): void;
 }
 
-
 const IMAGE_MIME_TYPES: Record<string, string> = {
 	jpg: "image/jpeg",
 	jpeg: "image/jpeg",
