@@ -176,24 +176,26 @@ export function createMercuryClient(apiKey: string): OpenAI {
 
 export async function streamMercuryChat(
   client: OpenAI,
-  messages: OpenAI.Messages.MessageParam[],
+  messages: OpenAI.Chat.ChatCompletionMessageParam[],
   options: MercuryStreamOptions = {}
 ) {
-  const payload: any = {
+  const stream = options.stream ?? true;
+  
+  const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming = {
     model: process.env.MERCURY_MODEL || 'mercury-2',
     messages,
-    stream: options.stream ?? true,
+    stream: true,
   };
 
   if (options.diffusing) {
-    payload.diffusing = true;
+    (params as any).diffusing = true;
   }
 
   if (options.reasoning_effort) {
-    payload.reasoning_effort = options.reasoning_effort;
+    params.reasoning_effort = options.reasoning_effort;
   }
 
-  return await client.messages.stream(payload);
+  return await client.chat.completions.create(params);
 }
 
 export function mapReasoningEffort(
@@ -239,7 +241,7 @@ export function canUseFeature(feature: 'voice' | 'diffusion' | 'tools'): boolean
   }
 }
 
-export function getPermission(permission: keyof typeof TenantConfig.prototype.permissions): boolean {
+export function getPermission(permission: keyof TenantConfig["permissions"]): boolean {
   const config = getTenantConfig();
   return config.permissions[permission];
 }

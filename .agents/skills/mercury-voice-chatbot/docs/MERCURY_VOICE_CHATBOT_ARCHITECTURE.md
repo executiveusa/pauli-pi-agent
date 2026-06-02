@@ -4,7 +4,7 @@
 
 The Mercury Voice Chatbot is a portable, white-label chatbot shell built on the existing pi-agent-core and pi-web-ui foundations. It supports three deployment tiers and integrates with the ArchonX control plane for all policy decisions, tenant configuration, and security gates.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      CLIENT WIDGET                          │
 │  (Webflow, NextJS, or any HTML container)                  │
@@ -377,7 +377,7 @@ if (tenantConfig.plan === "mercury_diffusion") {
 
 ### Example 1: Clean Text Chat (Tier 1)
 
-```
+```text
 User Types Message
     ↓
 Client sends: POST /v1/agent/chat { tenantId, message, history }
@@ -395,7 +395,7 @@ Log usage and cost (user pays)
 
 ### Example 2: Voice Agent (Tier 2)
 
-```
+```text
 User Clicks Voice Orb
     ↓
 Client: Start STT session
@@ -427,7 +427,7 @@ Client plays audio
 
 ### Example 3: Mercury Diffusion Agent (Tier 3)
 
-```
+```text
 User Clicks Voice Orb
     ↓
 User speaks
@@ -480,7 +480,7 @@ Tool Dock visible (plan-gated, permission-gated)
 
 ### Approval Workflow
 
-```
+```text
 Tool Call Request
     ↓
 Check Permissions
