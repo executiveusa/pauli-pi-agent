@@ -1,9 +1,7 @@
 import assert from "node:assert";
-import { test } from "node:test";
+import { test } from "vitest";
 import { SearchService } from "../src/services/search.js";
 import type { YouTubeVideo } from "../src/types.js";
-
-const skip = !process.env.ANTHROPIC_API_KEY ? "ANTHROPIC_API_KEY not set" : false;
 
 const makeVideo = (id: string, title: string): YouTubeVideo => ({
 	id,
@@ -22,7 +20,7 @@ const makeVideo = (id: string, title: string): YouTubeVideo => ({
 	watchedCount: 1,
 });
 
-test("SearchService returns sorted results", { skip }, async () => {
+test.skipIf(!process.env.ANTHROPIC_API_KEY)("SearchService returns sorted results", async () => {
 	const service = new SearchService("dummy");
 	const videos = [makeVideo("v1", "AI"), makeVideo("v2", "Python")];
 	const results = await service.search("test query", videos, 2);

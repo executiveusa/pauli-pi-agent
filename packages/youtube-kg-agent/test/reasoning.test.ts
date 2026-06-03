@@ -1,10 +1,8 @@
 import assert from "node:assert";
-import { test } from "node:test";
+import { test } from "vitest";
 import { ReasoningEngine } from "../src/services/reasoning.js";
 
-const skip = !process.env.ANTHROPIC_API_KEY ? "ANTHROPIC_API_KEY not set" : false;
-
-test("ReasoningEngine can query", { skip }, async () => {
+test.skipIf(!process.env.ANTHROPIC_API_KEY)("ReasoningEngine can query", async () => {
 	const engine = new ReasoningEngine();
 	const result = await engine.query("What is AI?", []);
 	assert(typeof result.answer === "string");
