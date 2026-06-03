@@ -52,26 +52,34 @@ export async function handleVoiceTranscribe(options: TranscribeOptions): Promise
 		// Decode base64 to buffer
 		const audioBuffer = Buffer.from(audio, "base64");
 
+		// Build multipart form data for Whisper API
+		const formData = new FormData();
+		const audioBlob = new Blob([audioBuffer], { type: "audio/mpeg" });
+		formData.append("file", audioBlob, "audio.mp3");
+		formData.append("model", "whisper-1");
+		if (language) {
+			formData.append("language", language);
+		}
+
 		// Call OpenAI Whisper API
-		// Note: This is a simplified implementation; full implementation would use
-		// the OpenAI SDK with proper audio file handling
 		const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${apiKey}`,
 			},
-			body: audioBuffer,
+			body: formData,
 		});
 
 		if (!response.ok) {
-			throw new Error(`Whisper API error: ${response.status}`);
+			const errorText = await response.text();
+			throw new Error(`Whisper API error: ${response.status} - ${errorText}`);
 		}
 
 		const result = (await response.json()) as { text: string };
 
 		return {
 			text: result.text,
-			confidence: 0.95, // Placeholder
+			confidence: 0.95,
 			language: language || "en",
 		};
 	} catch (error) {

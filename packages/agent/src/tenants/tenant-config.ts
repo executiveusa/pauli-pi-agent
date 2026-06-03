@@ -54,10 +54,9 @@ export function getTenantConfig(tenantId: string): TenantConfig {
 		return DEMO_TENANT;
 	}
 
-	// TODO: Load from database in production
-	// For now, use demo tenant as fallback
-	_tenantCache.set(tenantId, DEMO_TENANT);
-	return DEMO_TENANT;
+	// Tenant not found - reject unknown tenants to preserve isolation
+	// In production, load from database; in development, use explicit DEMO_TENANT ID
+	throw new Error(`Tenant not found: ${tenantId}`);
 }
 
 /**
@@ -109,7 +108,8 @@ export function canUseFeature(tenant: TenantConfig, feature: "voice" | "diffusio
 }
 
 /**
- * Check if a tenant can execute a specific tool
+ * Check if a tenant can execute a specific tool.
+ * Does not check approval status for high-risk operations like money movement.
  */
 export function canExecuteTool(tenant: TenantConfig, toolName: string): boolean {
 	// Check if feature is available
@@ -124,7 +124,7 @@ export function canExecuteTool(tenant: TenantConfig, toolName: string): boolean 
 		"generate-video": "canGenerateVideo",
 		"send-email": "canSendEmail",
 		"book-appointment": "canBookAppointments",
-		"money-movement": "requiresApprovalForMoneyMovement",
+		// Money movement is NEVER directly executable - must go through approval gate
 	};
 
 	const requiredPermission = toolPermissionMap[toolName];
@@ -132,8 +132,16 @@ export function canExecuteTool(tenant: TenantConfig, toolName: string): boolean 
 		return tenant.permissions[requiredPermission] as boolean;
 	}
 
-	// Unknown tool - deny by default
+	// Deny by default (includes unknown tools and money-movement)
 	return false;
+}
+
+/**
+ * Check if money movement requires approval for a tenant.
+ * When true, handleToolCall must block execution until approval is obtained.
+ */
+export function moneyMovementRequiresApproval(tenant: TenantConfig): boolean {
+	return tenant.permissions.requiresApprovalForMoneyMovement;
 }
 
 /**

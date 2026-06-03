@@ -19,6 +19,7 @@ import {
 	getTenantConfig,
 	getTenantPublicConfig,
 	getTenantUsage,
+	moneyMovementRequiresApproval,
 } from "../tenants/tenant-config.js";
 import { streamMercury } from "./mercury-routes.js";
 import { handleVoiceSpeak, handleVoiceTranscribe } from "./voice-routes.js";
@@ -69,9 +70,19 @@ export async function handleChat(req: ApiRequest): Promise<ApiResponse> {
 			};
 		}
 
+		// Normalize messages: convert string content to content blocks for assistant messages
+		const normalizedMessages = messages.map((m) => {
+			const msg: any = { ...m, timestamp: Date.now() };
+			// Assistant messages need content as an array of content blocks
+			if (m.role === "assistant" && typeof m.content === "string") {
+				msg.content = [{ type: "text", text: m.content }];
+			}
+			return msg;
+		});
+
 		const context: Context = {
 			systemPrompt: systemPrompt || "You are a helpful assistant.",
-			messages: messages.map((m) => ({ ...m, timestamp: Date.now() })) as any,
+			messages: normalizedMessages,
 		};
 
 		// Return streaming response
@@ -197,9 +208,10 @@ export async function handleSpeak(req: ApiRequest): Promise<ApiResponse> {
  */
 export async function handleToolCall(req: ApiRequest): Promise<ApiResponse> {
 	try {
-		const { tenantId, toolName } = req.body as {
+		const { tenantId, toolName, approvalToken } = req.body as {
 			tenantId: string;
 			toolName: string;
+			approvalToken?: string;
 		};
 
 		if (!tenantId || !toolName) {
@@ -211,6 +223,20 @@ export async function handleToolCall(req: ApiRequest): Promise<ApiResponse> {
 
 		const tenant = getTenantConfig(tenantId);
 
+		// Money movement requires explicit approval before execution
+		if (toolName === "money-movement") {
+			if (moneyMovementRequiresApproval(tenant)) {
+				if (!approvalToken) {
+					// Return pending status requiring approval
+					return {
+						statusCode: 202,
+						body: { result: null, toolName, status: "pending", message: "Approval required for money movement" },
+					};
+				}
+				// TODO: Verify approval token is valid and not expired
+			}
+		}
+
 		// Check if tenant can execute this tool
 		if (!canExecuteTool(tenant, toolName)) {
 			return {
@@ -219,7 +245,6 @@ export async function handleToolCall(req: ApiRequest): Promise<ApiResponse> {
 			};
 		}
 
-		// TODO: Implement approval workflow for high-risk tools
 		// TODO: Execute tool and log action
 		// TODO: Track usage
 
