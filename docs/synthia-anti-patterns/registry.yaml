@@ -1,0 +1,134 @@
+# Anti-Pattern Registry — Cynthia Design Studio
+# Version: 1.0.0
+# Purpose: Machine-readable list of forbidden patterns with detection rules
+
+anti_patterns:
+
+  # === TYPOGRAPHY ===
+  - id: AP-TYP-001
+    name: Banned Font Usage
+    severity: blocker
+    description: Using Inter, Roboto, Arial, Helvetica, or Open Sans
+    detection: "font-family.*(?:Inter|Roboto|Arial|Helvetica|Open Sans)"
+    fix: Use display typefaces from approved list (Syne, Space Grotesk, Instrument Serif, etc.)
+    source: kupuri-frontend/SKILL.md
+
+  - id: AP-TYP-002
+    name: Insufficient Type Scale
+    severity: major
+    description: Display heading smaller than 5rem
+    detection: "h1.*font-size.*(?:[0-4](?:\\.[0-9]+)?rem)"
+    fix: Display headings must be ≥5rem for cinematic impact
+
+  # === COLOR ===
+  - id: AP-CLR-001
+    name: Purple Color Used
+    severity: blocker
+    description: Any shade of purple (#7B2FF7, violet, indigo, etc.)
+    detection: "(?:purple|violet|indigo|#[0-9a-f]{3,6})"
+    manual_review: true
+    fix: Remove purple. Use approved accent colors from brand palette.
+    source: color-psychology/SKILL.md
+
+  - id: AP-CLR-002
+    name: Blue-Purple Gradient on White
+    severity: blocker
+    description: The quintessential AI-generated website gradient
+    detection: "gradient.*(?:blue.*purple|indigo.*violet)"
+    fix: Use brand-specific color combinations. One accent maximum.
+
+  # === LAYOUT ===
+  - id: AP-LAY-001
+    name: Generic Hero + Card Grid
+    severity: major
+    description: Default AI layout — hero section with subtitle, 3 cards below, generic CTA
+    detection: manual_review
+    fix: Use Kupuri vibe archetypes. Each layout must have a specific narrative reason.
+
+  - id: AP-LAY-002
+    name: Dashboard Inside Hero Section
+    severity: major
+    description: Placing dashboard metrics in a hero banner
+    detection: manual_review
+    fix: Dashboards use data-dense layouts, not marketing layouts.
+
+  - id: AP-LAY-003
+    name: Pill Overload
+    severity: minor
+    description: More than 3 pill/badge elements visible simultaneously
+    detection: manual_review
+    fix: Reduce to essential status indicators only.
+
+  # === MOTION ===
+  - id: AP-MOT-001
+    name: Scroll Event Listener
+    severity: blocker
+    description: Using window.addEventListener('scroll') instead of IntersectionObserver
+    detection: "addEventListener\\s*\\(\\s*['\"]scroll['\"]"
+    fix: Use IntersectionObserver for scroll-triggered animations.
+
+  - id: AP-MOT-002
+    name: Layout Thrashing Animation
+    severity: blocker
+    description: Animating top, left, width, height instead of transform/opacity
+    detection: "animate.*(?:top|left|width|height|margin|padding)[^-]"
+    fix: Use transform (translate, scale, rotate) and opacity only.
+
+  - id: AP-MOT-003
+    name: Linear Easing
+    severity: major
+    description: Using linear easing on any animation
+    detection: "ease:\\s*['\"]?linear|animation.*linear"
+    fix: Use spring physics, ease-out, or custom cubic-bezier.
+
+  - id: AP-MOT-004
+    name: Missing Cinematic Stack
+    severity: major
+    description: Landing page without Lenis + GSAP + Z-axis + SplitText + GLSL
+    detection: manual_review
+    fix: Implement all 5 techniques from the cinematic scroll stack.
+
+  # === CONTENT ===
+  - id: AP-CON-001
+    name: Stub Content
+    severity: blocker
+    description: TODO, placeholder, lorem ipsum, "coming soon" in shipped output
+    detection: "(?:TODO|FIXME|placeholder|lorem ipsum|coming soon|TBD)"
+    fix: All content must be real, contextual, and complete.
+
+  - id: AP-CON-002
+    name: Generic CTA
+    severity: major
+    description: Buttons saying "Submit", "OK", "Click Here", "Learn More"
+    detection: ">\\s*(?:Submit|OK|Click Here|Learn More|Get Started)\\s*<"
+    fix: CTAs describe specific outcomes ("Start Your Audit", "See Pricing").
+
+  # === ACCESSIBILITY ===
+  - id: AP-ACC-001
+    name: Missing Semantic HTML
+    severity: blocker
+    description: Using div soup instead of semantic elements
+    detection: manual_review
+    fix: Use header, main, nav, section, article, aside, footer.
+
+  - id: AP-ACC-002
+    name: Missing Focus Indicators
+    severity: major
+    description: Interactive elements without visible focus state
+    detection: "outline:\\s*none|outline:\\s*0"
+    fix: Provide visible focus-visible styles.
+
+  # === ENGINEERING ===
+  - id: AP-ENG-001
+    name: Shadcn as Default
+    severity: major
+    description: Using shadcn/ui as the component foundation
+    detection: "@shadcn|from.*shadcn"
+    fix: Use studio-canonical components. Shadcn allowed only for explicit migration.
+
+  - id: AP-ENG-002
+    name: Glassmorphism Overuse
+    severity: minor
+    description: Glass/blur effects used as primary aesthetic instead of intentional accent
+    detection: manual_review
+    fix: Glass effects are accents, not foundations. Use sparingly on 1-2 elements max.
