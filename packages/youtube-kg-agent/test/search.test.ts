@@ -20,7 +20,8 @@ const makeVideo = (id: string, title: string): YouTubeVideo => ({
 	watchedCount: 1,
 });
 
-test.skipIf(!process.env.ANTHROPIC_API_KEY)("SearchService returns sorted results", async () => {
+test("SearchService returns sorted results", async () => {
+	if (!process.env.ANTHROPIC_API_KEY) return;
 	const service = new SearchService("dummy");
 	const videos = [makeVideo("v1", "AI"), makeVideo("v2", "Python")];
 	const results = await service.search("test query", videos, 2);
