@@ -28,8 +28,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "check": "tsc --noEmit",
-    "test": "node --test --import tsx test/**/*.test.ts",
-    "test:watch": "node --test --import tsx --watch test/**/*.test.ts"
+    "test": "node --test --import tsx test/*.test.ts",
+    "test:watch": "node --test --import tsx --watch test/*.test.ts"
   },
   "keywords": [
     "ai",
