@@ -57,7 +57,7 @@ describe("AgentSession dynamic tool registration", () => {
 		const { session } = await createAgentSession({
 			cwd: tempDir,
 			agentDir,
-			model: getModel("anthropic", "claude-sonnet-4-5")!,
+			model: getModel("anthropic", "claude-sonnet-4-6")!,
 			settingsManager,
 			sessionManager,
 			resourceLoader,
@@ -104,7 +104,7 @@ describe("AgentSession dynamic tool registration", () => {
 		const { session } = await createAgentSession({
 			cwd: tempDir,
 			agentDir,
-			model: getModel("anthropic", "claude-sonnet-4-5")!,
+			model: getModel("anthropic", "claude-sonnet-4-6")!,
 			settingsManager,
 			sessionManager,
 			resourceLoader,
@@ -164,7 +164,7 @@ describe("AgentSession dynamic tool registration", () => {
 		const { session } = await createAgentSession({
 			cwd: tempDir,
 			agentDir,
-			model: getModel("anthropic", "claude-sonnet-4-5")!,
+			model: getModel("anthropic", "claude-sonnet-4-6")!,
 			settingsManager,
 			sessionManager,
 			resourceLoader,
