@@ -1,18 +1,70 @@
 {
   "name": "YouTube Knowledge Graph Agent",
   "version": "1.0.0",
-  "description": "Semantic search and multi-hop reasoning over YouTube",
-  "author": "Executive USA",
+  "description": "Semantic search and multi-hop reasoning over YouTube watch history",
+  "author": "Executive USA (Bambu)",
   "license": "MIT",
   "capabilities": {
     "youtube_search": "Search videos by semantic meaning",
-    "youtube_query": "Multi-hop reasoning across library",
-    "youtube_concept": "Explore concept hierarchies",
-    "youtube_metrics": "View learning metrics"
+    "youtube_query": "Multi-hop reasoning across your video library",
+    "youtube_concept": "Extract and explore concept hierarchies",
+    "youtube_metrics": "View learning metrics and stats"
+  },
+  "dashboard": {
+    "enabled": true,
+    "healthEndpoint": "http://localhost:3000/health",
+    "widgets": [
+      {
+        "name": "citation-accuracy",
+        "title": "Citation Accuracy",
+        "type": "gauge",
+        "metric": "citationAccuracy",
+        "target": 0.95,
+        "unit": "%",
+        "refreshInterval": 5000,
+        "thresholds": { "good": 0.95, "warning": 0.85, "critical": 0.70 }
+      },
+      {
+        "name": "embedding-latency",
+        "title": "Embedding Latency",
+        "type": "gauge",
+        "metric": "embeddingLatencyMs",
+        "target": 20,
+        "unit": "ms",
+        "refreshInterval": 10000,
+        "thresholds": { "good": 20, "warning": 50, "critical": 100 }
+      },
+      {
+        "name": "videos-indexed",
+        "title": "Videos Indexed",
+        "type": "counter",
+        "metric": "totalVideos",
+        "unit": "videos",
+        "refreshInterval": 30000
+      },
+      {
+        "name": "concepts-extracted",
+        "title": "Concepts Extracted",
+        "type": "counter",
+        "metric": "totalConcepts",
+        "unit": "concepts",
+        "refreshInterval": 30000
+      },
+      {
+        "name": "query-latency",
+        "title": "Query Latency (p99)",
+        "type": "gauge",
+        "metric": "queryLatencyMs",
+        "unit": "ms",
+        "refreshInterval": 10000,
+        "thresholds": { "good": 500, "warning": 1000, "critical": 2000 }
+      }
+    ]
   },
   "integrations": {
     "mcp_server": true,
     "claude_code": true,
+    "dashboard": true,
     "cursor_ide": true,
     "windsurf": true
   },
