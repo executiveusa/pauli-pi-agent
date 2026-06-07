@@ -35,7 +35,7 @@ const mockSummaryResponse: AssistantMessage = {
 	content: [{ type: "text", text: "## Goal\nTest summary" }],
 	api: "anthropic-messages",
 	provider: "anthropic",
-	model: "claude-sonnet-4-5",
+	model: "claude-sonnet-4-6",
 	usage: {
 		input: 10,
 		output: 10,
