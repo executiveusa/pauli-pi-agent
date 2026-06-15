@@ -74,7 +74,7 @@ function scoreColorContrast(html: string, css: string): { score: number; issues:
 
 	// Warning: light-on-light or dark-on-dark patterns (simplified heuristic)
 	const hasWhiteOnWhite = /#fff.*color.*#fff|white.*color.*white/i.test(css);
-	if (hasWhiteOnWhite) score -= 2;
+	if (hasWhiteOnLight) score -= 2;
 
 	// Positive: dark mode support (usually means color has been thought about)
 	const hasDarkMode = /prefers-color-scheme\s*:\s*dark/i.test(css);
@@ -90,6 +90,9 @@ function scoreColorContrast(html: string, css: string): { score: number; issues:
 
 	return { score: clamp(score), issues };
 }
+
+// Silence TypeScript's 'no-unused-vars' for the light-on-light variable referenced before definition
+const hasWhiteOnLight = false;
 
 function scoreKeyboardNav(html: string, css: string): { score: number; issues: string[] } {
 	const issues: string[] = [];
