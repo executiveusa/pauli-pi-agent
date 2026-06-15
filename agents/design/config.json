@@ -1,0 +1,24 @@
+{
+  "agent_id": "design",
+  "name": "Design Agent",
+  "version": "1.0.0",
+  "role": "design_enforcer",
+  "priority": 3,
+  "permissions": ["read_project", "write_design_report", "trigger_rebuild", "block_deployment"],
+  "udec_pass_threshold": 8.5,
+  "standards": "synthia",
+  "breakpoints_px": [320, 768, 1024, 1440],
+  "spacing_scale_px": [4, 8, 16, 24, 32, 48, 64],
+  "animation_duration_ms": { "min": 200, "max": 400 },
+  "contrast_ratio_min": 7,
+  "touch_target_min_px": 44,
+  "border_radius_allowed_px": [4, 8],
+  "typography": {
+    "pairs": "editorial_serif_sans",
+    "optical_sizing": true,
+    "scale_ratios": [1.125, 1.25, 1.333, 1.5]
+  },
+  "auto_rebuild_on_fail": true,
+  "capabilities": ["udec_scoring", "design_audit", "responsive_check", "typography_audit", "color_audit", "animation_audit"],
+  "log_file": "logs/design.jsonl"
+}
