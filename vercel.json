@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd brain-dashboard && npm run build",
+  "buildCommand": "cd brain-dashboard && npm install && npm run build",
   "outputDirectory": "brain-dashboard/.next",
   "installCommand": "npm install"
 }

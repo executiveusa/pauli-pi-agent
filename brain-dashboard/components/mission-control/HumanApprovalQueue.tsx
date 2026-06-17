@@ -6,8 +6,8 @@ import {
   Check,
   Clock,
   CreditCard,
-  DnsIcon,
   Globe,
+  Network,
   Rocket,
   ShieldAlert,
   X,
@@ -38,7 +38,7 @@ interface HumanApprovalQueueProps {
 
 const TYPE_CONFIG: Record<ApprovalType, { label: string; Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }> }> = {
   deployment: { label: 'Deployment', Icon: Rocket },
-  dns: { label: 'DNS Change', Icon: Globe },
+  dns: { label: 'DNS Change', Icon: Network },
   financial: { label: 'Financial', Icon: CreditCard },
   access: { label: 'Access', Icon: ShieldAlert },
 }
