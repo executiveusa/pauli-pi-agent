@@ -37,6 +37,7 @@ These tools must be utilized in every coding and agent execution session to comp
 
 | Repository / Source | Scope / Category | Lazy-Load Condition |
 | --- | --- | --- |
+| `skills/video-watch/` | Video Watch — Summarize, analyze, extract insights, competitor research, technical review, study notes from any video URL | When user provides a video URL or says "watch", "analyze", "summarize", "review", "extract", or "compare" in reference to a video |
 | `skills/ui-intelligence/` | UI Intelligence — Browser Tour + Design System + Journey Map + Doc Rewrite + React Components | When user says "analyze this app/UI", "document this interface", "extract design system", "generate components from", or "take a tour of this product" |
 | `executiveusa/pauli-Uncodixfy` | Text / Code Simplifier | When converting rich specifications to basic layouts |
 | `executiveusa/pauli-taste-skill` | Style / Aesthetics Engine | Active for any Next.js or React UI design work |
