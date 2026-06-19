@@ -303,7 +303,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 		initialState: initialState || {
 			systemPrompt: baseSystemPrompt,
 			model: getModel("anthropic", "claude-sonnet-4-6"),
-			thinkingLevel: isDeepResearch ? "auto" : "off",
+			thinkingLevel: "off",
 			messages: [],
 			tools: [],
 		},
