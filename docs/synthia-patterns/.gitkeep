@@ -1,0 +1,4 @@
+# patterns/
+# Reusable component patterns extracted from approved builds.
+# Format: [component-name].md — include HTML, CSS, JS, UDEC score reference.
+# HERMES adds entries here after each project delivers a unique technique.

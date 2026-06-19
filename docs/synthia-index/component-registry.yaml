@@ -1,0 +1,147 @@
+# Component Registry — Cynthia Design Studio
+version: "1.0.0"
+
+components:
+  # HERO PATTERNS
+  - id: hero-cinematic-full
+    name: Cinematic Full-Viewport Hero
+    category: hero
+    description: Full-height hero with atmospheric depth, Lenis scroll, GLSL noise
+    uses:
+      - lenis
+      - gsap
+      - glsl-noise
+      - split-text
+    viewport: 100vh
+    mobile_adaptation: reduce parallax, scale typography
+    udec_axes_impacted: [VHR, SPA, MOT, ATM]
+    reference: patterns/hero-parallax.html
+
+  - id: hero-split-media
+    name: Split Media Hero
+    category: hero
+    description: 50/50 split with media on one side, copy on the other
+    uses: [gsap, split-text]
+    viewport: 100vh
+    mobile_adaptation: stack vertically, media on top
+    udec_axes_impacted: [VHR, SPA, COM]
+
+  # NAVIGATION
+  - id: nav-fixed-transparent
+    name: Fixed Transparent Nav
+    category: navigation
+    description: Transparent header that gains background on scroll
+    uses: [intersection-observer]
+    mobile_adaptation: hamburger menu
+    udec_axes_impacted: [INF, MOB, ACC]
+
+  # CONTENT SECTIONS
+  - id: section-alternating
+    name: Alternating Content Blocks
+    category: content
+    description: Text-media blocks alternating sides
+    uses: [gsap-scroll-trigger]
+    mobile_adaptation: stack, media first
+    udec_axes_impacted: [VHR, SPA, INF]
+
+  - id: section-horizontal-scroll
+    name: Horizontal Scroll Gallery
+    category: content
+    description: Pin-scroll horizontal showcase
+    uses: [gsap-scroll-trigger, gsap-horizontal-pin]
+    mobile_adaptation: vertical stack
+    udec_axes_impacted: [MOT, COM, ORI]
+
+  - id: section-stats-counter
+    name: Animated Stats Counter
+    category: content
+    description: Number count-up on scroll-in
+    uses: [intersection-observer, gsap]
+    mobile_adaptation: 2-column grid
+    udec_axes_impacted: [MOT, CON]
+
+  # CARDS
+  - id: card-destination
+    name: Destination Card
+    category: card
+    description: Image card with overlay text, tilt hover, booking CTA
+    uses: [css-perspective, gsap]
+    reference: patterns/destination-cards.html
+    udec_axes_impacted: [COM, MAT, MOT]
+
+  - id: card-bento
+    name: Bento Grid Card
+    category: card
+    description: Variable-size grid cards with mixed content
+    uses: [css-grid, gsap-stagger]
+    reference: patterns/bento-grid.html
+    udec_axes_impacted: [VHR, SPA, ORI]
+
+  # FORMS
+  - id: form-audit-intake
+    name: Audit Intake Form
+    category: form
+    description: URL + optional fields form for free audit
+    uses: [form-validation, micro-interactions]
+    mobile_adaptation: full-width inputs, thumb-reach submit
+    udec_axes_impacted: [COM, ACC, MOB]
+
+  - id: form-glass-auth
+    name: Glass Auth Form
+    category: form
+    description: Frosted glass authentication form
+    uses: [css-backdrop-filter, micro-interactions]
+    reference: patterns/glass-auth.html
+    udec_axes_impacted: [MAT, COM, ACC]
+
+  # CTAs
+  - id: cta-btn-in-btn
+    name: Button-in-Button CTA
+    category: cta
+    description: Primary action button with nested micro-element
+    uses: [gsap-hover, magnetic-cursor]
+    udec_axes_impacted: [COM, MOT]
+
+  # MOTION PRIMITIVES
+  - id: motion-marquee
+    name: Infinite Marquee
+    category: motion
+    description: Auto-scrolling text/logo strip
+    uses: [css-animation, reduced-motion-safe]
+    reference: patterns/infinite-marquee.html
+    udec_axes_impacted: [MOT, ATM]
+
+  - id: motion-parallax-layer
+    name: Parallax Depth Layer
+    category: motion
+    description: Multi-layer parallax with z-axis separation
+    uses: [gsap-scroll-trigger, css-transform]
+    mobile_adaptation: disabled on mobile
+    udec_axes_impacted: [ATM, MOT, PER]
+
+  # ATMOSPHERIC
+  - id: atm-grain-overlay
+    name: Film Grain Overlay
+    category: atmospheric
+    description: Subtle noise texture overlay for warmth
+    uses: [css-pseudo-element, png-texture]
+    udec_axes_impacted: [ATM, MAT]
+
+  - id: atm-glsl-noise
+    name: GLSL Noise Shader
+    category: atmospheric
+    description: WebGL noise shader for dynamic backgrounds
+    uses: [webgl, glsl]
+    mobile_adaptation: fallback to CSS gradient
+    udec_axes_impacted: [ATM, PER, ORI]
+
+# FORBIDDEN COMPONENTS (never use)
+forbidden:
+  - id: generic-card-grid
+    reason: "Template-looking. Use bento or asymmetric layouts."
+  - id: shadcn-default
+    reason: "Not from doctrine. Build purpose-designed components."
+  - id: hero-metrics-dashboard
+    reason: "Hero is for narrative, not decoration. Metrics go in content sections."
+  - id: glassmorphism-everything
+    reason: "Glass effect is for specific containers (auth, overlays), not every element."
