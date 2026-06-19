@@ -14,10 +14,7 @@ for (const [provider, models] of Object.entries(MODELS)) {
 
 export function getModel<TProvider extends KnownProvider>(provider: TProvider, modelId: string): Model<Api> {
 	const providerModels = modelRegistry.get(provider);
-	if (!providerModels) throw new Error(`Unknown provider: ${provider}`);
-	const model = providerModels.get(modelId as string);
-	if (!model) throw new Error(`Unknown model: ${modelId} for provider ${provider}`);
-	return model;
+	return providerModels?.get(modelId as string) as Model<Api>;
 }
 
 export function getProviders(): KnownProvider[] {
