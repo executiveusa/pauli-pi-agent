@@ -349,7 +349,7 @@ async function multiTurn<TApi extends Api>(model: Model<TApi>, options?: StreamO
 }
 
 describe("Generate E2E Tests", () => {
-	describe.skipIf(!process.env.GEMINI_API_KEY)("Gemini Provider (gemini-2.5-flash)", () => {
+	describe.skipIf(!process.env.GEMINI_API_KEY)("Gemini Provider (gemini-3.1-flash-lite-preview)", () => {
 		const llm = getModel("google", "gemini-3.1-flash-lite-preview");
 
 		it("should complete basic text generation", { retry: 3 }, async () => {

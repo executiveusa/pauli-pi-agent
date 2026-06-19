@@ -52,23 +52,23 @@ interface ProviderModelPair {
 
 const PROVIDER_MODEL_PAIRS: ProviderModelPair[] = [
 	// Anthropic
-	{ provider: "anthropic", model: "claude-sonnet-4-6", label: "anthropic-claude-sonnet-4-5" },
+	{ provider: "anthropic", model: "claude-sonnet-4-6", label: "anthropic-claude-sonnet-4-6" },
 	// Google
 	{ provider: "google", model: "gemini-3.1-flash-lite-preview", label: "google-gemini-3-flash-preview" },
 	// OpenAI
 	{
 		provider: "openai",
 		model: "gpt-5-chat-latest",
-		label: "openai-completions-gpt-4o-mini",
+		label: "openai-completions-gpt-5-chat-latest",
 		apiOverride: "openai-completions",
 	},
-	{ provider: "openai", model: "gpt-5-chat-latest", label: "openai-responses-gpt-5-mini" },
-	{ provider: "azure-openai-responses", model: "gpt-5-chat-latest", label: "azure-openai-responses-gpt-4o-mini" },
+	{ provider: "openai", model: "gpt-5-chat-latest", label: "openai-responses-gpt-5-chat-latest" },
+	{ provider: "azure-openai-responses", model: "gpt-5-chat-latest", label: "azure-openai-responses-gpt-5-chat-latest" },
 	// OpenAI Codex
 	{ provider: "openai-codex", model: "gpt-5.2-codex", label: "openai-codex-gpt-5.2-codex" },
 	// Google Antigravity
 	{ provider: "google-antigravity", model: "gemini-3-flash", label: "antigravity-gemini-3-flash" },
-	{ provider: "google-antigravity", model: "claude-sonnet-4-6", label: "antigravity-claude-sonnet-4-5" },
+	{ provider: "google-antigravity", model: "claude-sonnet-4-6", label: "antigravity-claude-sonnet-4-6" },
 	// GitHub Copilot
 	{ provider: "github-copilot", model: "claude-sonnet-4.5", label: "copilot-claude-sonnet-4.5" },
 	{ provider: "github-copilot", model: "gpt-5.1-codex", label: "copilot-gpt-5.1-codex" },

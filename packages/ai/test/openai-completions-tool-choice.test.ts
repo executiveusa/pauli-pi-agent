@@ -263,9 +263,6 @@ describe("openai-completions tool_choice", () => {
 		const baseModel = getModel("xai", "grok-code-fast-1") as any;
 		const modelWithZaiToolStream = { ...baseModel, compat: { ...baseModel.compat, zaiToolStream: true } };
 		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
-		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
-		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
-		expect(modelWithZaiToolStream?.compat?.zaiToolStream).toBe(true);
 		// xai models without explicit zaiToolStream compat have undefined zaiToolStream
 		expect((getModel("xai", "grok-code-fast-1") as any)?.compat?.zaiToolStream).toBeUndefined();
 	});

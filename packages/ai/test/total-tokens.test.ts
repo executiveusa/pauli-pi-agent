@@ -106,7 +106,7 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic (API Key)", () => {
 		it(
-			"claude-3-5-haiku - should return totalTokens equal to sum of components",
+			"claude-sonnet-4-6 - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
 				const llm = getModel("anthropic", "claude-sonnet-4-6");
@@ -129,7 +129,7 @@ describe("totalTokens field", () => {
 
 	describe("Anthropic (OAuth)", () => {
 		it.skipIf(!anthropicOAuthToken)(
-			"claude-sonnet-4 - should return totalTokens equal to sum of components",
+			"claude-sonnet-4-6 (OAuth) - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
 				const llm = getModel("anthropic", "claude-sonnet-4-6");
@@ -156,7 +156,7 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Completions", () => {
 		it(
-			"gpt-4o-mini - should return totalTokens equal to sum of components",
+			"gpt-5-chat-latest - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
 				const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
@@ -179,7 +179,7 @@ describe("totalTokens field", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses", () => {
-		it("gpt-4o - should return totalTokens equal to sum of components", { retry: 3, timeout: 60000 }, async () => {
+		it("gpt-5-chat-latest - should return totalTokens equal to sum of components", { retry: 3, timeout: 60000 }, async () => {
 			const llm = getModel("openai", "gpt-5-chat-latest");
 
 			console.log(`\nOpenAI Responses / ${llm.id}:`);
@@ -195,7 +195,7 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses", () => {
 		it(
-			"gpt-4o-mini - should return totalTokens equal to sum of components",
+			"gpt-5-chat-latest - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
 				const llm = getModel("azure-openai-responses", "gpt-5-chat-latest");
@@ -220,7 +220,7 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!process.env.GEMINI_API_KEY)("Google", () => {
 		it(
-			"gemini-2.0-flash - should return totalTokens equal to sum of components",
+			"gemini-3.1-flash-lite-preview - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
 				const llm = getModel("google", "gemini-3.1-flash-lite-preview");
