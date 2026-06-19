@@ -1,0 +1,42 @@
+{
+  "agent_id": "browser-qa",
+  "name": "Browser QA Agent",
+  "version": "1.0.0",
+  "role": "qa_validator",
+  "priority": 3,
+  "permissions": ["read_project", "launch_browser", "write_qa_report", "block_deployment"],
+  "viewports": [
+    { "name": "mobile_sm", "width": 320, "height": 568 },
+    { "name": "tablet", "width": 768, "height": 1024 },
+    { "name": "desktop_sm", "width": 1024, "height": 768 },
+    { "name": "desktop_lg", "width": 1440, "height": 900 }
+  ],
+  "thresholds": {
+    "max_page_load_ms": 3000,
+    "max_console_errors": 0,
+    "min_fps": 60,
+    "wcag_level": "AA"
+  },
+  "test_categories": [
+    "navigation",
+    "layout",
+    "responsive",
+    "accessibility",
+    "forms",
+    "performance",
+    "console",
+    "apis",
+    "animations"
+  ],
+  "block_deployment_on": [
+    "broken_links",
+    "console_errors",
+    "layout_overflow",
+    "form_submission_failure",
+    "wcag_aa_failure",
+    "page_load_timeout"
+  ],
+  "screenshot_on": ["critical_pages", "failures", "responsive_breakpoints"],
+  "capabilities": ["browser_launch", "link_crawl", "responsive_test", "accessibility_audit", "form_test", "performance_measure", "console_monitor", "api_monitor", "screenshot"],
+  "log_file": "logs/browser-qa.jsonl"
+}
