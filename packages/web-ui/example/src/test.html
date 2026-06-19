@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Web UI - Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .status {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #f0fdf4;
+            border-left-color: #22c55e;
+        }
+        .status.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0284c7;
+        }
+        .features {
+            margin-top: 30px;
+        }
+        .features h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .features ul {
+            list-style: none;
+        }
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .features li:before {
+            content: "✓ ";
+            color: #22c55e;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pi Web UI - System Status</h1>
+        
+        <div id="status" class="status">
+            Loading system information...
+        </div>
+
+        <button onclick="location.reload()">Reload Page</button>
+
+        <div class="features">
+            <h2>Pauli Pi Agent Monorepo</h2>
+            <ul>
+                <li>15 specialized packages</li>
+                <li>840+ AI models integrated</li>
+                <li>Emerald Tablets™ doctrine installed</li>
+                <li>SYNTHIA 3.0™ operating layer active</li>
+                <li>Real-time chat interface with Lit</li>
+                <li>IndexedDB persistence layer</li>
+                <li>Global multi-source research mode</li>
+                <li>JavaScript REPL sandbox tool</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const status = document.getElementById('status');
+            const info = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                location: window.location.href,
+                features: {
+                    indexedDB: !!window.indexedDB,
+                    webWorkers: !!window.Worker,
+                    serviceWorkers: 'serviceWorker' in navigator,
+                    fetch: !!window.fetch,
+                    cryptoAPI: !!window.crypto,
+                    storageQuota: navigator.storage ? 'supported' : 'not supported'
+                }
+            };
+
+            const hasAllFeatures = Object.values(info.features).every(f => f === true || f === 'supported');
+            
+            status.className = hasAllFeatures ? 'status success' : 'status';
+            status.innerHTML = `
+                <strong>${hasAllFeatures ? '✅ System Ready' : '⚠️ Checking Features'}</strong><br/>
+                <small>${new Date().toLocaleTimeString()}</small><br/><br/>
+                IndexedDB: ${info.features.indexedDB ? '✓' : '✗'}<br/>
+                Web Workers: ${info.features.webWorkers ? '✓' : '✗'}<br/>
+                Service Workers: ${info.features.serviceWorkers ? '✓' : '✗'}<br/>
+                Fetch API: ${info.features.fetch ? '✓' : '✗'}<br/>
+                Crypto API: ${info.features.cryptoAPI ? '✓' : '✗'}<br/>
+                Storage Quota: ${info.features.storageQuota}
+            `;
+        }
+
+        updateStatus();
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>
