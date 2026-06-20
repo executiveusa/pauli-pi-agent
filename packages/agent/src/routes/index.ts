@@ -69,6 +69,12 @@ export async function handleChat(req: ApiRequest): Promise<ApiResponse> {
 				body: { error: "Diffusion feature not available for this tenant plan" },
 			};
 		}
+		if (route.includes("voice") && !canUseFeature(tenant, "voice")) {
+			return {
+				statusCode: 403,
+				body: { error: "Voice feature not available for this tenant plan" },
+			};
+		}
 
 		// Normalize messages: convert string content to content blocks for assistant messages
 		const normalizedMessages = messages.map((m) => {

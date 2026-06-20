@@ -283,7 +283,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
 
 # Start server
-CMD ["node", "dist/server.js"]
+CMD ["node", "packages/agent/dist/index.js"]
 ```
 
 ### Docker Compose (Dev)
@@ -421,22 +421,22 @@ echo "Tenant ID: $TENANT_ID"
 
 # Test 1: Health Check
 echo -n "✓ Health check... "
-curl -s $API_URL/health | grep -q "healthy" && echo "OK" || echo "FAILED"
+curl -s $API_URL/health | grep -q "healthy" && echo "OK" || { echo "FAILED"; exit 1; }
 
 # Test 2: Tenant Config
 echo -n "✓ Tenant config... "
-curl -s -X GET "$API_URL/v1/tenant/config?tenantId=$TENANT_ID" | grep -q "$TENANT_ID" && echo "OK" || echo "FAILED"
+curl -s -X GET "$API_URL/v1/tenant/config?tenantId=$TENANT_ID" | grep -q "$TENANT_ID" && echo "OK" || { echo "FAILED"; exit 1; }
 
 # Test 3: Chat Completion
 echo -n "✓ Chat completion... "
 curl -s -X POST "$API_URL/v1/agent/chat" \
   -H "Content-Type: application/json" \
   -d "{\"tenantId\":\"$TENANT_ID\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}" \
-  | grep -q "stream" && echo "OK" || echo "FAILED"
+  | grep -q "stream" && echo "OK" || { echo "FAILED"; exit 1; }
 
 # Test 4: Usage Metrics
 echo -n "✓ Usage metrics... "
-curl -s -X GET "$API_URL/v1/tenant/usage?tenantId=$TENANT_ID" | grep -q "$TENANT_ID" && echo "OK" || echo "FAILED"
+curl -s -X GET "$API_URL/v1/tenant/usage?tenantId=$TENANT_ID" | grep -q "$TENANT_ID" && echo "OK" || { echo "FAILED"; exit 1; }
 
 echo "✅ All smoke tests passed!"
 ```
