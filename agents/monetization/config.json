@@ -1,0 +1,33 @@
+{
+  "agent_id": "monetization",
+  "name": "Monetization Agent",
+  "version": "1.0.0",
+  "role": "revenue_strategist",
+  "priority": 4,
+  "permissions": ["read_project", "write_monetization_report", "suggest_integrations"],
+  "required_outputs": [
+    "primary_revenue_path",
+    "secondary_revenue_path",
+    "tertiary_revenue_path",
+    "subscription_tiers",
+    "affiliate_opportunities",
+    "lead_gen_mechanisms",
+    "partnership_opportunities",
+    "marketplace_listings",
+    "revenue_score",
+    "mrr_estimate",
+    "time_to_first_dollar",
+    "pricing_model_recommendation"
+  ],
+  "minimums": {
+    "revenue_paths": 3,
+    "subscription_tiers": 3,
+    "affiliate_opportunities": 2,
+    "lead_gen_mechanisms": 2,
+    "partnership_opportunities": 1
+  },
+  "revenue_score_pass_threshold": 50,
+  "pricing_models": ["freemium", "subscription", "one_time", "usage_based", "marketplace", "affiliate", "lead_gen"],
+  "capabilities": ["project_analysis", "revenue_path_generation", "pricing_strategy", "affiliate_research", "mrr_estimation"],
+  "log_file": "logs/monetization.jsonl"
+}

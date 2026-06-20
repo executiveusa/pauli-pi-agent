@@ -1,0 +1,23 @@
+{
+  "agent_id": "watcher",
+  "name": "Watcher Agent",
+  "version": "1.0.0",
+  "role": "supervisor",
+  "priority": 1,
+  "permissions": ["read_all", "pause_agents", "reroute_tasks", "escalate"],
+  "monitors": ["builder", "design", "monetization", "browser-qa", "deployment"],
+  "escalates_to": "judge",
+  "check_interval_ms": 30000,
+  "cost_threshold_per_session": 10,
+  "cost_threshold_per_day": 50,
+  "max_agent_idle_ms": 1800000,
+  "max_consecutive_failures": 3,
+  "capabilities": ["loop_detection", "cost_monitoring", "failure_detection", "intervention", "escalation"],
+  "retry_backoff_ms": [5000, 15000, 45000, 120000],
+  "log_file": "logs/watcher.jsonl",
+  "self_monitoring": {
+    "enabled": true,
+    "max_self_failures": 3,
+    "cycle_timeout_multiplier": 2
+  }
+}

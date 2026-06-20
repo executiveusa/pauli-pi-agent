@@ -1,0 +1,200 @@
+# Task Routing — Cynthia Design Studio
+# Version: 1.0.0
+# Purpose: Maps task types to agents, doctrine, and deliverables
+
+task_types:
+
+  web.landing-page:
+    description: Single-page cinematic landing experience
+    primary_agent: frontend
+    supporting_agents: [copy, motion, reviewer]
+    required_doctrine: [DESIGN_LAWS, kupuri-frontend-skill, motion-skill, color-psychology]
+    required_components: [hero, navigation, section-blocks, cta, footer]
+    deliverables: [html_bundle, audit_json, screenshot_set]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: html
+    storage: studio/jobs/{job_id}/
+    escalation: experience_architect
+
+  web.marketing-site:
+    description: Multi-page marketing website
+    primary_agent: frontend
+    supporting_agents: [copy, motion, reviewer, packaging]
+    required_doctrine: [DESIGN_LAWS, kupuri-frontend-skill, brand-skill]
+    deliverables: [html_bundle, copy_deck, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: html
+    storage: studio/jobs/{job_id}/
+
+  app.product-ui:
+    description: Product interface / web application
+    primary_agent: frontend
+    supporting_agents: [copy, reviewer]
+    required_doctrine: [DESIGN_LAWS, design-principles]
+    deliverables: [react_components, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: react
+
+  dashboard.analytics:
+    description: Data-dense analytics dashboard
+    primary_agent: frontend
+    supporting_agents: [reviewer]
+    required_doctrine: [DESIGN_LAWS, design-principles, dashboard-clarity]
+    deliverables: [react_components, data_schema, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: react
+
+  dashboard.ops:
+    description: Operations monitoring dashboard
+    primary_agent: frontend
+    supporting_agents: [reviewer, ops]
+    required_doctrine: [DESIGN_LAWS, dashboard-clarity]
+    deliverables: [react_components, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: react
+
+  copy.ux:
+    description: UX microcopy, labels, error messages, tooltips
+    primary_agent: copy
+    supporting_agents: [reviewer]
+    required_doctrine: [brand-skill, DESIGN_LAWS]
+    deliverables: [copy_file_md, audit_json]
+    pass_threshold: 8.0
+    rubric: copy-quality
+    output_format: markdown
+
+  copy.newsletter:
+    description: Email newsletter production
+    primary_agent: copy
+    supporting_agents: [reviewer, packaging]
+    required_doctrine: [brand-skill, newsletter-production-kit]
+    deliverables: [html_email, plain_text, audit_json]
+    pass_threshold: 8.0
+    rubric: copy-quality
+    output_format: html_email
+
+  copy.bulletin:
+    description: Short-form bulletin or update
+    primary_agent: copy
+    supporting_agents: [reviewer]
+    required_doctrine: [brand-skill]
+    deliverables: [markdown_file, audit_json]
+    pass_threshold: 8.0
+    rubric: copy-quality
+    output_format: markdown
+
+  copy.blog-audit:
+    description: Audit and improvement plan for existing blog content
+    primary_agent: growth_audit
+    supporting_agents: [copy, reviewer]
+    required_doctrine: [brand-skill, DESIGN_LAWS]
+    deliverables: [audit_report_md, improvement_plan, audit_json]
+    pass_threshold: 8.0
+    rubric: content-audit
+    output_format: markdown
+
+  campaign.launch:
+    description: Full launch campaign (landing + copy + assets)
+    primary_agent: experience_architect
+    supporting_agents: [frontend, copy, motion, reviewer, packaging]
+    required_doctrine: [DESIGN_LAWS, brand-skill, kupuri-frontend-skill]
+    deliverables: [html_bundle, copy_deck, asset_bundle, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: multi
+
+  motion.interaction:
+    description: Interaction animation system or motion design
+    primary_agent: motion
+    supporting_agents: [frontend, reviewer]
+    required_doctrine: [motion-skill, DESIGN_LAWS]
+    deliverables: [animation_spec, code_bundle, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: code
+
+  motion.brand:
+    description: Brand animation (logo reveal, identity motion)
+    primary_agent: motion
+    supporting_agents: [reviewer]
+    required_doctrine: [motion-skill, brand-skill]
+    deliverables: [remotion_composition, mp4_render, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: video
+
+  asset.3d-brief:
+    description: 3D asset specification and direction
+    primary_agent: 3d
+    supporting_agents: [reviewer]
+    required_doctrine: [3d-scene-composition]
+    deliverables: [scene_spec, glb_file, audit_json]
+    pass_threshold: 8.0
+    rubric: 3d-quality
+    output_format: glb
+
+  design.refactor:
+    description: Improve existing design artifacts
+    primary_agent: refactor
+    supporting_agents: [reviewer, librarian]
+    required_doctrine: [DESIGN_LAWS, refactoring-heuristics]
+    deliverables: [refactored_artifacts, diff_report, audit_json]
+    pass_threshold: 8.5
+    rubric: udec-14-axis
+    output_format: varies
+
+  design.audit:
+    description: Comprehensive design review of existing work
+    primary_agent: growth_audit
+    supporting_agents: [librarian, reviewer]
+    required_doctrine: [DESIGN_LAWS, udec-scorer]
+    deliverables: [audit_report, score_card, improvement_plan]
+    pass_threshold: n/a
+    rubric: udec-14-axis
+    output_format: markdown
+
+  brand.message-refresh:
+    description: Update brand messaging and voice
+    primary_agent: copy
+    supporting_agents: [librarian, reviewer]
+    required_doctrine: [brand-skill]
+    deliverables: [brand_doc, voice_examples, audit_json]
+    pass_threshold: 8.0
+    rubric: brand-consistency
+    output_format: markdown
+
+  portfolio.case-packaging:
+    description: Package approved work as portfolio piece
+    primary_agent: packaging
+    supporting_agents: [copy]
+    required_doctrine: [brand-skill]
+    deliverables: [case_study_md, screenshots, metrics]
+    pass_threshold: 8.0
+    rubric: presentation-quality
+    output_format: markdown
+
+  commercial.offer-assembly:
+    description: Assemble service offer from templates
+    primary_agent: packaging
+    supporting_agents: [copy]
+    required_doctrine: [brand-skill]
+    deliverables: [offer_document, pricing_summary]
+    pass_threshold: 8.0
+    rubric: commercial-quality
+    output_format: markdown
+    requires_human_approval: true
+
+  system.component-normalization:
+    description: Normalize scattered components into canonical registry
+    primary_agent: refactor
+    supporting_agents: [librarian, reviewer]
+    required_doctrine: [DESIGN_LAWS, component-standards]
+    deliverables: [normalized_components, registry_update, audit_json]
+    pass_threshold: 8.5
+    rubric: component-quality
+    output_format: code

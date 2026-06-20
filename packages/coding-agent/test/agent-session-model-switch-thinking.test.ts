@@ -1,5 +1,5 @@
 import { Agent, type ThinkingLevel } from "@mariozechner/pi-agent-core";
-import { getModel } from "@mariozechner/pi-ai";
+import { getModel, type Model } from "@mariozechner/pi-ai";
 import { describe, expect, it } from "vitest";
 import { AgentSession } from "../src/core/agent-session.js";
 import { AuthStorage } from "../src/core/auth-storage.js";
@@ -8,8 +8,19 @@ import { SessionManager } from "../src/core/session-manager.js";
 import { SettingsManager } from "../src/core/settings-manager.js";
 import { createTestResourceLoader } from "./utilities.js";
 
-const reasoningModel = getModel("anthropic", "claude-sonnet-4-5")!;
-const nonReasoningModel = getModel("anthropic", "claude-3-5-haiku-latest")!;
+const reasoningModel = getModel("anthropic", "claude-sonnet-4-6")!;
+const nonReasoningModel: Model<"anthropic-messages"> = {
+	id: "claude-haiku-4-mock",
+	name: "Claude Haiku (mock non-reasoning)",
+	api: "anthropic-messages",
+	provider: "anthropic",
+	baseUrl: "https://api.anthropic.com",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0.25, output: 1.25, cacheRead: 0.03, cacheWrite: 0.3 },
+	contextWindow: 200000,
+	maxTokens: 8192,
+};
 
 function createSession({
 	thinkingLevel = "high",

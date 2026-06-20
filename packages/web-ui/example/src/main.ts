@@ -1,5 +1,5 @@
 import "@mariozechner/mini-lit/dist/ThemeToggle.js";
-import { Agent, type AgentMessage } from "@mariozechner/pi-agent-core";
+import { Agent, type AgentMessage, type AgentTool } from "@mariozechner/pi-agent-core";
 import { getModel } from "@mariozechner/pi-ai";
 import {
 	type AgentState,
@@ -84,7 +84,7 @@ const GEO_HINT_MAP: Record<string, string[]> = {
 };
 
 // Web search tool — conforms to AgentTool<any> for the ChatPanel toolsFactory
-function createWebSearchTool() {
+function createWebSearchTool(): AgentTool<any> {
 	return {
 		label: "Web Search",
 		name: "web_search",
@@ -343,7 +343,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
 			if (isDeepResearch) {
-				return [replTool, createWebSearchTool() as any];
+				return [replTool, createWebSearchTool()];
 			}
 			return [replTool];
 		},

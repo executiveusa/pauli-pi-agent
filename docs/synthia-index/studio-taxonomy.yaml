@@ -1,0 +1,92 @@
+# Cynthia Studio Taxonomy
+# Version: 1.0.0
+# Purpose: Classification system for all studio artifacts
+
+domains:
+  doctrine:
+    description: Non-negotiable design laws and principles
+    location: studio/doctrine/
+    governance: version-locked, requires review board approval to change
+    
+  laws:
+    description: Specific enforceable rules derived from doctrine
+    location: studio/laws/
+    governance: version-locked
+
+  principles:
+    description: Guiding heuristics that inform decisions
+    location: studio/principles/
+    governance: curated by Design Librarian
+
+  anti-patterns:
+    description: Forbidden practices with detection rules
+    location: studio/anti-patterns/
+    governance: append-only, requires Reviewer approval to remove
+
+  rubrics:
+    description: Scoring frameworks and quality thresholds
+    location: studio/rubrics/
+    governance: version-locked
+
+  workflows:
+    description: Step-by-step processes for producing work
+    location: studio/workflows/
+    governance: curated by Ops Agent
+
+  patterns:
+    description: Reusable design solutions organized by domain
+    location: studio/patterns/{domain}/
+    subdomains: [web, dashboard, app, copy, newsletter, bulletin, motion, 3d, graphics]
+    governance: curated by Design Librarian
+
+  components:
+    description: Reusable UI building blocks
+    location: studio/components/{category}/
+    categories: [core, layout, navigation, forms, data-display, dashboard, motion, marketing, experimental]
+    governance: component registry required
+
+  design-contracts:
+    description: Formal specifications for design deliverables
+    location: studio/design-contracts/
+    governance: curated by Experience Architect
+
+  schemas:
+    description: Machine-readable schemas for validation
+    location: studio/schemas/
+    format: [yaml, json, toml]
+
+  prompts:
+    description: System prompts for agents
+    location: studio/prompts/{role}/
+    roles: [system, planner, reviewer, fixer, copy, motion, 3d]
+    governance: version-locked
+
+  brand:
+    description: Brand identity, voice, visual language
+    location: studio/brand/
+    governance: brand owner approval required
+
+  exemplars:
+    description: Reference implementations
+    location: studio/exemplars/{status}/
+    statuses: [approved, experimental, anti-examples]
+    governance: approved requires Reviewer sign-off
+
+  research:
+    description: External research and competitive intelligence
+    location: studio/research/
+    governance: append-only
+
+artifact_states:
+  - canonical: "Approved, version-locked, authoritative"
+  - approved: "Passed review, available for use"
+  - experimental: "Under development, not for production"
+  - deprecated: "Superseded, kept for reference"
+  - archived: "No longer active, preserved in archive/"
+  - forbidden: "Explicitly banned, listed in anti-patterns"
+
+approval_levels:
+  - auto: "Passes automated checks"
+  - peer: "Single agent review"
+  - board: "Design Review Board (multiple reviewers)"
+  - human: "Human stakeholder approval required"

@@ -1,0 +1,139 @@
+{
+  "version": "1.0",
+  "studio": "The Pauli Effect™ AI Design Studio",
+  "intent": "Produce Awwwards-caliber cinematic frontend via parallel agent build-score-iterate loop",
+  "quality_floor": 8.5,
+  "hard_blockers": ["MOT < 7.0", "ACC < 7.0"],
+
+  "nodes": [
+    {
+      "id": "hermes",
+      "type": "switch",
+      "role": "Director — reads brief, assigns agent team, monitors quality gate",
+      "model": "NousResearch/Hermes-3",
+      "reads": ["tasks/queue/*.task.md", "audits/*.json"],
+      "writes": ["tasks/queue/*.task.md", ".hermes/memory/"],
+      "tools": ["file_system", "telegram_gateway", "vibe_graph_post", "spawn_agent"]
+    },
+    {
+      "id": "scout",
+      "type": "agent",
+      "role": "Research — Awwwards daily report, project-specific reference extraction",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/awwwards-research/SKILL.md"],
+      "reads": ["tasks/queue/*.task.md"],
+      "writes": ["research/*.md"],
+      "tools": ["web_search", "screenshot", "file_write"]
+    },
+    {
+      "id": "ralphy-1",
+      "type": "agent",
+      "role": "Builder — cinematic HTML variation 1 (parallel)",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/kupuri-frontend/SKILL.md", "skills/motion/SKILL.md"],
+      "reads": ["tasks/queue/*.task.md", "research/*.md", "examples/"],
+      "writes": [".superdesign/design_iterations/{project}_1.html"],
+      "tools": ["file_write", "file_read"],
+      "parallel_peers": ["ralphy-2", "ralphy-3"]
+    },
+    {
+      "id": "ralphy-2",
+      "type": "agent",
+      "role": "Builder — cinematic HTML variation 2 (parallel)",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/kupuri-frontend/SKILL.md", "skills/motion/SKILL.md"],
+      "reads": ["tasks/queue/*.task.md", "research/*.md"],
+      "writes": [".superdesign/design_iterations/{project}_2.html"],
+      "tools": ["file_write", "file_read"],
+      "parallel_peers": ["ralphy-1", "ralphy-3"]
+    },
+    {
+      "id": "ralphy-3",
+      "type": "agent",
+      "role": "Builder — cinematic HTML variation 3 (parallel)",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/kupuri-frontend/SKILL.md", "skills/motion/SKILL.md"],
+      "reads": ["tasks/queue/*.task.md", "research/*.md"],
+      "writes": [".superdesign/design_iterations/{project}_3.html"],
+      "tools": ["file_write", "file_read"],
+      "parallel_peers": ["ralphy-1", "ralphy-2"]
+    },
+    {
+      "id": "lena",
+      "type": "agent",
+      "role": "Critic — UDEC 14-axis scoring of all 3 variations",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/udec-scorer/SKILL.md"],
+      "reads": [".superdesign/design_iterations/*.html"],
+      "writes": ["audits/{project}-audit-{n}.json"],
+      "tools": ["file_read", "file_write"]
+    },
+    {
+      "id": "gate",
+      "type": "switch",
+      "role": "Quality gate — routes pass/fail based on UDEC composite",
+      "condition_pass": "max(scores.composite) >= 8.5 AND MOT >= 7.0 AND ACC >= 7.0",
+      "condition_fail": "max(scores.composite) < 8.5 OR MOT < 7.0 OR ACC < 7.0",
+      "condition_stub": "any file contains TODO or placeholder",
+      "reads": ["audits/{project}-audit-{n}.json"],
+      "routes": {
+        "pass": "approve",
+        "fail": "marco",
+        "stub": "ralphy-1 (rebuild)"
+      }
+    },
+    {
+      "id": "marco",
+      "type": "agent",
+      "role": "Synthesist — writes iteration brief from LENA rejection",
+      "model": "claude-sonnet-4-6",
+      "skills": ["skills/udec-scorer/SKILL.md", "skills/design-principles/SKILL.md"],
+      "reads": ["audits/{project}-audit-{n}.json", ".superdesign/design_iterations/*.html"],
+      "writes": ["tasks/queue/{project}-synthesis-{n}.task.md"],
+      "tools": ["file_read", "file_write"],
+      "activates_only_on": "gate.fail"
+    },
+    {
+      "id": "approve",
+      "type": "output",
+      "role": "Ship — copy approved file to examples/, POST to Vibe Graph, text Bambu",
+      "activates_only_on": "gate.pass",
+      "actions": [
+        "copy best variation to examples/{project}/v{n}.html",
+        "copy audit to examples/{project}/audit.json",
+        "POST to https://kupuri-media-cdmx.vercel.app/api/vibe",
+        "send Telegram: '{project} ready. Score {score}. Preview: {url}'"
+      ]
+    }
+  ],
+
+  "edges": [
+    { "from": "hermes",   "to": "scout",    "type": "control",  "trigger": "brief received" },
+    { "from": "hermes",   "to": "ralphy-1", "type": "control",  "trigger": "scout.done OR scout.skip" },
+    { "from": "hermes",   "to": "ralphy-2", "type": "control",  "trigger": "scout.done OR scout.skip", "parallel": true },
+    { "from": "hermes",   "to": "ralphy-3", "type": "control",  "trigger": "scout.done OR scout.skip", "parallel": true },
+    { "from": "scout",    "to": "ralphy-1", "type": "message",  "data": "research report path" },
+    { "from": "scout",    "to": "ralphy-2", "type": "message",  "data": "research report path" },
+    { "from": "scout",    "to": "ralphy-3", "type": "message",  "data": "research report path" },
+    { "from": "ralphy-1", "to": "lena",     "type": "message",  "data": "output file path", "trigger": "file written" },
+    { "from": "ralphy-2", "to": "lena",     "type": "message",  "data": "output file path", "trigger": "file written" },
+    { "from": "ralphy-3", "to": "lena",     "type": "message",  "data": "output file path", "trigger": "file written" },
+    { "from": "lena",     "to": "gate",     "type": "message",  "data": "audit JSON path", "trigger": "all 3 scored" },
+    { "from": "gate",     "to": "approve",  "type": "control",  "condition": "pass" },
+    { "from": "gate",     "to": "marco",    "type": "control",  "condition": "fail" },
+    { "from": "marco",    "to": "hermes",   "type": "message",  "data": "synthesis task file path" },
+    { "from": "hermes",   "to": "ralphy-1", "type": "control",  "trigger": "marco.done", "note": "loop back — max 5 iterations before escalate to Bambu" }
+  ],
+
+  "loop_guard": {
+    "max_iterations": 5,
+    "on_exceed": "escalate to HERMES → text Bambu: 'Project {name} stuck at UDEC {score} after 5 cycles. Human review needed.'"
+  },
+
+  "external_integrations": {
+    "vibe_graph": "POST https://kupuri-media-cdmx.vercel.app/api/vibe",
+    "telegram": ".hermes/config.yaml gateway",
+    "mcp_cli": "mcp2cli-main/cli.js",
+    "superdesign_vscode": "src/ extension reads system-prompt.txt + this CLAUDE.md"
+  }
+}

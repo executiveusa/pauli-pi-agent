@@ -10,7 +10,7 @@ import {
 // Mock models for testing
 const mockModels: Model<"anthropic-messages">[] = [
 	{
-		id: "claude-sonnet-4-5",
+		id: "claude-sonnet-4-6",
 		name: "Claude Sonnet 4.5",
 		api: "anthropic-messages",
 		provider: "anthropic",
@@ -68,15 +68,15 @@ const allModels = [...mockModels, ...mockOpenRouterModels];
 describe("parseModelPattern", () => {
 	describe("simple patterns without colons", () => {
 		test("exact match returns model with undefined thinking level", () => {
-			const result = parseModelPattern("claude-sonnet-4-5", allModels);
-			expect(result.model?.id).toBe("claude-sonnet-4-5");
+			const result = parseModelPattern("claude-sonnet-4-6", allModels);
+			expect(result.model?.id).toBe("claude-sonnet-4-6");
 			expect(result.thinkingLevel).toBeUndefined();
 			expect(result.warning).toBeUndefined();
 		});
 
 		test("partial match returns best model with undefined thinking level", () => {
 			const result = parseModelPattern("sonnet", allModels);
-			expect(result.model?.id).toBe("claude-sonnet-4-5");
+			expect(result.model?.id).toBe("claude-sonnet-4-6");
 			expect(result.thinkingLevel).toBeUndefined();
 			expect(result.warning).toBeUndefined();
 		});
@@ -92,7 +92,7 @@ describe("parseModelPattern", () => {
 	describe("patterns with valid thinking levels", () => {
 		test("sonnet:high returns sonnet with high thinking level", () => {
 			const result = parseModelPattern("sonnet:high", allModels);
-			expect(result.model?.id).toBe("claude-sonnet-4-5");
+			expect(result.model?.id).toBe("claude-sonnet-4-6");
 			expect(result.thinkingLevel).toBe("high");
 			expect(result.warning).toBeUndefined();
 		});
@@ -107,7 +107,7 @@ describe("parseModelPattern", () => {
 		test("all valid thinking levels work", () => {
 			for (const level of ["off", "minimal", "low", "medium", "high", "xhigh"]) {
 				const result = parseModelPattern(`sonnet:${level}`, allModels);
-				expect(result.model?.id).toBe("claude-sonnet-4-5");
+				expect(result.model?.id).toBe("claude-sonnet-4-6");
 				expect(result.thinkingLevel).toBe(level);
 				expect(result.warning).toBeUndefined();
 			}
@@ -117,7 +117,7 @@ describe("parseModelPattern", () => {
 	describe("patterns with invalid thinking levels", () => {
 		test("sonnet:random returns sonnet with undefined thinking level and warning", () => {
 			const result = parseModelPattern("sonnet:random", allModels);
-			expect(result.model?.id).toBe("claude-sonnet-4-5");
+			expect(result.model?.id).toBe("claude-sonnet-4-6");
 			expect(result.thinkingLevel).toBeUndefined();
 			expect(result.warning).toContain("Invalid thinking level");
 			expect(result.warning).toContain("random");
@@ -200,7 +200,7 @@ describe("parseModelPattern", () => {
 			const result = parseModelPattern("sonnet:", allModels);
 			// Empty string after colon is not a valid thinking level
 			// So it tries to match "sonnet:" which won't match, then tries "sonnet"
-			expect(result.model?.id).toBe("claude-sonnet-4-5");
+			expect(result.model?.id).toBe("claude-sonnet-4-6");
 			expect(result.warning).toContain("Invalid thinking level");
 		});
 	});
@@ -249,7 +249,7 @@ describe("resolveCliModel", () => {
 		});
 
 		expect(result.error).toBeUndefined();
-		expect(result.model?.id).toBe("claude-sonnet-4-5");
+		expect(result.model?.id).toBe("claude-sonnet-4-6");
 		expect(result.thinkingLevel).toBe("high");
 	});
 
