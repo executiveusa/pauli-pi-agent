@@ -2,23 +2,27 @@ import { NextResponse } from "next/server";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
-const PAULI_PI_API_KEY = process.env.PAULI_PI_API_KEY || "";
-const DIFFUSION_STEPS = Number(process.env.DIFFUSION_STEPS) || 15;
+// Mercury by Inception Labs — OpenAI-compatible API
+const MERCURY_API_KEY = process.env.MERCURY_API_KEY || process.env.PAULI_PI_API_KEY || "";
 
-const pauliPi = createOpenAI({
-  apiKey: PAULI_PI_API_KEY,
-  // Assuming a generic OpenAI-compatible endpoint for Pauli-Pi / Inception
-  // If it fails, we fall back to standard openai or a mock.
-  baseURL: "https://api.openai.com/v1", 
+const mercury = createOpenAI({
+  apiKey: MERCURY_API_KEY,
+  baseURL: "https://api.inceptionlabs.ai/v1",
 });
 
 export async function POST(req: Request) {
-  const { message, modality = "text", fileUrl, conversationId } = await req.json();
+  const { message, messages: history, conversationId } = await req.json();
+
+  // Build messages array — support conversation history if provided
+  const chatMessages = history && Array.isArray(history)
+    ? history
+    : [{ role: "user" as const, content: message }];
 
   try {
     const result = await streamText({
-      model: pauliPi("gpt-4o-mini"), // Or whatever the valid model name is
-      prompt: message,
+      model: mercury("mercury-coder-small"),
+      messages: chatMessages,
+      system: "You are Pauli-Pi, a helpful diffusion-based AI assistant. Be concise, clear and friendly.",
     });
 
     const encoder = new TextEncoder();
@@ -29,16 +33,22 @@ export async function POST(req: Request) {
           for await (const chunk of result.textStream) {
             currentText += chunk;
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ type: "tokenChunk", content: currentText })}\n\n`)
+              encoder.encode(
+                `data: ${JSON.stringify({ type: "tokenChunk", content: currentText })}\n\n`
+              )
             );
           }
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "done", content: currentText })}\n\n`)
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "done", content: currentText })}\n\n`
+            )
           );
         } catch (err) {
           console.error("Stream error:", err);
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "tokenChunk", content: "I’m sorry, but I can’t help with that. (Stream Error)" })}\n\n`)
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "error", content: "Stream error occurred. Please try again." })}\n\n`
+            )
           );
         } finally {
           controller.close();
@@ -51,21 +61,27 @@ export async function POST(req: Request) {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
+        "X-Conversation-ID": conversationId || "",
       },
     });
-  } catch (error) {
-    console.error("API error:", error);
+  } catch (error: unknown) {
+    console.error("Mercury API error:", error);
     const encoder = new TextEncoder();
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
     const fallbackStream = new ReadableStream({
       start(controller) {
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ type: "tokenChunk", content: "I’m sorry, but I can’t help with that. (API Error)" })}\n\n`)
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "error", content: `API Error: ${errMsg}` })}\n\n`
+          )
         );
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ type: "done", content: "I’m sorry, but I can’t help with that. (API Error)" })}\n\n`)
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "done", content: `API Error: ${errMsg}` })}\n\n`
+          )
         );
         controller.close();
-      }
+      },
     });
     return new NextResponse(fallbackStream, {
       headers: { "Content-Type": "text/event-stream" },
