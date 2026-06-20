@@ -128,7 +128,7 @@ Providers (Mercury, OpenAI, Anthropic)
 
 8. **Create API routes** (in existing agent server)
    - POST /v1/agent/chat
-   - POST /v1/agent/voice/session
+   - ~~POST /v1/agent/voice/session~~ _(not implemented — placeholder removed from Phase 2 scope)_
    - POST /v1/agent/voice/transcribe
    - POST /v1/agent/voice/speak
    - POST /v1/agent/tool-call

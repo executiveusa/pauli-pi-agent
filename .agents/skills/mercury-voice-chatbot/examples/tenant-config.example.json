@@ -1,6 +1,19 @@
 {
-  "_description": "Example tenant configurations for different deployment tiers",
+  "_description": "Reference collection of example TenantConfig objects for different deployment tiers. This file is NOT a valid single TenantConfig — it is a named map of examples.",
   "_note": "Load these at server startup or via API. Never hardcode secrets.",
+  "_usage": {
+    "summary": "The runtime expects a single TenantConfig object (not this map). To use one of the entries below, extract it by key and pass it to setActiveTenant().",
+    "example_code": "import configs from './tenant-config.example.json';\nimport { setActiveTenant } from '../tenants/tenant-config.js';\n// Pick one entry by tenantId key:\nsetActiveTenant(configs['voice-assistant']);",
+    "single_object_shape": {
+      "tenantId": "string — unique identifier for this tenant",
+      "clientName": "string — human-readable client name",
+      "plan": "\"clean\" | \"voice\" | \"mercury_diffusion\"",
+      "branding": "{ botName, primaryColor, accentColor, voiceName? }",
+      "routing": "{ defaultModel, reasoningEffort, diffusionEnabled, voiceEnabled }",
+      "billing": "{ mode, usagePaidByClient, setupFee, monthlyMaintenanceFee }",
+      "permissions": "{ canUseBrowser, canGenerateImages, canGenerateVideo, canSendEmail, canBookAppointments, requiresApprovalForMoneyMovement }"
+    }
+  },
 
   "clean-text-bot": {
     "tenantId": "clean-text-bot",
