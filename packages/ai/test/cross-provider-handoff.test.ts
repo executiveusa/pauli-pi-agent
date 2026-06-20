@@ -63,7 +63,11 @@ const PROVIDER_MODEL_PAIRS: ProviderModelPair[] = [
 		apiOverride: "openai-completions",
 	},
 	{ provider: "openai", model: "gpt-5-chat-latest", label: "openai-responses-gpt-5-chat-latest" },
-	{ provider: "azure-openai-responses", model: "gpt-5-chat-latest", label: "azure-openai-responses-gpt-5-chat-latest" },
+	{
+		provider: "azure-openai-responses",
+		model: "gpt-5-chat-latest",
+		label: "azure-openai-responses-gpt-5-chat-latest",
+	},
 	// OpenAI Codex
 	{ provider: "openai-codex", model: "gpt-5.2-codex", label: "openai-codex-gpt-5.2-codex" },
 	// Google Antigravity

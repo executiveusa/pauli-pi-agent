@@ -340,7 +340,7 @@ describe("Tool Results with Images", () => {
 	// OAuth-based providers (credentials from ~/.pi/agent/oauth.json)
 	// =========================================================================
 
-	describe("Anthropic OAuth Provider (claude-sonnet-4-5)", () => {
+	describe("Anthropic OAuth Provider (claude-sonnet-4-6)", () => {
 		const model = getModel("anthropic", "claude-sonnet-4-6");
 
 		it.skipIf(!anthropicOAuthToken)(

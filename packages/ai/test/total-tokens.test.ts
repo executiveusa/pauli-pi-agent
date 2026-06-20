@@ -179,18 +179,22 @@ describe("totalTokens field", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses", () => {
-		it("gpt-5-chat-latest - should return totalTokens equal to sum of components", { retry: 3, timeout: 60000 }, async () => {
-			const llm = getModel("openai", "gpt-5-chat-latest");
+		it(
+			"gpt-5-chat-latest - should return totalTokens equal to sum of components",
+			{ retry: 3, timeout: 60000 },
+			async () => {
+				const llm = getModel("openai", "gpt-5-chat-latest");
 
-			console.log(`\nOpenAI Responses / ${llm.id}:`);
-			const { first, second } = await testTotalTokensWithCache(llm);
+				console.log(`\nOpenAI Responses / ${llm.id}:`);
+				const { first, second } = await testTotalTokensWithCache(llm);
 
-			logUsage("First request", first);
-			logUsage("Second request", second);
+				logUsage("First request", first);
+				logUsage("Second request", second);
 
-			assertTotalTokensEqualsComponents(first);
-			assertTotalTokensEqualsComponents(second);
-		});
+				assertTotalTokensEqualsComponents(first);
+				assertTotalTokensEqualsComponents(second);
+			},
+		);
 	});
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses", () => {

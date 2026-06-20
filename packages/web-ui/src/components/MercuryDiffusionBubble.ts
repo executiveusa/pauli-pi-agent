@@ -162,6 +162,8 @@ export class MercuryDiffusionBubble extends LitElement {
 	`;
 
 	@property({ type: String }) diffusionState: DiffusionState = "idle";
+	/** Text content to display. Can be set via template binding or via setDelta(). */
+	@property({ type: String }) text = "";
 	@state() private _text = "";
 
 	/**
@@ -201,7 +203,8 @@ export class MercuryDiffusionBubble extends LitElement {
 	}
 
 	override render() {
-		if (this.diffusionState === "idle" && !this._text) {
+		const displayText = this.text || this._text;
+		if (this.diffusionState === "idle" && !displayText) {
 			return html``;
 		}
 
@@ -218,7 +221,7 @@ export class MercuryDiffusionBubble extends LitElement {
 						`
 						: ""
 				}
-				<div class="content">${this._text}</div>
+				<div class="content">${displayText}</div>
 			</div>
 		`;
 	}
