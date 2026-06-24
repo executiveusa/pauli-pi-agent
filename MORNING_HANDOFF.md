@@ -1,14 +1,29 @@
 # MORNING HANDOFF — Bambu
 
-**From:** the overnight build session (2026-06-23/24)
+**From:** the overnight + morning build session (2026-06-24)
 **Branch:** `feat/pauli-brain-icm` in `C:\Users\execu\repos\pauli-pi-agent` (local only, NOT pushed)
-**TL;DR:** Pauli now has an identity (`PAULI.md`), a doctrine map (`company/INDEX.md`), and a
-working brain that searches your `E:\` vaults from disk — verified live. The control bridge
-now runs jobs *as Pauli*. **One thing left that only you can do: put the VPS on Tailscale.**
+**TL;DR:** ✅ **DONE — brain is LIVE on Supabase over Tailscale.** `backend: "supabase"` verified.
+You joined `pauli-vps` (100.122.224.55) to the tailnet this morning; Supabase is now the
+primary brain, local vaults are the automatic fallback. No more morning tasks from the
+overnight handoff — it's all working.
 
 ---
 
-## ✅ What got built tonight
+## ✅ FINAL STATE (verified live, 2026-06-24)
+
+- **Brain primary = Supabase** via Tailscale (`http://100.122.224.55:8001`). RPC
+  `search_memories_fulltext(match_count, search_query)` working. Proof: query
+  `"yappyverse factory"` → `backend: "supabase"`.
+- **Brain fallback = local** `E:\` vaults. Proof: query `"design doctrine luxury"` →
+  Supabase had no match → fell back to local → 12 hits. Resilient by design.
+- **Tailscale** — `pauli-vps` joined (`100.122.224.55`), reachable from this machine.
+- **Keys** — real self-hosted JWT keys are in the gitignored `.env`. NOTE: the
+  Cosmos_Vault's `SUPABASE_*` entries are the WRONG type (`sbp_` dashboard tokens for an
+  old hosted project) — the `.env` overrides them correctly now.
+
+---
+
+## ✅ What got built (this session)
 
 ### 1. Brain — `brain/` (zero npm deps, pure Node 24)
 - **`brain/search.mjs`** — `searchBrain(query, {limit})`. Tries **Supabase RPC first**

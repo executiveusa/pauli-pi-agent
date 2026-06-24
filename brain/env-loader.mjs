@@ -17,7 +17,13 @@ const ALLOWED = [
 
 import { readFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Resolve the agent repo root from this module's location (brain/ → repo root),
+// so .env loads correctly regardless of process.cwd().
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = dirname(__dirname);
 
 // Vaults are the agent's knowledge sources (E:\ paths from your machine).
 export const VAULTS = [
@@ -56,8 +62,8 @@ function readEnvIfPresent(p) {
 }
 
 export function loadEnv() {
-  // 1. Local repo .env (highest priority among files)
-  const localEnv = readEnvIfPresent(join(process.cwd(), '.env')) || {};
+  // 1. Local repo .env (highest priority among files) — resolved from this module, not cwd.
+  const localEnv = readEnvIfPresent(join(REPO_ROOT, '.env')) || {};
 
   // 2. Cosmos vault (the unified secrets file)
   const cosmosCandidates = [

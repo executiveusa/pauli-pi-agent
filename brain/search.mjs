@@ -143,8 +143,8 @@ async function localSearch(query, limit = DEFAULT_LIMIT) {
 }
 
 // ─── Supabase RPC (live primary) ─────────────────────────────────────────────
-// Calls the search_memories_fulltext / search_memories_by_vector functions that
-// already exist in the second_brain schema (per the connection doc).
+// Calls search_memories_fulltext in the second_brain schema.
+// Actual signature verified live: search_memories_fulltext(match_count, search_query).
 async function supabaseSearch(query, limit = DEFAULT_LIMIT) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -161,7 +161,7 @@ async function supabaseSearch(query, limit = DEFAULT_LIMIT) {
         'Content-Type': 'application/json',
         Prefer: 'return=representation',
       },
-      body: JSON.stringify({ query, count: limit }),
+      body: JSON.stringify({ match_count: limit, search_query: query }),
       signal: AbortSignal.timeout(6000),
     });
   } catch {
