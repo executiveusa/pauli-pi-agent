@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import NoteTree from '@/components/NoteTree'
 import NoteViewer from '@/components/NoteViewer'
 import SearchBar from '@/components/SearchBar'
 import AgentLog from '@/components/AgentLog'
-import { Brain, Activity, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Activity, Bot, Brain, ChevronLeft, ChevronRight, Gauge } from 'lucide-react'
 
 type Panel = 'activity'
 
@@ -16,14 +17,11 @@ export default function Dashboard() {
   const [rightOpen, setRightOpen] = useState(true)
 
   function handleWikiLinkClick(name: string) {
-    // TODO: resolve wiki-link basename to path via search
     console.log('wiki-link clicked:', name)
   }
 
   return (
     <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
-
-      {/* Left sidebar — file tree */}
       <div
         className={`flex flex-col border-r border-zinc-800 transition-all duration-200 ${
           sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
@@ -38,13 +36,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0">
-
-        {/* Top bar */}
         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-zinc-800 shrink-0">
           <button
-            onClick={() => setSidebarOpen((v) => !v)}
+            onClick={() => setSidebarOpen((value) => !value)}
             className="text-zinc-500 hover:text-zinc-300 transition-colors"
             title="Toggle file tree"
           >
@@ -58,6 +53,22 @@ export default function Dashboard() {
           <SearchBar onSelect={setSelectedPath} />
 
           <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/mercury"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-emerald-200 hover:bg-emerald-400/10"
+              title="Mercury control panel"
+            >
+              <Bot className="w-4 h-4" />
+              Mercury
+            </Link>
+            <Link
+              href="/mission-control"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-blue-200 hover:bg-blue-400/10"
+              title="Mission control"
+            >
+              <Gauge className="w-4 h-4" />
+              Mission
+            </Link>
             <button
               onClick={() => setRightPanel('activity')}
               className={`p-1.5 rounded transition-colors ${
@@ -66,31 +77,29 @@ export default function Dashboard() {
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
               title="Agent activity"
-              >
+            >
               <Activity className="w-4 h-4" />
             </button>
             <button
               onClick={() => {
                 if (rightOpen) setRightOpen(false)
-                else { setRightPanel('activity'); setRightOpen(true) }
+                else {
+                  setRightPanel('activity')
+                  setRightOpen(true)
+                }
               }}
               className="text-xs text-zinc-500 hover:text-zinc-300 px-2"
             >
-              {rightOpen ? '→' : '←'}
+              {rightOpen ? '->' : '<-'}
             </button>
           </div>
         </div>
 
-        {/* Note viewer */}
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 min-w-0">
-            <NoteViewer
-              path={selectedPath}
-              onWikiLinkClick={handleWikiLinkClick}
-            />
+            <NoteViewer path={selectedPath} onWikiLinkClick={handleWikiLinkClick} />
           </div>
 
-          {/* Right panel */}
           {rightOpen && (
             <div className="w-72 border-l border-zinc-800 shrink-0 flex flex-col overflow-hidden">
               <AgentLog />

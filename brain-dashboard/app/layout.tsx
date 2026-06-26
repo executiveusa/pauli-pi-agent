@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Pauli Second Brain',
-  description: 'Pi Agent — ArchonX Second Brain Dashboard',
+  description: 'Pi Agent - ArchonX Second Brain Dashboard',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
