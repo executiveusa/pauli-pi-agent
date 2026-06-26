@@ -8,6 +8,14 @@
 	</head>
 	<body class="bg-background">
 		<div id="app"></div>
+		<script>
+			// Buffer polyfill for Node-only deps (pg) that creep into the browser bundle
+			window.global = window;
+		</script>
+		<script type="module">
+			import { Buffer } from "buffer";
+			window.Buffer = Buffer;
+		</script>
 		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>
