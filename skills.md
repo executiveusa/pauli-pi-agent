@@ -4,6 +4,24 @@ This directory maps and indexes the specialized skills, tools, and Model Context
 
 ---
 
+## 0. Master Skills Registry (lazy-load)
+
+**Full catalog:** [`skills/SKILLS_REGISTRY.md`](./skills/SKILLS_REGISTRY.md) — 76 skills across 47 categories.
+
+**Rule:** Do NOT clone skills into the agent. Reference them by name; load only when a task matches the trigger. This is ICM — one agent, many folders, markdown = architecture.
+
+**Default stack (unknown repos):** `jcodemunch-mcp`, `ast-grep-mcp`, `Understand-Anything`, `files.md`, `claude-handoff`
+
+**Per-repo presets:** see the registry's "Practical Repo Presets" table.
+
+### Newly added reference skills
+
+| Skill | File | When to load |
+|-------|------|--------------|
+| MCP Apps (ext-apps) | [`skills/mcp-ext-apps.md`](./skills/mcp-ext-apps.md) | When serving interactive UI from an MCP server to external hosts (Claude, ChatGPT). For in-app artifacts, use the native pi-web-ui artifacts system instead. |
+
+---
+
 ## 1. Primary Token Savers & Compilers (Always Active)
 
 These tools must be utilized in every coding and agent execution session to compress codebase layouts and reduce raw token costs.

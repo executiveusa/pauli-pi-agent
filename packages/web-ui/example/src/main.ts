@@ -1,6 +1,5 @@
 import "@mariozechner/mini-lit/dist/ThemeToggle.js";
 import { Agent, type AgentMessage, type AgentTool } from "@mariozechner/pi-agent-core";
-import { getModel } from "@mariozechner/pi-ai";
 import {
 	type AgentState,
 	ApiKeyPromptDialog,
@@ -21,6 +20,8 @@ import {
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
 import { Bell, Globe, History, Plus, Settings } from "lucide";
+import { registerMercuryDiffusionRenderer } from "./mercury-diffusion-renderer.js";
+import { pickModel } from "./smart-router.js";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
@@ -156,6 +157,8 @@ function createWebSearchTool(): AgentTool<any> {
 
 // Register custom message renderers
 registerCustomMessageRenderers();
+// Register Mercury diffusion renderer (visual effect for diffusion models)
+registerMercuryDiffusionRenderer();
 
 // Create stores
 const settings = new SettingsStore();
@@ -302,7 +305,9 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 	agent = new Agent({
 		initialState: initialState || {
 			systemPrompt: baseSystemPrompt,
-			model: getModel("anthropic", "claude-sonnet-4-6"),
+			// Smart router: default to a FREE model for tool calls / chat.
+			// User can override via the model selector in the UI.
+			model: pickModel("fast").model,
 			thinkingLevel: "off",
 			messages: [],
 			tools: [],

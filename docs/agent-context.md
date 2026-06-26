@@ -49,7 +49,10 @@ Pi-mono fork (from `badlogic/pi`) extended into **THE PAULI EFFECT** — a facel
 - `16c61085` Notion sync + library catalog + control bridge scripts
 
 ## Known Issues (the real gaps)
-1. **Web UI browser rendering blocked** — `packages/web-ui/example` imports `@mariozechner/pi-agent-core` which re-exports `data-processor` (postgres server code) into the browser bundle. Vite aliases + Buffer polyfill added but `@mariozechner/pi-data-processor` workspace package still unresolved in browser. Fix: proper `vite-plugin-node-polyfills` config OR refactor example to not import full agent core OR externalize data-processor in vite config. Dev server starts (HTTP 200) but page is blank.
+1. **Web UI browser rendering — ✅ FIXED (2026-06-26)**
+   - Root cause: `packages/web-ui/example` imports `@mariozechner/pi-agent-core` which re-exports `data-processor` (postgres) and `database/migrations` + `secrets/infisical-client` (fs) into the browser bundle.
+   - Fix: rewrote `packages/web-ui/example/vite.config.ts` with a `stubNodeOnlyPackages` plugin that stubs `fs`, `node:fs`, `path`, `pg`, and the agent dist modules (`database/index.js`, `database/migrations.js`, `database/types.js`, `secrets/infisical-client.js`, `tenants/tenant-loader.js`) with no-op browser shims. All named exports preserved (`MigrationRunner`, `getSecretsClient`, `ClaudeImporter`, etc.).
+   - **Verified:** UI renders at http://localhost:5173/ — chat textbox, model selector, sessions, settings all visible. No PAGEERROR.
 2. **VPS needs reboot** — `*** System restart required ***` on `pauli-vps`, 20 zombie processes. Non-urgent, services healthy.
 3. **3 critical vulns** in pi-mono deps (next@15.3.3 has CVE-2025-66478). Run `npm audit fix` before any public exposure.
 4. **Supabase service-role key** in plaintext Downloads file since March — rotate before agent does anything public.
@@ -62,11 +65,16 @@ Pi-mono fork (from `badlogic/pi`) extended into **THE PAULI EFFECT** — a facel
 - **Cosmos identity locked** — engineering lead, anti-sycophant, tells Bambu when ideas are traps
 
 ## Next recommended steps (priority order)
-1. **Fix web-ui browser rendering** — the one blocking gap. Try `vite-plugin-node-polyfills` or externalize data-processor. ~1-2 hrs focused.
-2. **Push `feat/pauli-brain-icm` to origin** — 7 commits local only. Push when ready to share/backup.
-3. **Triage 179 dormant repos** — score by revenue-potential × readiness, surface top 10 build-first candidates.
-4. **Ship ONE directory** — Puerto Vallarta luxury directory (MISSION.md 90-day goal) → first MRR, proves factory loop.
-5. **Ingest vaults into Supabase** — brain has ~1 test memory; real knowledge still only on E:\.
+1. **✅ Fix web-ui browser rendering** — DONE (2026-06-26). Vite config rewrites Node-only modules to browser stubs.
+2. **✅ Smart model routing** — DONE (2026-06-26). `packages/web-ui/example/src/smart-router.ts` picks free models (Groq Llama, Gemini Flash, OpenRouter :free) for fast/code/vision lanes, reserves Claude for reasoning. User enters keys via Settings; router auto-picks based on what's configured.
+3. **✅ Mercury diffusion renderer** — DONE (2026-06-26). `mercury-diffusion-renderer.ts` + `mercury-diffusion-bubble-setup.ts` wire the existing `MercuryDiffusionBubble` component into the chat stream for diffusion-model responses.
+4. **✅ Artifacts streaming** — Already wired (no change needed). ChatPanel auto-includes `ArtifactsPanel.tool` + `ArtifactsToolRenderer`. Agent can create/update/rewrite HTML/SVG/Markdown/text artifacts; user can send/receive assets via `AttachmentsRuntimeProvider`.
+5. **✅ Skills registry** — DONE (2026-06-26). `skills/SKILLS_REGISTRY.md` catalogs all 76 skills from the Skills Agent Library Report as lazy-load references. `skills/mcp-ext-apps.md` documents the MCP Apps protocol.
+6. **Deploy to Vercel** — `vercel --prod` from repo root. `vercel.json` exists.
+7. **Triage 179 dormant repos** — score by revenue-potential × readiness, surface top 10 build-first candidates.
+8. **Ship ONE directory** — Puerto Vallarta luxury directory (MISSION.md 90-day goal) → first MRR, proves factory loop.
+9. **Ingest vaults into Supabase** — brain has ~1 test memory; real knowledge still only on E:\.
+10. **Wire Bright Data MCP + video-watch skill** — for research/scraping (user's next request after UI).
 
 ## Files changed this session
 - `COSMOS.md` (new) — global identity anchor
