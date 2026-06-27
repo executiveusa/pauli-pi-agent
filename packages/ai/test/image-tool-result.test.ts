@@ -210,7 +210,7 @@ async function handleToolWithTextAndImageResult<TApi extends Api>(
 
 describe("Tool Results with Images", () => {
 	describe.skipIf(!process.env.GEMINI_API_KEY)("Google Provider (gemini-2.5-flash)", () => {
-		const llm = getModel("google", "gemini-2.5-flash");
+		const llm = getModel("google", "gemini-3.1-flash-lite-preview");
 
 		it("should handle tool result with only image", { retry: 3, timeout: 30000 }, async () => {
 			await handleToolWithImageResult(llm);
@@ -222,7 +222,7 @@ describe("Tool Results with Images", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Completions Provider (gpt-4o-mini)", () => {
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini");
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest");
 		void _compat;
 		const llm: Model<"openai-completions"> = {
 			...baseModel,
@@ -239,7 +239,7 @@ describe("Tool Results with Images", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses Provider (gpt-5-mini)", () => {
-		const llm = getModel("openai", "gpt-5-mini");
+		const llm = getModel("openai", "gpt-5-chat-latest");
 
 		it("should handle tool result with only image", { retry: 3, timeout: 30000 }, async () => {
 			await handleToolWithImageResult(llm);
@@ -251,7 +251,7 @@ describe("Tool Results with Images", () => {
 	});
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses Provider (gpt-4o-mini)", () => {
-		const llm = getModel("azure-openai-responses", "gpt-4o-mini");
+		const llm = getModel("azure-openai-responses", "gpt-5-chat-latest");
 		const azureDeploymentName = resolveAzureDeploymentName(llm.id);
 		const azureOptions = azureDeploymentName ? { azureDeploymentName } : {};
 
@@ -265,7 +265,7 @@ describe("Tool Results with Images", () => {
 	});
 
 	describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic Provider (claude-haiku-4-5)", () => {
-		const model = getModel("anthropic", "claude-haiku-4-5");
+		const model = getModel("anthropic", "claude-sonnet-4-6");
 
 		it("should handle tool result with only image", { retry: 3, timeout: 30000 }, async () => {
 			await handleToolWithImageResult(model);
@@ -341,7 +341,7 @@ describe("Tool Results with Images", () => {
 	// =========================================================================
 
 	describe("Anthropic OAuth Provider (claude-sonnet-4-5)", () => {
-		const model = getModel("anthropic", "claude-sonnet-4-5");
+		const model = getModel("anthropic", "claude-sonnet-4-6");
 
 		it.skipIf(!anthropicOAuthToken)(
 			"should handle tool result with only image",
@@ -365,7 +365,7 @@ describe("Tool Results with Images", () => {
 			"gpt-4o - should handle tool result with only image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "gpt-4o");
+				const llm = getModel("github-copilot", "gpt-5-chat-latest");
 				await handleToolWithImageResult(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -374,7 +374,7 @@ describe("Tool Results with Images", () => {
 			"gpt-4o - should handle tool result with text and image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "gpt-4o");
+				const llm = getModel("github-copilot", "gpt-5-chat-latest");
 				await handleToolWithTextAndImageResult(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -383,7 +383,7 @@ describe("Tool Results with Images", () => {
 			"claude-sonnet-4 - should handle tool result with only image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4-6");
 				await handleToolWithImageResult(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -392,7 +392,7 @@ describe("Tool Results with Images", () => {
 			"claude-sonnet-4 - should handle tool result with text and image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4-6");
 				await handleToolWithTextAndImageResult(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -403,7 +403,7 @@ describe("Tool Results with Images", () => {
 			"gemini-2.5-flash - should handle tool result with only image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+				const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 				await handleToolWithImageResult(llm, { apiKey: geminiCliToken });
 			},
 		);
@@ -412,7 +412,7 @@ describe("Tool Results with Images", () => {
 			"gemini-2.5-flash - should handle tool result with text and image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+				const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 				await handleToolWithTextAndImageResult(llm, { apiKey: geminiCliToken });
 			},
 		);
@@ -442,7 +442,7 @@ describe("Tool Results with Images", () => {
 			"claude-sonnet-4-5 - should handle tool result with only image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("google-antigravity", "claude-sonnet-4-5");
+				const llm = getModel("google-antigravity", "claude-sonnet-4-6");
 				await handleToolWithImageResult(llm, { apiKey: antigravityToken });
 			},
 		);
@@ -451,7 +451,7 @@ describe("Tool Results with Images", () => {
 			"claude-sonnet-4-5 - should handle tool result with text and image",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("google-antigravity", "claude-sonnet-4-5");
+				const llm = getModel("google-antigravity", "claude-sonnet-4-6");
 				await handleToolWithTextAndImageResult(llm, { apiKey: antigravityToken });
 			},
 		);**/

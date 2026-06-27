@@ -31,6 +31,7 @@ function initGitRepo(repoDir: string): void {
 	git(["init", "--initial-branch=main"], repoDir);
 	git(["config", "--local", "user.email", "test@test.com"], repoDir);
 	git(["config", "--local", "user.name", "Test"], repoDir);
+	git(["config", "--local", "commit.gpgsign", "false"], repoDir);
 }
 
 // Helper to create a commit with a file

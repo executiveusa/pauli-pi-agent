@@ -199,6 +199,7 @@ export class ChatGPTImporter {
 	): Promise<{ count: number; cost: number }> {
 		const client = await this.pool.connect();
 		try {
+			const anthropic = await this.getAnthropicClient();
 			let successCount = 0;
 			let totalCost = 0;
 
@@ -210,18 +211,18 @@ export class ChatGPTImporter {
 
 					const content = msg.rows[0].content;
 
-					// Store embedding metadata (content hash for semantic search indexing)
-					const contentHash = this.hashContent(content);
+					// Create embedding using Anthropic's embeddings API
+					const embedding = await (anthropic as any).messages.embeddings.create({
+						model: "claude-3-5-sonnet-20241022",
+						input: content.substring(0, 2000),
+					});
+
+					// Store embedding vector
 					await client.query(
 						`INSERT INTO message_embeddings (id, message_id, embedding_vector, model, created_at)
 						 VALUES ($1, $2, $3, $4, NOW())
 						 ON CONFLICT (message_id) DO NOTHING`,
-						[
-							`emb_${messageId}`,
-							messageId,
-							JSON.stringify({ hash: contentHash, length: content.length }),
-							"claude-3-5-sonnet-20241022",
-						],
+						[`emb_${messageId}`, messageId, JSON.stringify(embedding), "claude-3-5-sonnet-20241022"],
 					);
 
 					successCount++;

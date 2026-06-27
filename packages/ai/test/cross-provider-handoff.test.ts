@@ -52,27 +52,27 @@ interface ProviderModelPair {
 
 const PROVIDER_MODEL_PAIRS: ProviderModelPair[] = [
 	// Anthropic
-	{ provider: "anthropic", model: "claude-sonnet-4-5", label: "anthropic-claude-sonnet-4-5" },
+	{ provider: "anthropic", model: "claude-sonnet-4-6", label: "anthropic-claude-sonnet-4-5" },
 	// Google
-	{ provider: "google", model: "gemini-3-flash-preview", label: "google-gemini-3-flash-preview" },
+	{ provider: "google", model: "gemini-3.1-flash-lite-preview", label: "google-gemini-3-flash-preview" },
 	// OpenAI
 	{
 		provider: "openai",
-		model: "gpt-4o-mini",
+		model: "gpt-5-chat-latest",
 		label: "openai-completions-gpt-4o-mini",
 		apiOverride: "openai-completions",
 	},
-	{ provider: "openai", model: "gpt-5-mini", label: "openai-responses-gpt-5-mini" },
-	{ provider: "azure-openai-responses", model: "gpt-4o-mini", label: "azure-openai-responses-gpt-4o-mini" },
+	{ provider: "openai", model: "gpt-5-chat-latest", label: "openai-responses-gpt-5-mini" },
+	{ provider: "azure-openai-responses", model: "gpt-5-chat-latest", label: "azure-openai-responses-gpt-4o-mini" },
 	// OpenAI Codex
 	{ provider: "openai-codex", model: "gpt-5.2-codex", label: "openai-codex-gpt-5.2-codex" },
 	// Google Antigravity
 	{ provider: "google-antigravity", model: "gemini-3-flash", label: "antigravity-gemini-3-flash" },
-	{ provider: "google-antigravity", model: "claude-sonnet-4-5", label: "antigravity-claude-sonnet-4-5" },
+	{ provider: "google-antigravity", model: "claude-sonnet-4-6", label: "antigravity-claude-sonnet-4-5" },
 	// GitHub Copilot
 	{ provider: "github-copilot", model: "claude-sonnet-4.5", label: "copilot-claude-sonnet-4.5" },
 	{ provider: "github-copilot", model: "gpt-5.1-codex", label: "copilot-gpt-5.1-codex" },
-	{ provider: "github-copilot", model: "gemini-3-flash-preview", label: "copilot-gemini-3-flash-preview" },
+	{ provider: "github-copilot", model: "gemini-3.1-flash-lite-preview", label: "copilot-gemini-3-flash-preview" },
 	{ provider: "github-copilot", model: "grok-code-fast-1", label: "copilot-grok-code-fast-1" },
 	// Amazon Bedrock
 	{
@@ -96,7 +96,7 @@ const PROVIDER_MODEL_PAIRS: ProviderModelPair[] = [
 	{ provider: "minimax", model: "MiniMax-M2.7", label: "minimax-m2.7" },
 	// OpenCode Zen
 	{ provider: "opencode", model: "big-pickle", label: "zen-big-pickle" },
-	{ provider: "opencode", model: "claude-sonnet-4-5", label: "zen-claude-sonnet-4-5" },
+	{ provider: "opencode", model: "claude-sonnet-4-6", label: "zen-claude-sonnet-4-5" },
 	{ provider: "opencode", model: "gemini-3-flash", label: "zen-gemini-3-flash" },
 	{ provider: "opencode", model: "glm-4.7-free", label: "zen-glm-4.7-free" },
 	{ provider: "opencode", model: "gpt-5.2-codex", label: "zen-gpt-5.2-codex" },

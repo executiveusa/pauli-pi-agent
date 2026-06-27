@@ -1,0 +1,118 @@
+# Doctrine Map — Cynthia Design Studio
+# Maps all canonical doctrine to their locations and consumers
+
+doctrine_files:
+
+  DESIGN_LAWS:
+    path: studio/doctrine/DESIGN_LAWS.md
+    version: 1.0.0
+    status: canonical
+    consumers: [all_agents]
+    governs: [all_design_work]
+    summary: "14 non-negotiable design laws plus forbidden practices"
+
+  kupuri-frontend-skill:
+    path: skills/kupuri-frontend/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [frontend, motion, reviewer]
+    governs: [web.landing-page, web.marketing-site, app.product-ui]
+    summary: "Master cinematic frontend design law. Vibe archetypes, layout archetypes, 5-technique stack."
+
+  design-principles:
+    path: skills/design-principles/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [frontend, reviewer, refactor]
+    governs: [all_visual_work]
+    summary: "Laws 0-6 from Refactoring UI. Feature-first, hierarchy, spacing, visual weight."
+
+  motion-skill:
+    path: skills/motion/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [motion, frontend, reviewer]
+    governs: [motion.interaction, motion.brand, web.landing-page]
+    summary: "Cinematic scroll stack. 5 techniques: Lenis, CSS perspective, GSAP, horizontal scroll, GLSL."
+
+  color-psychology:
+    path: skills/color-psychology/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [frontend, reviewer]
+    governs: [all_visual_work]
+    summary: "Association-based color. One accent only. No purple. Cultural context awareness."
+
+  brand-skill:
+    path: skills/brand/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [copy, frontend, reviewer, packaging]
+    governs: [all_client_facing_work]
+    summary: "Brand voice system. Guide/Witness/Craftsperson voices. Tone calibration."
+
+  udec-scorer:
+    path: skills/udec-scorer/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [reviewer]
+    governs: [all_quality_gates]
+    summary: "14-axis scoring framework. Weights, thresholds, calibration benchmarks."
+
+  quality-gate:
+    path: tasks/GATE.md
+    version: 1.0.0
+    status: canonical
+    consumers: [reviewer, all_production_agents]
+    governs: [pass_fail_decisions]
+    summary: "UDEC 8.5 floor. MOT/ACC blockers at 7.0."
+
+  emerald-tablets:
+    path: skills/emerald-tablets/SKILL.md
+    version: 1.0.0
+    status: canonical
+    consumers: [all_agents]
+    governs: [studio_philosophy]
+    summary: "Three tablets: Anti-hype covenant, Quality floor, Taste is discipline."
+
+  systems-thinking:
+    path: studio/doctrine/SYSTEMS_THINKING.md
+    version: 1.0.0
+    status: canonical
+    consumers: [experience_architect, ops]
+    governs: [system_design_decisions]
+    summary: "Donella Meadows systems thinking applied to agent orchestration."
+
+  anti-patterns:
+    path: studio/anti-patterns/registry.yaml
+    version: 1.0.0
+    status: canonical
+    consumers: [all_production_agents, reviewer]
+    governs: [all_output]
+    summary: "Machine-readable forbidden patterns with detection rules."
+
+dependency_chains:
+  landing_page_build:
+    - DESIGN_LAWS
+    - kupuri-frontend-skill
+    - motion-skill
+    - color-psychology
+    - brand-skill
+    - udec-scorer
+    - anti-patterns
+
+  copy_production:
+    - DESIGN_LAWS
+    - brand-skill
+    - anti-patterns
+
+  quality_review:
+    - udec-scorer
+    - quality-gate
+    - anti-patterns
+    - DESIGN_LAWS
+
+  system_architecture:
+    - DESIGN_LAWS
+    - systems-thinking
+    - emerald-tablets

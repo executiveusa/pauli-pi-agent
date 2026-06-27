@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pauli-Pi Agent — Interactive Architecture Graph</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #06060f;
+    --surface:     rgba(14, 14, 28, 0.85);
+    --border:      rgba(99, 102, 241, 0.18);
+    --text:        #e2e8f0;
+    --text-muted:  #64748b;
+    --entry:       #6366f1;
+    --runtime:     #7c3aed;
+    --ai:          #f59e0b;
+    --skills:      #10b981;
+    --voice:       #06b6d4;
+    --tenant:      #ec4899;
+    --data:        #ef4444;
+    --tools:       #84cc16;
+    --external:    #94a3b8;
+    --supporting:  #6b7280;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────── */
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    background: rgba(6, 6, 15, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    gap: 16px;
+  }
+  #header h1 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #a5b4fc;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+  }
+  #search {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search::placeholder { color: var(--text-muted); }
+  #search:focus { border-color: var(--entry); }
+
+  #filter-btns {
+    display: flex;
+    gap: 4px;
+  }
+  .filter-btn {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+  .filter-btn.active { color: white; border-color: currentColor; }
+
+  /* ── Canvas ──────────────────────────────────────────────────── */
+  #graph {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 320px;
+    bottom: 0;
+    overflow: hidden;
+  }
+  #graph svg {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+  #graph svg:active { cursor: grabbing; }
+
+  /* ── Sidebar ──────────────────────────────────────────────────── */
+  #sidebar {
+    position: fixed;
+    top: 52px;
+    right: 0;
+    width: 320px;
+    bottom: 0;
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #sidebar-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  #sidebar-header .node-label {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  #sidebar-header .node-group {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  #sidebar-header .node-type {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
+  #sidebar-body::-webkit-scrollbar { width: 4px; }
+  #sidebar-body::-webkit-scrollbar-track { background: transparent; }
+  #sidebar-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .sidebar-section {
+    margin-bottom: 20px;
+  }
+  .sidebar-section h3 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .sidebar-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #cbd5e1;
+  }
+  .sidebar-file {
+    font-size: 11px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: #a5b4fc;
+    background: rgba(99,102,241,0.1);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(99,102,241,0.2);
+    word-break: break-all;
+  }
+  .conn-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .conn-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .conn-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .conn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .conn-arrow {
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  /* ── Legend ──────────────────────────────────────────────────── */
+  #legend {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    z-index: 50;
+  }
+  #legend h4 {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .legend-item:hover { color: var(--text); }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Controls ──────────────────────────────────────────────────── */
+  #controls {
+    position: fixed;
+    bottom: 20px;
+    right: 340px;
+    display: flex;
+    gap: 6px;
+    z-index: 50;
+  }
+  .ctrl-btn {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .ctrl-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+
+  /* ── Tooltip ──────────────────────────────────────────────────── */
+  #tooltip {
+    position: fixed;
+    background: rgba(14, 14, 28, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    max-width: 200px;
+    z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .tooltip-label { font-weight: 600; margin-bottom: 3px; }
+  .tooltip-group { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ── Empty state ──────────────────────────────────────────────── */
+  #sidebar-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 24px;
+    gap: 10px;
+  }
+  #sidebar-empty .icon { font-size: 36px; opacity: 0.3; }
+  #sidebar-empty p { font-size: 13px; line-height: 1.6; }
+  #stats { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <h1>Pauli-Pi Agent</h1>
+  <span class="subtitle">Autonomous AI Agency Architecture</span>
+  <input id="search" type="search" placeholder="Search nodes…" autocomplete="off" />
+  <div id="filter-btns">
+    <button class="filter-btn active" data-group="all">All</button>
+    <button class="filter-btn" data-group="entry" style="--c:var(--entry)">Entry</button>
+    <button class="filter-btn" data-group="runtime" style="--c:var(--runtime)">Runtime</button>
+    <button class="filter-btn" data-group="ai" style="--c:var(--ai)">AI</button>
+    <button class="filter-btn" data-group="skills" style="--c:var(--skills)">Skills</button>
+    <button class="filter-btn" data-group="voice" style="--c:var(--voice)">Voice</button>
+    <button class="filter-btn" data-group="tenant" style="--c:var(--tenant)">Tenant</button>
+    <button class="filter-btn" data-group="data" style="--c:var(--data)">Data</button>
+    <button class="filter-btn" data-group="tools" style="--c:var(--tools)">Tools</button>
+    <button class="filter-btn" data-group="external" style="--c:var(--external)">External</button>
+  </div>
+</div>
+
+<!-- Graph canvas -->
+<div id="graph"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div id="sidebar-content">
+    <div id="sidebar-empty">
+      <div class="icon">◎</div>
+      <p>Click any node to explore its role, connections, and source location</p>
+      <div id="stats"></div>
+    </div>
+    <div id="sidebar-detail" style="display:none; flex-direction:column; height:100%;">
+      <div id="sidebar-header">
+        <div class="node-label" id="detail-label">—</div>
+        <div class="node-group" id="detail-group">—</div>
+        <div class="node-type" id="detail-type">—</div>
+      </div>
+      <div id="sidebar-body">
+        <div class="sidebar-section" id="sec-file" style="display:none">
+          <h3>Source</h3>
+          <div class="sidebar-file" id="detail-file">—</div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Description</h3>
+          <div class="sidebar-desc" id="detail-desc">—</div>
+        </div>
+        <div class="sidebar-section" id="sec-out">
+          <h3>Outgoing connections</h3>
+          <ul class="conn-list" id="out-list"></ul>
+        </div>
+        <div class="sidebar-section" id="sec-in">
+          <h3>Incoming connections</h3>
+          <ul class="conn-list" id="in-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <h4>Layers</h4>
+  <div class="legend-item" data-group="entry"><div class="legend-dot" style="background:var(--entry)"></div>Entry Points</div>
+  <div class="legend-item" data-group="runtime"><div class="legend-dot" style="background:var(--runtime)"></div>Agent Runtime</div>
+  <div class="legend-item" data-group="ai"><div class="legend-dot" style="background:var(--ai)"></div>AI / LLM Layer</div>
+  <div class="legend-item" data-group="skills"><div class="legend-dot" style="background:var(--skills)"></div>Skills / Business</div>
+  <div class="legend-item" data-group="voice"><div class="legend-dot" style="background:var(--voice)"></div>Mercury Voice</div>
+  <div class="legend-item" data-group="tenant"><div class="legend-dot" style="background:var(--tenant)"></div>Tenant System</div>
+  <div class="legend-item" data-group="data"><div class="legend-dot" style="background:var(--data)"></div>Data / Storage</div>
+  <div class="legend-item" data-group="tools"><div class="legend-dot" style="background:var(--tools)"></div>Tools / MCP</div>
+  <div class="legend-item" data-group="external"><div class="legend-dot" style="background:var(--external)"></div>External APIs</div>
+  <div class="legend-item" data-group="supporting"><div class="legend-dot" style="background:var(--supporting)"></div>Supporting</div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <button class="ctrl-btn" id="btn-zoom-in" title="Zoom in">+</button>
+  <button class="ctrl-btn" id="btn-zoom-out" title="Zoom out">−</button>
+  <button class="ctrl-btn" id="btn-reset" title="Reset view">⌂</button>
+  <button class="ctrl-btn" id="btn-expand" title="Expand layout">⤢</button>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip">
+  <div class="tooltip-label" id="tt-label"></div>
+  <div class="tooltip-group" id="tt-group"></div>
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+
+const GROUP_COLORS = {
+  entry:      '#6366f1',
+  runtime:    '#7c3aed',
+  ai:         '#f59e0b',
+  skills:     '#10b981',
+  voice:      '#06b6d4',
+  tenant:     '#ec4899',
+  data:       '#ef4444',
+  tools:      '#84cc16',
+  external:   '#94a3b8',
+  supporting: '#6b7280',
+};
+
+const GROUP_NAMES = {
+  entry:      'Entry Point',
+  runtime:    'Agent Runtime',
+  ai:         'AI / LLM Layer',
+  skills:     'Skills & Business',
+  voice:      'Mercury Voice',
+  tenant:     'Tenant System',
+  data:       'Data & Storage',
+  tools:      'Tools & MCP',
+  external:   'External API',
+  supporting: 'Supporting',
+};
+
+// Group cluster positions (radial layout seed)
+const GROUP_POS = {
+  entry:      { fx: -300, fy: -200 },
+  runtime:    { fx:    0, fy:    0 },
+  ai:         { fx:  350, fy: -150 },
+  skills:     { fx: -350, fy:  150 },
+  voice:      { fx:  350, fy:  200 },
+  tenant:     { fx:  150, fy:  280 },
+  data:       { fx: -100, fy:  300 },
+  tools:      { fx: -250, fy: -250 },
+  external:   { fx:  100, fy: -320 },
+  supporting: { fx:  300, fy:  350 },
+};
+
+const nodes = [
+  // ── Entry Points ──────────────────────────────────────────────
+  { id:'pi-cli',        group:'entry',     type:'package',
+    label:'pi CLI',
+    file:'packages/coding-agent/src/cli.ts',
+    desc:'Interactive coding agent CLI. Primary human entry point. Supports a differential-rendering TUI mode and an RPC mode for IDE integrations (VS Code, Cursor, Windsurf). Manages sessions, compaction, and auth storage.' },
+
+  { id:'slack-mom',     group:'entry',     type:'package',
+    label:'Slack Bot (pi-mom)',
+    file:'packages/mom/',
+    desc:'Slack bot (@mariozechner/pi-mom) that delegates Slack messages to the pi coding agent. Enables team members to invoke full agent capabilities directly from Slack channels without a terminal.' },
+
+  { id:'brain-dashboard', group:'entry',   type:'app',
+    label:'Brain Dashboard',
+    file:'brain-dashboard/app/page.tsx',
+    desc:'Next.js "Second Brain" web dashboard. Three-panel layout: file tree (NoteTree), note viewer with wiki-link support and Markdown rendering, semantic search bar, and real-time agent activity log (AgentLog). Reads from Supabase.' },
+
+  { id:'studio-cli',    group:'entry',     type:'module',
+    label:'Studio CLI',
+    file:'packages/agent/src/bin/studio-cli.ts',
+    desc:'CLI for the agent studio. Provides direct access to agent runtime with full tool and model control. Used for development and debugging agent behaviors.' },
+
+  // ── Agent Runtime ─────────────────────────────────────────────
+  { id:'agent',         group:'runtime',   type:'class',
+    label:'Agent Core',
+    file:'packages/agent/src/agent.ts',
+    desc:'Central orchestrator — stateful wrapper around the agent loop. Owns the conversation transcript, emits lifecycle events (message_start, message_update, message_end, tool_execution_start/end, turn_end, agent_end), manages steering and follow-up message queues, handles abort signals, and exposes prompt()/steer()/followUp()/abort()/waitForIdle() APIs.' },
+
+  { id:'agent-loop',    group:'runtime',   type:'module',
+    label:'Agent Loop',
+    file:'packages/agent/src/agent-loop.ts',
+    desc:'Low-level execution engine. Runs the core prompt→LLM→tool_call→result cycle. Handles parallel tool execution, provider retry logic with exponential backoff, streaming event emission, and both fresh-start (runAgentLoop) and continuation (runAgentLoopContinue) modes.' },
+
+  { id:'workflow-router', group:'runtime', type:'class',
+    label:'Workflow Router',
+    file:'packages/agent/src/orchestration/router.ts',
+    desc:'Routes tasks to one of four priority queues (high-priority ≥75, normal-priority ≥50, low-priority ≥25, background) based on task type and retry count. Tracks real-time queue metrics (load, average duration, success rate) and supports rebalancing across queues.' },
+
+  { id:'workflow-executor', group:'runtime', type:'class',
+    label:'Workflow Executor',
+    file:'packages/agent/src/orchestration/executor.ts',
+    desc:'Executes workflow definitions with dependency resolution. Runs tasks in topological order, launching parallel tasks where dependencies allow. Manages execution context, resource allocation estimates, and error propagation within workflow graphs.' },
+
+  { id:'tool-registry', group:'runtime',   type:'module',
+    label:'Tool Registry',
+    file:'packages/agent/src/tools/tool-registry.ts',
+    desc:'Global singleton registry for all agent tools. Registers built-in tools (lead_capture, appointment_request, quote_request, upload_context, generate_asset_request) at module load time. Supports runtime registration for skill-specific tools and unregistration for test isolation.' },
+
+  { id:'tool-router',   group:'runtime',   type:'module',
+    label:'Tool Router',
+    file:'packages/agent/src/tools/tool-router.ts',
+    desc:'Dispatches tool calls to handlers after enforcing tenant permission scopes and approval requirements. Tools with requiresApproval:true (e.g. generate_asset_request) gate on explicit human approval before executing.' },
+
+  // ── AI / LLM Layer ────────────────────────────────────────────
+  { id:'api-registry',  group:'ai',        type:'module',
+    label:'API Registry',
+    file:'packages/ai/src/api-registry.ts',
+    desc:'Central registry for all LLM provider stream functions. Uses lazy-loading wrappers so only imported providers add to bundle size. Maps provider API identifiers to their stream() implementations. Entry point for all LLM calls from the agent loop.' },
+
+  { id:'model-router',  group:'ai',        type:'class',
+    label:'Model Router',
+    file:'packages/agent/src/models/router.ts',
+    desc:'Cost-aware model selector. Routes requests to one of four modes: local_only (llama2-7b, free), free (Gemini Flash < 50K tokens / Haiku otherwise), balanced (Sonnet if budget allows), premium (Opus if reasoning required). Checks monthly spend against $100 default limit in PostgreSQL. Logs every routing decision.' },
+
+  { id:'llm-proxy',     group:'ai',        type:'service',
+    label:'LLM Proxy (:8082)',
+    desc:'Local token-saving proxy (LLM_PROXY_URL=http://localhost:8082). Routes lightweight tasks (fast, code) to groq/llama-3.3-70b-versatile and balanced tasks to Mistral via OpenAI-compatible API. Token: "freecc". Dramatically reduces API costs for high-frequency agent tasks.' },
+
+  { id:'anthropic-provider', group:'ai',   type:'provider',
+    label:'Anthropic / Claude',
+    file:'packages/ai/src/providers/anthropic.ts',
+    desc:'Primary LLM provider. Supports Claude 3.5 Haiku (free, 200K ctx, $0.8/M), Claude 3.5 Sonnet (balanced, $3/M), Claude Opus 4 (premium reasoning, $15/M). Full streaming with text, tool_call, thinking, usage, and stop events. Cache-aware via session IDs.' },
+
+  { id:'openai-provider', group:'ai',      type:'provider',
+    label:'OpenAI',
+    file:'packages/ai/src/providers/openai-responses.ts',
+    desc:'OpenAI provider via Responses API and Completions API. Includes Azure OpenAI Responses and OpenAI Codex Responses variants. Handles GPT-4 and Codex models. Also provides GitHub Copilot headers for free-tier model access.' },
+
+  { id:'google-provider', group:'ai',      type:'provider',
+    label:'Google Gemini',
+    file:'packages/ai/src/providers/google.ts',
+    desc:'Google Gemini provider for long-context (1M token window with Gemini 2.5 Flash) and vision tasks. Variants: standard Gemini, Vertex AI, and Gemini CLI with OAuth2. Preferred for vision analysis and tasks exceeding 200K token context.' },
+
+  { id:'mistral-provider', group:'ai',     type:'provider',
+    label:'Mistral',
+    file:'packages/ai/src/providers/mistral.ts',
+    desc:'Mistral AI provider. Cost-effective balanced-tier routing via local proxy. Supports standard Mistral models. Used as the balanced-tier fallback when Anthropic Sonnet budget is exceeded.' },
+
+  { id:'bedrock-provider', group:'ai',     type:'provider',
+    label:'Amazon Bedrock',
+    file:'packages/ai/src/providers/amazon-bedrock.ts',
+    desc:'AWS Bedrock via Converse Stream API. Enterprise-grade access to foundation models through AWS infrastructure. Supports AWS credential chains for secure enterprise deployments.' },
+
+  // ── Skills & Business ─────────────────────────────────────────
+  { id:'revenue-systems', group:'skills',  type:'skill',
+    label:'Revenue Systems Agent',
+    file:'skills/revenue-systems-agent/',
+    desc:'10-phase business analysis and offer generation skill. Scores business pain points across 8 dimensions (revenue impact, frequency, stress, demo ease, repeatability, trust, local advantage, Pauli fit). Generates: business-snapshot, funnel map, pain-scorecard.json, offer.json, demo-spec, outreach email, sales script, subscription package. Covers 7 niches: luxury tourism, real estate, construction, plumbers/HVAC, medical tourism, destination weddings, anime/digital products.' },
+
+  { id:'ui-intelligence', group:'skills',  type:'skill',
+    label:'UI Intelligence',
+    file:'skills/ui-intelligence/',
+    desc:'7-phase UI analysis skill. Screenshots live apps via Chrome DevTools MCP, extracts design systems (colors, typography, spacing, components), maps complete user journeys (every page, every state), documents microinteractions with CSS-precise timing, generates 12+ TypeScript React components with design tokens, and writes a design-system.json. UDEC quality gate: stops if score < 8.5/10 or cost > $50.' },
+
+  { id:'youtube-kg',    group:'skills',    type:'package',
+    label:'YouTube KG Agent',
+    file:'packages/youtube-kg-agent/',
+    desc:'Semantic knowledge graph over YouTube watch history. Pipeline: YouTube OAuth2 → watch history → Anthropic 384-dim embeddings → Supabase pgvector. Exposes MCP tools: youtube_search (vector similarity), youtube_query (multi-hop Claude reasoning with citation verification), youtube_concept (concept hierarchy). Also serves REST API (:3000) and gRPC (:50051).' },
+
+  { id:'lead-engine',   group:'skills',    type:'package',
+    label:'Lead Engine',
+    file:'packages/lead-engine/',
+    desc:'Automated B2B lead discovery pipeline. Services: GoogleMapsResearchAdapter (local business lookup), WebsiteAuditAdapter (website quality scoring), ProspectBriefGenerator (analysis), OutreachBriefGenerator (personalized email drafts). CLI: `leads find --niche "med spa" --location "Mexico City"`. Integrates Firecrawl for site analysis.' },
+
+  { id:'deep-research', group:'skills',    type:'package',
+    label:'Deep Research',
+    file:'packages/deep-research/',
+    desc:'Durable multi-source research agent. Stack: Express + Anthropic SDK + ABSURD (durable execution) + PostgreSQL. Uses Firecrawl for web scraping and BrightData for premium data access. Returns structured research reports with citations. Runs research steps as resumable database-backed workflows.' },
+
+  { id:'pauli-skill',   group:'skills',    type:'skill',
+    label:'Pauli Sent Me',
+    file:'.claude/commands/pauli-sent-me.md',
+    desc:'Partner program skill triggered by "Pauli Sent Me" phrase. Activates the Revenue Systems Agent workflow for incoming client referrals. Walks through business audit → offer → demo spec → outreach sequence specifically framed for the Pauli Sent Me partner introduction context.' },
+
+  // ── Mercury Voice ─────────────────────────────────────────────
+  { id:'mercury-client', group:'voice',    type:'module',
+    label:'Mercury Client',
+    file:'packages/agent/src/mercury/mercury-client.ts',
+    desc:'ArchonX Mercury voice agent client. Connects to Inception Labs API (mercury-2 diffusion model). Manages reasoning effort levels: instant (voice), low (default), medium (operator), high (complex). Handles streaming diffusion tokens via mercury-stream.ts and structured reasoning via mercury-reasoning.ts.' },
+
+  { id:'mercury-voice', group:'voice',     type:'module',
+    label:'Voice Interface',
+    file:'packages/agent/src/interfaces/voice.ts',
+    desc:'Real-time voice I/O interface. STT: OpenAI (speech-to-text). TTS: OpenAI tts-1, voice "shimmer". Streams audio chunks to/from Mercury diffusion model for sub-200ms voice response latency. Integrates WebSocket transport for browser voice clients.' },
+
+  { id:'stability-gate', group:'voice',    type:'module',
+    label:'Stability Gate',
+    file:'packages/agent/src/voice/stability-gate.ts',
+    desc:'Voice output quality filter. Buffers Mercury diffusion output tokens and only passes content to TTS when stability threshold is met. Prevents garbled or incomplete voice generations from reaching the end user.' },
+
+  { id:'inception-api', group:'voice',     type:'external',
+    label:'Inception Labs API',
+    desc:'External diffusion LLM API (MERCURY_BASE_URL=https://api.inceptionlabs.ai/v1). Hosts mercury-2 model — a diffusion-based language model optimized for voice with very low latency. Authenticated via INCEPTION_API_KEY. Supports instant, low, medium, and high reasoning effort modes.' },
+
+  // ── Tenant System ─────────────────────────────────────────────
+  { id:'tenant-loader', group:'tenant',    type:'module',
+    label:'Tenant Loader',
+    file:'packages/agent/src/tenants/tenant-loader.ts',
+    desc:'Loads and caches tenant configurations. Supports local mode (ARCHONX_TENANT_CONFIG_MODE=local) reading from JSON files, and remote mode fetching from ARCHONX_CONTROL_PLANE_URL. Default tenant: client_demo. Enables true multi-tenancy with isolated branding, routing, and billing per client.' },
+
+  { id:'tenant-config', group:'tenant',    type:'module',
+    label:'Tenant Schema',
+    file:'packages/agent/src/tenants/tenant-schema.ts',
+    desc:'ArchonX tenant configuration type system. Three plans: clean (text-only, no voice/diffusion), voice (STT/TTS enabled), mercury_diffusion (full voice + diffusion + tool dock). Billing modes: client_byok (client brings own API key) or managed_pass_through (ArchonX resells). Branding: bot name, logo, colors, TTS voice.' },
+
+  { id:'tenant-permissions', group:'tenant', type:'module',
+    label:'Tenant Permissions',
+    file:'packages/agent/src/tenants/tenant-permissions.ts',
+    desc:'Per-tenant capability enforcement. Boolean gates on: browser/web search, image generation, video generation, email sending, appointment booking. requiresApprovalForMoneyMovement: any financial action requires explicit human sign-off. Applied by tool-router before every tool execution.' },
+
+  { id:'usage-ledger',  group:'tenant',    type:'module',
+    label:'Usage Ledger',
+    file:'packages/agent/src/tenants/usage-ledger.ts',
+    desc:'Token usage and cost tracking per tenant. Records every LLM call with provider, model, token counts, and cost. Supports client BYOK (client absorbs costs) and managed billing (ArchonX bills client). Used to enforce monthly budget limits and generate invoices.' },
+
+  // ── Data & Storage ────────────────────────────────────────────
+  { id:'postgres-db',   group:'data',      type:'database',
+    label:'PostgreSQL',
+    desc:'Primary durable storage layer. Tables: personas (user profiles + model_policy), model_calls (routing decisions + costs), workflow state, usage ledger. ABSURD durable execution engine persists workflow tasks here for crash-safe resumable processing.' },
+
+  { id:'supabase',      group:'data',      type:'database',
+    label:'Supabase (pgvector)',
+    desc:'Vector database and real-time backend. Stores 384-dim Anthropic embeddings for YouTube KG semantic search. Powers brain-dashboard note storage and search. Supabase free tier used during early growth; plans to migrate to self-hosted on Coolify/Hostinger at scale.' },
+
+  { id:'data-processor', group:'data',     type:'package',
+    label:'Data Processor',
+    file:'packages/data-processor/',
+    desc:'ABSURD-backed second-brain ingestion pipeline. Workflow types: import_chatgpt (thread parsing, persona extraction), import_claude (pattern extraction, reasoning trees), sync_notion (page sync, property mapping), index_files (recursive indexing, metadata). All workflows stored as durable database-backed tasks resumable across restarts.' },
+
+  { id:'knowledge-graph', group:'data',    type:'module',
+    label:'Knowledge Graph',
+    file:'packages/agent/src/knowledge/',
+    desc:'Agent knowledge extraction and graph module (extractor.ts + graph.ts). Extracts entities, relationships, and concepts from agent interactions. Builds queryable knowledge structures backed by Supabase pgvector for semantic retrieval during future conversations.' },
+
+  { id:'secrets',       group:'data',      type:'module',
+    label:'Secrets Manager',
+    file:'packages/agent/src/secrets/',
+    desc:'Infisical-backed secret management (infisical-client.ts). Resolves API keys at runtime (secret-resolver.ts), redacts secrets from logs and telemetry (secret-redaction.ts). Supports per-tenant BYOK credential injection — clients can supply their own Anthropic/OpenAI keys.' },
+
+  // ── Tools & MCP ───────────────────────────────────────────────
+  { id:'lead-capture-tool', group:'tools', type:'tool',
+    label:'lead_capture',
+    desc:'Built-in CRM tool. Captures visitor lead info (name, email, phone, intent) and writes to CRM/Supabase. No approval required. Scope: lead_capture. Used by Synthia Smart Sites to capture inbound business leads from website visitors.' },
+
+  { id:'appointment-tool', group:'tools',  type:'tool',
+    label:'appointment_request',
+    desc:'Appointment scheduling tool. Collects name, email, preferred date/time, notes. Routes to booking system integration. No approval required. Scope: appointment. Core conversion tool for local business websites.' },
+
+  { id:'quote-tool',    group:'tools',     type:'tool',
+    label:'quote_request',
+    desc:'Service quote request tool. Collects service type, description, budget, contact email. Submits to quote processing pipeline. No approval required. Scope: quote. Used by construction, HVAC, and service business websites.' },
+
+  { id:'upload-tool',   group:'tools',     type:'tool',
+    label:'upload_context',
+    desc:'Document context upload tool. Accepts base64-encoded file with filename and MIME type. Adds document context to the conversation for LLM analysis. Scope: upload. Enables clients to share PDFs, images, or files mid-conversation.' },
+
+  { id:'asset-gen-tool', group:'tools',    type:'tool',
+    label:'generate_asset_request',
+    desc:'Asset generation request tool (image, video, document). Requires explicit human approval before execution (requiresApproval: true). Scope: asset_generation. Prevents autonomous AI spending on media generation without client sign-off.' },
+
+  { id:'browser-tool',  group:'tools',     type:'tool',
+    label:'Browser Control (Chrome MCP)',
+    desc:'Chrome DevTools MCP integration (npx @chrome-devtools/mcp). Enabled in .claude/settings.json. Provides navigate, screenshot, DOM inspection, and console access to the agent. Primary tool for UI Intelligence skill phases 1-5.' },
+
+  { id:'scrapers',      group:'tools',     type:'module',
+    label:'Scrapers (web/PDF)',
+    file:'packages/agent/src/scrapers/',
+    desc:'Content ingestion pipeline: web.ts (URL fetching + HTML parsing, Firecrawl integration), pdf.ts (PDF text extraction), ingestor.ts (content normalization + chunking), parser.ts (structure extraction). Used by lead engine, deep research, and knowledge ingestion workflows.' },
+
+  // ── External APIs ─────────────────────────────────────────────
+  { id:'firecrawl',     group:'external',  type:'external',
+    label:'Firecrawl API',
+    desc:'Web scraping API (FIRECRAWL_API_KEY). Handles JavaScript-rendered pages, PDF extraction, and sitemap crawling. Used by scrapers, lead engine (website audit), and deep research. Returns structured Markdown-ready content from any URL.' },
+
+  { id:'notion',        group:'external',  type:'external',
+    label:'Notion API',
+    desc:'Notion workspace integration (NOTION_API_TOKEN). DataProcessor syncs Notion databases into the second brain. Brain-dashboard can read Notion pages. Available as MCP server tool for reading/writing Notion pages, databases, and comments.' },
+
+  { id:'postiz',        group:'external',  type:'external',
+    label:'Postiz (Social)',
+    file:'packages/integrations/postiz/',
+    desc:'Social media publishing platform integration. Part of MonthlyCare retention plans — ArchonX autonomously publishes social media content for clients via Postiz. Used by Revenue Systems Agent for clients on the social publishing tier.' },
+
+  { id:'vercel',        group:'external',  type:'external',
+    label:'Vercel',
+    desc:'Edge deployment platform (VERCEL_TOKEN). Brain dashboard and Synthia Smart Sites deployed on Vercel Edge. Available as MCP server for automated deployments, build log access, and domain management via deploy_to_vercel tool.' },
+
+  { id:'cloudflare',    group:'external',  type:'external',
+    label:'Cloudflare Workers',
+    desc:'CDN and serverless edge compute (CLOUDFLARE_API_TOKEN). Used for Workers (API routing), D1 (SQLite edge DB), KV (key-value storage), R2 (object storage), and Hyperdrive (connection pooling). Part of thin-infra strategy — edge-first before VPS migration.' },
+
+  { id:'huggingface',   group:'external',  type:'external',
+    label:'Hugging Face',
+    desc:'Model hub and dataset registry (HUGGINGFACE_TOKEN). pi-share-hf publishes OSS coding agent sessions to HF datasets for training data sharing. Also used to search and download specialized models for local vLLM deployments via pi-pods.' },
+
+  // ── Supporting ────────────────────────────────────────────────
+  { id:'tui',           group:'supporting', type:'package',
+    label:'TUI Library',
+    file:'packages/tui/',
+    desc:'@mariozechner/pi-tui — terminal UI library with differential rendering. Provides reactive components for the pi CLI: input fields, progress bars, streaming text displays, scrollable lists. Only re-renders changed terminal cells for flicker-free updates.' },
+
+  { id:'web-ui',        group:'supporting', type:'package',
+    label:'Web UI Components',
+    file:'packages/web-ui/',
+    desc:'@mariozechner/pi-web-ui — reusable web components for AI chat interfaces. Includes chat bubble components, streaming text renderers, tool call display widgets, and image viewers. Used in brain-dashboard and Synthia Smart Site widgets.' },
+
+  { id:'pods',          group:'supporting', type:'package',
+    label:'GPU Pod Manager',
+    file:'packages/pods/',
+    desc:'@mariozechner/pi-pods — CLI for managing vLLM deployments on GPU pods. Provisions cloud GPU instances, deploys vLLM, and routes traffic through the local LLM proxy. Enables fully self-hosted model serving for zero-marginal-cost token usage on high-volume tasks.' },
+
+  { id:'superpowers',   group:'supporting', type:'module',
+    label:'Superpowers Registry',
+    file:'superpowers/tools/registry.ts',
+    desc:'Tool registration and IDE plugin hub. Registers ui_intelligence (with trigger phrases, 7-phase workflow, Chrome MCP tools) and youtube_kg (with MCP server path, REST/gRPC endpoints). Generates IDE plugin configs for Claude Code (.claude-plugin), Cursor (.cursor-plugin), and Windsurf (.windsurf-plugin).' },
+
+  { id:'factory',       group:'supporting', type:'directory',
+    label:'Factory (Artifacts)',
+    file:'factory/',
+    desc:'Generated artifact output directory. Receives outputs from all skills: factory/revenue-systems/ (business audits, offers, outreach), factory/ui-analyses/ (design systems, component libraries), clients/ (per-client deliverables), prospects/ (lead database), reports/ (research reports).' },
+];
+
+const edges = [
+  // Entry → Runtime
+  { source:'pi-cli',          target:'agent',            label:'creates & drives' },
+  { source:'slack-mom',       target:'agent',            label:'delegates to' },
+  { source:'brain-dashboard', target:'agent',            label:'monitors via API' },
+  { source:'studio-cli',      target:'agent',            label:'creates' },
+  { source:'pi-cli',          target:'tui',              label:'renders with' },
+
+  // Runtime internal
+  { source:'agent',           target:'agent-loop',       label:'runs' },
+  { source:'agent',           target:'workflow-router',  label:'routes tasks via' },
+  { source:'workflow-router', target:'workflow-executor', label:'dispatches to' },
+  { source:'agent',           target:'tool-router',      label:'dispatches tools via' },
+  { source:'tool-router',     target:'tool-registry',    label:'looks up handlers' },
+
+  // Runtime → AI
+  { source:'agent-loop',      target:'api-registry',     label:'streams via' },
+  { source:'agent',           target:'model-router',     label:'selects model via' },
+  { source:'model-router',    target:'api-registry',     label:'resolves provider for' },
+  { source:'api-registry',    target:'anthropic-provider', label:'delegates' },
+  { source:'api-registry',    target:'openai-provider',  label:'delegates' },
+  { source:'api-registry',    target:'google-provider',  label:'delegates' },
+  { source:'api-registry',    target:'mistral-provider', label:'delegates' },
+  { source:'api-registry',    target:'bedrock-provider', label:'delegates' },
+  { source:'anthropic-provider', target:'llm-proxy',     label:'proxies via' },
+  { source:'mistral-provider', target:'llm-proxy',       label:'proxies via' },
+  { source:'pods',            target:'llm-proxy',        label:'hosts models for' },
+
+  // Runtime → Tools
+  { source:'tool-registry',   target:'lead-capture-tool',  label:'registers' },
+  { source:'tool-registry',   target:'appointment-tool',   label:'registers' },
+  { source:'tool-registry',   target:'quote-tool',         label:'registers' },
+  { source:'tool-registry',   target:'upload-tool',        label:'registers' },
+  { source:'tool-registry',   target:'asset-gen-tool',     label:'registers' },
+  { source:'agent',           target:'browser-tool',       label:'uses' },
+  { source:'agent',           target:'scrapers',           label:'uses' },
+  { source:'tool-router',     target:'tenant-permissions', label:'checks' },
+
+  // Runtime → Skills
+  { source:'agent',           target:'revenue-systems',  label:'executes' },
+  { source:'agent',           target:'ui-intelligence',  label:'executes' },
+  { source:'agent',           target:'youtube-kg',       label:'queries' },
+  { source:'agent',           target:'lead-engine',      label:'runs' },
+  { source:'agent',           target:'deep-research',    label:'runs' },
+  { source:'agent',           target:'pauli-skill',      label:'triggers' },
+  { source:'superpowers',     target:'youtube-kg',       label:'registers & routes' },
+  { source:'superpowers',     target:'ui-intelligence',  label:'registers & routes' },
+
+  // Runtime → Tenant
+  { source:'agent',           target:'tenant-loader',    label:'loads config via' },
+  { source:'tenant-loader',   target:'tenant-config',    label:'validates against' },
+  { source:'tenant-loader',   target:'tenant-permissions', label:'enforces' },
+  { source:'tenant-loader',   target:'usage-ledger',     label:'tracks usage in' },
+
+  // Runtime → Data
+  { source:'agent',           target:'secrets',          label:'resolves keys via' },
+  { source:'workflow-executor', target:'postgres-db',    label:'persists state' },
+  { source:'usage-ledger',    target:'postgres-db',      label:'logs to' },
+  { source:'model-router',    target:'postgres-db',      label:'logs decisions' },
+  { source:'agent',           target:'knowledge-graph',  label:'builds' },
+  { source:'knowledge-graph', target:'supabase',         label:'stores vectors' },
+
+  // Mercury Voice
+  { source:'agent',           target:'mercury-client',   label:'voice sessions via' },
+  { source:'mercury-client',  target:'mercury-voice',    label:'streams audio to' },
+  { source:'mercury-voice',   target:'stability-gate',   label:'gates through' },
+  { source:'mercury-client',  target:'inception-api',    label:'calls diffusion API' },
+
+  // Skills → AI
+  { source:'revenue-systems', target:'api-registry',     label:'uses LLM' },
+  { source:'lead-engine',     target:'api-registry',     label:'uses LLM' },
+  { source:'deep-research',   target:'api-registry',     label:'uses LLM' },
+  { source:'youtube-kg',      target:'api-registry',     label:'gets embeddings from' },
+  { source:'ui-intelligence', target:'api-registry',     label:'uses LLM' },
+
+  // Skills → External
+  { source:'lead-engine',     target:'firecrawl',        label:'audits sites via' },
+  { source:'deep-research',   target:'firecrawl',        label:'scrapes via' },
+  { source:'scrapers',        target:'firecrawl',        label:'fetches via' },
+  { source:'ui-intelligence', target:'browser-tool',     label:'screenshots via' },
+  { source:'data-processor',  target:'notion',           label:'syncs from' },
+  { source:'brain-dashboard', target:'notion',           label:'reads from' },
+  { source:'revenue-systems', target:'postiz',           label:'publishes social via' },
+
+  // Skills → Data
+  { source:'youtube-kg',      target:'supabase',         label:'stores embeddings' },
+  { source:'data-processor',  target:'postgres-db',      label:'writes imports' },
+  { source:'data-processor',  target:'supabase',         label:'writes to' },
+  { source:'brain-dashboard', target:'supabase',         label:'reads notes from' },
+
+  // Output
+  { source:'revenue-systems', target:'factory',          label:'outputs to' },
+  { source:'ui-intelligence', target:'factory',          label:'outputs to' },
+
+  // Infra
+  { source:'agent',           target:'vercel',           label:'deploys via' },
+  { source:'brain-dashboard', target:'vercel',           label:'deployed on' },
+];
+
+// ── D3 Setup ─────────────────────────────────────────────────────────────────
+
+const width  = document.getElementById('graph').clientWidth;
+const height = document.getElementById('graph').clientHeight;
+
+const svg = d3.select('#graph')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height);
+
+// Defs: arrow markers + glow filter
+const defs = svg.append('defs');
+
+// Glow filter
+const filter = defs.append('filter').attr('id', 'glow').attr('x','-30%').attr('y','-30%').attr('width','160%').attr('height','160%');
+filter.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','3').attr('result','blur');
+const feComposite = filter.append('feMerge');
+feComposite.append('feMergeNode').attr('in','blur');
+feComposite.append('feMergeNode').attr('in','SourceGraphic');
+
+// Arrow markers per group
+Object.entries(GROUP_COLORS).forEach(([g, color]) => {
+  defs.append('marker')
+    .attr('id', `arrow-${g}`)
+    .attr('viewBox','0 -4 8 8')
+    .attr('refX', 16)
+    .attr('refY', 0)
+    .attr('markerWidth', 5)
+    .attr('markerHeight', 5)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-4L8,0L0,4')
+    .attr('fill', color)
+    .attr('opacity', 0.6);
+});
+
+// Default marker
+defs.append('marker')
+  .attr('id','arrow-default')
+  .attr('viewBox','0 -4 8 8')
+  .attr('refX', 16).attr('refY', 0)
+  .attr('markerWidth', 5).attr('markerHeight', 5)
+  .attr('orient','auto')
+  .append('path')
+  .attr('d','M0,-4L8,0L0,4')
+  .attr('fill','#475569').attr('opacity',0.5);
+
+const g = svg.append('g').attr('id','main-group');
+
+// Zoom
+const zoom = d3.zoom()
+  .scaleExtent([0.15, 3])
+  .on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+// ── Simulation ───────────────────────────────────────────────────────────────
+
+const nodeMap = new Map(nodes.map(n => [n.id, n]));
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(edges).id(d => d.id).distance(d => {
+    // Same group = closer
+    const s = d.source.group || d.source;
+    const t = d.target.group || d.target;
+    return s === t ? 80 : 160;
+  }).strength(0.4))
+  .force('charge', d3.forceManyBody().strength(-600))
+  .force('center', d3.forceCenter(width/2, height/2))
+  .force('collide', d3.forceCollide().radius(d => nodeRadius(d) + 18))
+  .force('x', d3.forceX(d => {
+    const pos = GROUP_POS[d.group];
+    return width/2 + (pos?.fx ?? 0);
+  }).strength(0.08))
+  .force('y', d3.forceY(d => {
+    const pos = GROUP_POS[d.group];
+    return height/2 + (pos?.fy ?? 0);
+  }).strength(0.08))
+  .alphaDecay(0.02);
+
+// ── Render edges ──────────────────────────────────────────────────────────────
+
+const edgeLayer = g.append('g').attr('id','edges');
+const edgePaths = edgeLayer.selectAll('path')
+  .data(edges)
+  .join('path')
+  .attr('fill','none')
+  .attr('stroke', d => {
+    const sn = nodeMap.get(typeof d.source === 'string' ? d.source : d.source.id);
+    return sn ? GROUP_COLORS[sn.group] || '#475569' : '#475569';
+  })
+  .attr('stroke-width', 1.2)
+  .attr('stroke-opacity', 0.25)
+  .attr('marker-end', d => {
+    const sn = nodeMap.get(typeof d.source === 'string' ? d.source : d.source.id);
+    return sn ? `url(#arrow-${sn.group})` : 'url(#arrow-default)';
+  });
+
+// ── Render nodes ──────────────────────────────────────────────────────────────
+
+function nodeRadius(d) {
+  const sizes = { package:22, app:22, class:20, module:16, service:18, provider:16,
+                  skill:20, tool:14, database:20, external:16, directory:14, other:14 };
+  return sizes[d.type] || 14;
+}
+
+const nodeLayer = g.append('g').attr('id','nodes');
+const nodeGroups = nodeLayer.selectAll('g.node')
+  .data(nodes)
+  .join('g')
+  .attr('class', 'node')
+  .attr('cursor','pointer')
+  .call(d3.drag()
+    .on('start', dragStart)
+    .on('drag',  dragging)
+    .on('end',   dragEnd))
+  .on('click', nodeClick)
+  .on('dblclick', nodeDoubleClick)
+  .on('mouseenter', nodeHover)
+  .on('mouseleave', nodeLeave);
+
+// Outer glow ring
+nodeGroups.append('circle')
+  .attr('r', d => nodeRadius(d) + 6)
+  .attr('fill','none')
+  .attr('stroke', d => GROUP_COLORS[d.group] || '#475569')
+  .attr('stroke-width', 1)
+  .attr('stroke-opacity', 0.15)
+  .attr('class','glow-ring');
+
+// Main circle
+nodeGroups.append('circle')
+  .attr('r', d => nodeRadius(d))
+  .attr('fill', d => {
+    const c = GROUP_COLORS[d.group] || '#475569';
+    return `${c}22`;
+  })
+  .attr('stroke', d => GROUP_COLORS[d.group] || '#475569')
+  .attr('stroke-width', 1.5)
+  .attr('class','main-circle');
+
+// Icon/type indicator
+nodeGroups.append('text')
+  .attr('text-anchor','middle')
+  .attr('dominant-baseline','central')
+  .attr('font-size', d => nodeRadius(d) * 0.7)
+  .attr('fill', d => GROUP_COLORS[d.group] || '#475569')
+  .attr('pointer-events','none')
+  .text(d => typeIcon(d.type));
+
+// Label
+nodeGroups.append('text')
+  .attr('text-anchor','middle')
+  .attr('y', d => nodeRadius(d) + 13)
+  .attr('fill','#94a3b8')
+  .attr('font-size', 10)
+  .attr('font-weight', 400)
+  .attr('pointer-events','none')
+  .attr('class','node-label-text')
+  .each(function(d) {
+    const el = d3.select(this);
+    const lines = d.label.split('\n');
+    if (lines.length === 1) {
+      el.text(d.label);
+    } else {
+      lines.forEach((line, i) => {
+        el.append('tspan')
+          .attr('x', 0)
+          .attr('dy', i === 0 ? 0 : 13)
+          .text(line);
+      });
+    }
+  });
+
+function typeIcon(type) {
+  const icons = {
+    package:'◈', app:'⬡', class:'◆', module:'◇', service:'⊕',
+    provider:'⊗', skill:'★', tool:'⚙', database:'▣', external:'◉',
+    directory:'⊞', other:'○'
+  };
+  return icons[type] || '○';
+}
+
+// ── Simulation tick ───────────────────────────────────────────────────────────
+
+sim.on('tick', () => {
+  edgePaths.attr('d', d => {
+    const sx = d.source.x || 0, sy = d.source.y || 0;
+    const tx = d.target.x || 0, ty = d.target.y || 0;
+    const dx = tx - sx, dy = ty - sy;
+    const dr = Math.sqrt(dx*dx + dy*dy) * 1.2;
+    return `M${sx},${sy}A${dr},${dr} 0 0,1 ${tx},${ty}`;
+  });
+  nodeGroups.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// ── Drag ─────────────────────────────────────────────────────────────────────
+
+function dragStart(event, d) {
+  if (!event.active) sim.alphaTarget(0.3).restart();
+  d.fx = d.x; d.fy = d.y;
+}
+function dragging(event, d) {
+  d.fx = event.x; d.fy = event.y;
+}
+function dragEnd(event, d) {
+  if (!event.active) sim.alphaTarget(0);
+  if (!d.pinned) { d.fx = null; d.fy = null; }
+}
+
+// ── Node interactions ────────────────────────────────────────────────────────
+
+let selectedNode = null;
+let activeFilter = 'all';
+let searchTerm = '';
+
+function nodeClick(event, d) {
+  event.stopPropagation();
+  selectedNode = d;
+  showDetail(d);
+  highlightNode(d);
+}
+
+function nodeDoubleClick(event, d) {
+  event.stopPropagation();
+  d.pinned = !d.pinned;
+  if (!d.pinned) { d.fx = null; d.fy = null; }
+  else { d.fx = d.x; d.fy = d.y; }
+  d3.select(this).select('.glow-ring')
+    .attr('stroke-dasharray', d.pinned ? '4,2' : null)
+    .attr('stroke-opacity', d.pinned ? 0.6 : 0.15);
+}
+
+const tooltip = document.getElementById('tooltip');
+const ttLabel = document.getElementById('tt-label');
+const ttGroup = document.getElementById('tt-group');
+
+function nodeHover(event, d) {
+  // Tooltip
+  ttLabel.textContent = d.label.replace('\n', ' ');
+  ttGroup.textContent = GROUP_NAMES[d.group] || d.group;
+  tooltip.style.opacity = '1';
+  moveTT(event);
+
+  // Dim non-connected
+  const connected = getConnected(d.id);
+  nodeGroups.each(function(n) {
+    const dim = !connected.has(n.id);
+    d3.select(this).select('.main-circle').attr('stroke-opacity', dim ? 0.2 : 1);
+    d3.select(this).select('.node-label-text').attr('fill-opacity', dim ? 0.2 : 1);
+    d3.select(this).select('.glow-ring').attr('stroke-opacity', dim ? 0.02 : 0.3);
+  });
+  edgePaths.attr('stroke-opacity', link => {
+    const sid = typeof link.source === 'string' ? link.source : link.source.id;
+    const tid = typeof link.target === 'string' ? link.target : link.target.id;
+    return (sid === d.id || tid === d.id) ? 0.8 : 0.04;
+  }).attr('stroke-width', link => {
+    const sid = typeof link.source === 'string' ? link.source : link.source.id;
+    const tid = typeof link.target === 'string' ? link.target : link.target.id;
+    return (sid === d.id || tid === d.id) ? 2 : 1.2;
+  });
+}
+
+function nodeLeave() {
+  tooltip.style.opacity = '0';
+  resetHighlight();
+}
+
+function moveTT(event) {
+  const x = event.clientX + 14;
+  const y = event.clientY - 10;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+
+svg.on('mousemove', event => {
+  if (tooltip.style.opacity === '1') moveTT(event);
+});
+
+svg.on('click', () => {
+  selectedNode = null;
+  showEmpty();
+  resetHighlight();
+});
+
+function getConnected(id) {
+  const set = new Set([id]);
+  edges.forEach(e => {
+    const sid = typeof e.source === 'string' ? e.source : e.source.id;
+    const tid = typeof e.target === 'string' ? e.target : e.target.id;
+    if (sid === id) set.add(tid);
+    if (tid === id) set.add(sid);
+  });
+  return set;
+}
+
+function highlightNode(d) {
+  const connected = getConnected(d.id);
+  nodeGroups.each(function(n) {
+    const sel = n.id === d.id;
+    const conn = connected.has(n.id);
+    d3.select(this).select('.main-circle')
+      .attr('stroke-width', sel ? 2.5 : 1.5)
+      .attr('stroke-opacity', conn ? 1 : 0.3)
+      .attr('filter', sel ? 'url(#glow)' : null);
+    d3.select(this).select('.node-label-text').attr('fill', sel ? '#e2e8f0' : '#94a3b8').attr('fill-opacity', conn ? 1 : 0.3);
+  });
+  edgePaths.attr('stroke-opacity', link => {
+    const sid = typeof link.source === 'string' ? link.source : link.source.id;
+    const tid = typeof link.target === 'string' ? link.target : link.target.id;
+    return (sid === d.id || tid === d.id) ? 0.9 : 0.08;
+  });
+}
+
+function resetHighlight() {
+  applyFilters();
+}
+
+// ── Sidebar detail ────────────────────────────────────────────────────────────
+
+const sEmpty  = document.getElementById('sidebar-empty');
+const sDetail = document.getElementById('sidebar-detail');
+const sStats  = document.getElementById('stats');
+
+sStats.textContent = `${nodes.length} nodes · ${edges.length} connections`;
+
+function showEmpty() {
+  sEmpty.style.display  = 'flex';
+  sDetail.style.display = 'none';
+}
+
+function showDetail(d) {
+  sEmpty.style.display  = 'none';
+  sDetail.style.display = 'flex';
+
+  const color = GROUP_COLORS[d.group] || '#6b7280';
+  document.getElementById('detail-label').textContent = d.label.replace('\n', ' ');
+
+  const gBadge = document.getElementById('detail-group');
+  gBadge.textContent = GROUP_NAMES[d.group] || d.group;
+  gBadge.style.background = color + '22';
+  gBadge.style.color = color;
+
+  document.getElementById('detail-type').textContent = d.type ? `Type: ${d.type}` : '';
+  document.getElementById('detail-desc').textContent = d.desc || '—';
+
+  const secFile = document.getElementById('sec-file');
+  if (d.file) {
+    secFile.style.display = '';
+    document.getElementById('detail-file').textContent = d.file;
+  } else {
+    secFile.style.display = 'none';
+  }
+
+  // Connections
+  const outgoing = edges.filter(e => {
+    const sid = typeof e.source === 'string' ? e.source : e.source.id;
+    return sid === d.id;
+  });
+  const incoming = edges.filter(e => {
+    const tid = typeof e.target === 'string' ? e.target : e.target.id;
+    return tid === d.id;
+  });
+
+  const outList = document.getElementById('out-list');
+  const inList  = document.getElementById('in-list');
+  const secOut  = document.getElementById('sec-out');
+  const secIn   = document.getElementById('sec-in');
+
+  outList.innerHTML = '';
+  inList.innerHTML  = '';
+
+  if (outgoing.length === 0) { secOut.style.display = 'none'; }
+  else {
+    secOut.style.display = '';
+    outgoing.forEach(e => {
+      const tid = typeof e.target === 'string' ? e.target : e.target.id;
+      const tn = nodeMap.get(tid);
+      if (!tn) return;
+      const li = document.createElement('li');
+      li.className = 'conn-item';
+      li.innerHTML = `<div class="conn-dot" style="background:${GROUP_COLORS[tn.group] || '#475569'}"></div>
+        <span class="conn-arrow">→</span>
+        <span>${tn.label.replace('\n',' ')}</span>
+        <span style="margin-left:auto;font-size:10px;color:#475569">${e.label||''}</span>`;
+      li.addEventListener('click', () => { nodeClick({stopPropagation:()=>{}}, tn); highlightNode(tn); });
+      outList.appendChild(li);
+    });
+  }
+
+  if (incoming.length === 0) { secIn.style.display = 'none'; }
+  else {
+    secIn.style.display = '';
+    incoming.forEach(e => {
+      const sid = typeof e.source === 'string' ? e.source : e.source.id;
+      const sn = nodeMap.get(sid);
+      if (!sn) return;
+      const li = document.createElement('li');
+      li.className = 'conn-item';
+      li.innerHTML = `<div class="conn-dot" style="background:${GROUP_COLORS[sn.group] || '#475569'}"></div>
+        <span class="conn-arrow">←</span>
+        <span>${sn.label.replace('\n',' ')}</span>
+        <span style="margin-left:auto;font-size:10px;color:#475569">${e.label||''}</span>`;
+      li.addEventListener('click', () => { nodeClick({stopPropagation:()=>{}}, sn); highlightNode(sn); });
+      inList.appendChild(li);
+    });
+  }
+}
+
+// ── Filter & Search ───────────────────────────────────────────────────────────
+
+function applyFilters() {
+  nodeGroups.each(function(d) {
+    const groupMatch  = activeFilter === 'all' || d.group === activeFilter;
+    const searchMatch = !searchTerm || d.label.toLowerCase().includes(searchTerm) || (d.desc||'').toLowerCase().includes(searchTerm);
+    const visible = groupMatch && searchMatch;
+    d3.select(this)
+      .attr('opacity', visible ? 1 : 0.08)
+      .attr('pointer-events', visible ? 'all' : 'none');
+  });
+  edgePaths.attr('stroke-opacity', link => {
+    const sid = typeof link.source === 'string' ? link.source : link.source.id;
+    const tid = typeof link.target === 'string' ? link.target : link.target.id;
+    const sn = nodeMap.get(sid);
+    const tn = nodeMap.get(tid);
+    const sg = sn?.group, tg = tn?.group;
+    const sVis = (activeFilter === 'all' || sg === activeFilter) && (!searchTerm || sn?.label.toLowerCase().includes(searchTerm));
+    const tVis = (activeFilter === 'all' || tg === activeFilter) && (!searchTerm || tn?.label.toLowerCase().includes(searchTerm));
+    return (sVis && tVis) ? 0.25 : 0.04;
+  }).attr('stroke-width', 1.2);
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  const g = btn.dataset.group;
+  const color = g !== 'all' ? GROUP_COLORS[g] : '#6366f1';
+  if (color) {
+    btn.addEventListener('mouseenter', () => { if (!btn.classList.contains('active')) btn.style.color = color; });
+    btn.addEventListener('mouseleave', () => { if (!btn.classList.contains('active')) btn.style.color = ''; });
+  }
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = 'rgba(255,255,255,0.05)';
+      b.style.color = '';
+      b.style.borderColor = 'transparent';
+    });
+    btn.classList.add('active');
+    btn.style.background = color + '22';
+    btn.style.color = color;
+    btn.style.borderColor = color;
+    activeFilter = g;
+    applyFilters();
+  });
+});
+
+// Search
+document.getElementById('search').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase().trim();
+  applyFilters();
+});
+
+// Legend click → filter
+document.querySelectorAll('#legend .legend-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const g = item.dataset.group;
+    const btn = document.querySelector(`.filter-btn[data-group="${g}"]`);
+    if (btn) btn.click();
+  });
+});
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+
+document.getElementById('btn-zoom-in').addEventListener('click', () => {
+  svg.transition().call(zoom.scaleBy, 1.4);
+});
+document.getElementById('btn-zoom-out').addEventListener('click', () => {
+  svg.transition().call(zoom.scaleBy, 0.7);
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  svg.transition().duration(600).call(zoom.transform, d3.zoomIdentity.translate(0,0).scale(1));
+});
+let expanded = false;
+document.getElementById('btn-expand').addEventListener('click', () => {
+  expanded = !expanded;
+  sim.force('charge').strength(expanded ? -1200 : -600);
+  sim.alpha(0.4).restart();
+});
+
+// ── Initial view fit after settle ────────────────────────────────────────────
+setTimeout(() => {
+  const bounds = g.node().getBBox();
+  const pw = width, ph = height;
+  const bw = bounds.width, bh = bounds.height;
+  const scale = Math.min(0.9, 0.9 * Math.min(pw / bw, ph / bh));
+  const tx = (pw - scale * (bounds.x * 2 + bw)) / 2;
+  const ty = (ph - scale * (bounds.y * 2 + bh)) / 2;
+  svg.transition().duration(800).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}, 3000);
+
+// ── Window resize ──────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const w2 = document.getElementById('graph').clientWidth;
+  const h2 = document.getElementById('graph').clientHeight;
+  svg.attr('width', w2).attr('height', h2);
+  sim.force('center', d3.forceCenter(w2/2, h2/2)).alpha(0.3).restart();
+});
+</script>
+</body>
+</html>

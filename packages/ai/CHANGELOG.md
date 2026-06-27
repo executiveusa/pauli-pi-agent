@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- `"inception"` added to `KnownProvider` union (`src/types.ts`)
+- `inception: "INCEPTION_API_KEY"` added to provider env-key map (`src/env-api-keys.ts`)
+
 ## [0.67.2] - 2026-04-14
 
 ### Fixed

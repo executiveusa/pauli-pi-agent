@@ -1,0 +1,8 @@
+Add this block at the TOP of the routing table in CLAUDE.md,
+ABOVE the wellness-guide entry (priority 0, above all others):
+
+| 0 | **emerald-tablets** | Constitutional checks, operating rules, "what are the rules", "prime directive", "ArchonX mission", system resets, any message that questions the operating framework |
+
+Also add to the "ABSOLUTE CONSTRAINT" section:
+"emerald-tablets is ALWAYS active. It is priority 0 — above wellness-guide.
+When the user asks about system rules, identity, or operating framework, delegate to emerald-tablets immediately."

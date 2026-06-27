@@ -4,6 +4,25 @@ This directory maps and indexes the specialized skills, tools, and Model Context
 
 ---
 
+## 0. Master Skills Registry (lazy-load)
+
+**Full catalog:** [`skills/SKILLS_REGISTRY.md`](./skills/SKILLS_REGISTRY.md) — 76 skills across 47 categories.
+
+**Rule:** Do NOT clone skills into the agent. Reference them by name; load only when a task matches the trigger. This is ICM — one agent, many folders, markdown = architecture.
+
+**Default stack (unknown repos):** `jcodemunch-mcp`, `ast-grep-mcp`, `Understand-Anything`, `files.md`, `claude-handoff`
+
+**Per-repo presets:** see the registry's "Practical Repo Presets" table.
+
+### Newly added reference skills
+
+| Skill | File | When to load |
+|-------|------|--------------|
+| MCP Apps (ext-apps) | [`skills/mcp-ext-apps.md`](./skills/mcp-ext-apps.md) | When serving interactive UI from an MCP server to external hosts (Claude, ChatGPT). For in-app artifacts, use the native pi-web-ui artifacts system instead. |
+| Sandcastle | [`skills/sandcastle.md`](./skills/sandcastle.md) | When running multiple agent instances in parallel (overnight builds, multi-repo factory). Pairs with command-code for project scaffolding. |
+
+---
+
 ## 1. Primary Token Savers & Compilers (Always Active)
 
 These tools must be utilized in every coding and agent execution session to compress codebase layouts and reduce raw token costs.
@@ -37,6 +56,8 @@ These tools must be utilized in every coding and agent execution session to comp
 
 | Repository / Source | Scope / Category | Lazy-Load Condition |
 | --- | --- | --- |
+| `skills/video-watch/` | Video Watch — Summarize, analyze, extract insights, competitor research, technical review, study notes from any video URL | When user provides a video URL or says "watch", "analyze", "summarize", "review", "extract", or "compare" in reference to a video |
+| `skills/ui-intelligence/` | UI Intelligence — Browser Tour + Design System + Journey Map + Doc Rewrite + React Components | When user says "analyze this app/UI", "document this interface", "extract design system", "generate components from", or "take a tour of this product" |
 | `executiveusa/pauli-Uncodixfy` | Text / Code Simplifier | When converting rich specifications to basic layouts |
 | `executiveusa/pauli-taste-skill` | Style / Aesthetics Engine | Active for any Next.js or React UI design work |
 | `executiveusa/pauli-blog` | Content / Social Publishing | Used by the UGC Character and Postiz distribution agents |

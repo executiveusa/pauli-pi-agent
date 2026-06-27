@@ -64,6 +64,12 @@ export class SupabaseService {
 		};
 	}
 
+	async getAllVideos(): Promise<YouTubeVideo[]> {
+		const { data, error } = await this.supabase.from("youtube_videos").select("*");
+		if (error) throw error;
+		return (data as YouTubeVideo[]) ?? [];
+	}
+
 	async health(): Promise<boolean> {
 		const { error } = await this.supabase.from("youtube_videos").select("id").limit(1);
 		return !error;

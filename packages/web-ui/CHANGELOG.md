@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+- `<voice-orb>` — push-to-talk voice component with 7 states and CSS state animations
+- `<mercury-diffusion-bubble>` — in-place replace diffusion stream display with scanlines overlay and lock-on-final
+- `<usage-meter>` — client-safe token and turn usage display
+- `<tool-dock>` — permission-gated tool launcher with disabled-state graying
+- `<asset-panel>` — image/video/document/audio asset display
+- `<mercury-agent-shell>` — plan-aware compositor that gates component visibility per tenant plan
+- All new components exported from `src/index.ts`
+
 ## [0.67.2] - 2026-04-14
 
 ## [0.67.1] - 2026-04-13

@@ -1,6 +1,6 @@
 import "@mariozechner/mini-lit/dist/ThemeToggle.js";
-import { Agent, type AgentMessage } from "@mariozechner/pi-agent-core";
-import { getModel } from "@mariozechner/pi-ai";
+import { Agent, type AgentMessage, type AgentTool } from "@mariozechner/pi-agent-core";
+import { getModels, getProviders, type Model } from "@mariozechner/pi-ai";
 import {
 	type AgentState,
 	ApiKeyPromptDialog,
@@ -20,15 +20,146 @@ import {
 	setAppStorage,
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
-import { Bell, History, Plus, Settings } from "lucide";
+import { Bell, Globe, History, Plus, Settings } from "lucide";
+import { registerMercuryDiffusionRenderer } from "./mercury-diffusion-renderer.js";
+import { pickModel } from "./smart-router.js";
+import "./token-tracker.js";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
 import { Input } from "@mariozechner/mini-lit/dist/Input.js";
 import { createSystemNotification, customConvertToLlm, registerCustomMessageRenderers } from "./custom-messages.js";
 
+// ============================================================================
+// DEEP RESEARCH MODE
+// ============================================================================
+const DEEP_RESEARCH_API =
+	(import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
+
+const DEEP_RESEARCH_SYSTEM_PROMPT = `You are a deep research agent specializing in comprehensive, globally balanced analysis.
+
+When given a topic or question, produce a thorough research report that:
+1. Draws from sources spanning multiple world regions — not just US or Western European perspectives
+2. Actively seeks viewpoints from Asia, Africa, Latin America, Middle East, Eastern Europe, and Oceania
+3. Distinguishes between facts, expert opinions, and popular sentiment
+4. Presents minority or dissenting views alongside mainstream positions
+5. Cites every claim with a numbered reference [1], [2], etc.
+
+Output Format — always return a structured Markdown document:
+
+# [Topic]
+
+## Summary
+2-3 sentence overview from a neutral, global perspective.
+
+## Key Findings
+...with inline citations [1][2]...
+
+## Regional Perspectives
+Explicitly cover how this topic is viewed in different parts of the world.
+
+## Contested Areas
+Note where evidence is disputed or where perspectives sharply diverge.
+
+## References
+[1] Title — Source, Region, URL, Date
+[2] ...
+
+Search strategy:
+- Run searches from multiple geographic perspectives (US, Brazil, India, Japan, Nigeria, Germany)
+- Seek primary sources: government data, academic papers, NGO reports, local journalism
+- Do not weight US/UK sources more heavily than others
+- Label speculation vs. established fact clearly
+
+If a deep-research backend is available you can trigger it via: POST ${DEEP_RESEARCH_API}/api/research with {query: string}`;
+
+// Geo hint → BrightData GeoRegion codes
+const GEO_HINT_MAP: Record<string, string[]> = {
+	global: ["us", "br", "in", "jp", "ng", "de", "za", "mx"],
+	asia: ["in", "jp", "id", "mx"],
+	africa: ["ng", "za"],
+	"latin-america": ["br", "mx"],
+	"middle-east": ["in", "ng"],
+	eu: ["de", "gb"],
+	us: ["us"],
+	uk: ["gb"],
+};
+
+// Web search tool — conforms to AgentTool<any> for the ChatPanel toolsFactory
+function createWebSearchTool(): AgentTool<any> {
+	return {
+		label: "Web Search",
+		name: "web_search",
+		description:
+			"Search the web for current information. Use geo_hint to indicate desired regional perspective (e.g. 'global', 'asia', 'africa', 'latin-america').",
+		parameters: {
+			type: "object" as const,
+			properties: {
+				query: { type: "string", description: "Search query" },
+				geo_hint: {
+					type: "string",
+					description:
+						"Desired regional perspective: global, us, uk, eu, asia, africa, latin-america, middle-east",
+				},
+			},
+			required: ["query"],
+		},
+		async execute(
+			_toolCallId: string,
+			params: { query: string; geo_hint?: string },
+		): Promise<{ content: Array<{ type: "text"; text: string }>; details: string }> {
+			const { query, geo_hint } = params;
+			const regions = geo_hint ? (GEO_HINT_MAP[geo_hint] ?? ["us", "br", "in", "jp", "ng", "de"]) : undefined;
+			try {
+				const spawnResp = await fetch(`${DEEP_RESEARCH_API}/api/research`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ query, ...(regions ? { regions } : {}) }),
+					signal: AbortSignal.timeout(10_000),
+				});
+				if (spawnResp.ok) {
+					const { taskId } = (await spawnResp.json()) as { taskId: string };
+					// Poll for the completed report (up to 3 minutes)
+					const deadline = Date.now() + 180_000;
+					while (Date.now() < deadline) {
+						await new Promise((r) => setTimeout(r, 4_000));
+						const pollResp = await fetch(`${DEEP_RESEARCH_API}/api/research/${taskId}`, {
+							signal: AbortSignal.timeout(10_000),
+						});
+						if (!pollResp.ok) break;
+						const snapshot = (await pollResp.json()) as {
+							status: string;
+							result?: { document: string };
+							error?: string;
+						};
+						if (snapshot.status === "completed" && snapshot.result?.document) {
+							return {
+								content: [{ type: "text", text: snapshot.result.document }],
+								details: snapshot.result.document,
+							};
+						}
+						if (snapshot.status === "failed") {
+							const msg = `Deep research task failed: ${snapshot.error ?? "unknown error"}`;
+							return { content: [{ type: "text", text: msg }], details: msg };
+						}
+					}
+					const timeoutMsg = `Deep research timed out for task ${taskId}. Synthesizing from training knowledge.`;
+					return { content: [{ type: "text", text: timeoutMsg }], details: timeoutMsg };
+				}
+			} catch {
+				// Backend not running — fall through to offline message
+			}
+			const hint = geo_hint ? ` Focus on ${geo_hint} perspectives.` : "";
+			const offlineMsg = `[web_search] Query: "${query}"${hint}\n\nThe deep-research backend is not available. Please synthesize from your training knowledge, explicitly representing viewpoints from Asia, Africa, Latin America, and the Middle East alongside Western sources. Mark all facts with [source needed] where you cannot cite a specific URL.`;
+			return { content: [{ type: "text", text: offlineMsg }], details: offlineMsg };
+		},
+	};
+}
+
 // Register custom message renderers
 registerCustomMessageRenderers();
+// Register Mercury diffusion renderer (visual effect for diffusion models)
+registerMercuryDiffusionRenderer();
 
 // Create stores
 const settings = new SettingsStore();
@@ -69,6 +200,7 @@ let agent: Agent;
 let chatPanel: ChatPanel;
 let agentUnsubscribe: (() => void) | undefined;
 let showFlipbook = false;
+let isDeepResearch = false;
 
 const generateTitle = (messages: AgentMessage[]): string => {
 	const firstUserMsg = messages.find((m) => m.role === "user" || m.role === "user-with-attachments");
@@ -161,16 +293,22 @@ const createAgent = async (initialState?: Partial<AgentState>) => {
 		agentUnsubscribe();
 	}
 
-	agent = new Agent({
-		initialState: initialState || {
-			systemPrompt: `You are a helpful AI assistant with access to various tools.
+	const baseSystemPrompt = isDeepResearch
+		? DEEP_RESEARCH_SYSTEM_PROMPT
+		: `You are a helpful AI assistant with access to various tools.
 
 Available tools:
 - JavaScript REPL: Execute JavaScript code in a sandboxed browser environment (can do calculations, get time, process data, create visualizations, etc.)
 - Artifacts: Create interactive HTML, SVG, Markdown, and text artifacts
 
-Feel free to use these tools when needed to provide accurate and helpful responses.`,
-			model: getModel("anthropic", "claude-sonnet-4-6"),
+Feel free to use these tools when needed to provide accurate and helpful responses.`;
+
+	agent = new Agent({
+		initialState: initialState || {
+			systemPrompt: baseSystemPrompt,
+			// Smart router: default to a FREE model for tool calls / chat.
+			// User can override via the model selector in the UI.
+			model: pickModel("fast").model,
 			thinkingLevel: "off",
 			messages: [],
 			tools: [],
@@ -208,9 +346,11 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			return await ApiKeyPromptDialog.prompt(provider);
 		},
 		toolsFactory: (_agent, _agentInterface, _artifactsPanel, runtimeProvidersFactory) => {
-			// Create javascript_repl tool with access to attachments + artifacts
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
+			if (isDeepResearch) {
+				return [replTool, createWebSearchTool()];
+			}
 			return [replTool];
 		},
 	});
@@ -241,6 +381,57 @@ const loadSession = async (sessionId: string): Promise<boolean> => {
 	return true;
 };
 
+// ============================================================
+// MODEL SWITCHER — user can pick any model; token tracker syncs
+// ============================================================
+let showModelPicker = false;
+
+function switchModel(model: Model<any>) {
+	if (agent) {
+		// Recreate the agent with the new model, preserving messages and session
+		const currentModel = agent.state.model;
+		if (currentModel?.id === model.id && currentModel?.provider === model.provider) {
+			// Same model, no need to switch
+			showModelPicker = false;
+			renderApp();
+			return;
+		}
+		// Create new agent with the selected model
+		createAgent({
+			model,
+			thinkingLevel: agent.state.thinkingLevel,
+			messages: agent.state.messages,
+			tools: agent.state.tools,
+			systemPrompt: agent.state.systemPrompt,
+		}).then(() => {
+			window.dispatchEvent(
+				new CustomEvent("agent-model-changed", { detail: { model: model.id, provider: model.provider } }),
+			);
+		});
+	}
+	showModelPicker = false;
+	renderApp();
+}
+
+function toggleModelPicker() {
+	showModelPicker = !showModelPicker;
+	renderApp();
+}
+
+function getAvailableModels(): Array<{ provider: string; id: string; name: string; model: Model<any> }> {
+	const result: Array<{ provider: string; id: string; name: string; model: Model<any> }> = [];
+	try {
+		for (const provider of getProviders()) {
+			for (const model of getModels(provider as any)) {
+				result.push({ provider, id: model.id, name: model.name, model });
+			}
+		}
+	} catch {
+		// ignore
+	}
+	return result;
+}
+
 const newSession = () => {
 	const url = new URL(window.location.href);
 	url.search = "";
@@ -256,6 +447,8 @@ const renderApp = () => {
 
 	const appHtml = html`
 		<div class="w-full h-screen flex flex-col bg-background text-foreground overflow-hidden">
+			<!-- Token Tracker (floating, bottom-left) -->
+			<token-tracker></token-tracker>
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-border shrink-0">
 				<div class="flex items-center gap-2 px-4 py-">
@@ -366,6 +559,70 @@ const renderApp = () => {
 						},
 						title: "Demo: Add Custom Notification",
 					})}
+
+					<!-- Deep Research toggle -->
+					<button
+						class="flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium transition-colors ${
+							isDeepResearch
+								? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 ring-1 ring-blue-500/50"
+								: "text-muted-foreground hover:bg-secondary hover:text-foreground"
+						}"
+						@click=${async () => {
+							isDeepResearch = !isDeepResearch;
+							currentSessionId = undefined;
+							currentTitle = "";
+							await createAgent();
+							renderApp();
+						}}
+						title="${isDeepResearch ? "Deep Research ON — click to disable" : "Enable Deep Research mode (global, multi-source, cited)"}"
+					>
+						${icon(Globe, "sm")}
+						<span class="hidden sm:inline">${isDeepResearch ? "Researching" : "Research"}</span>
+						${isDeepResearch ? html`<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>` : ""}
+					</button>
+
+					<!-- Model Switcher -->
+					<div class="relative">
+						<button
+							class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+								showModelPicker
+									? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/50"
+									: "text-muted-foreground hover:bg-secondary hover:text-foreground"
+							}"
+							@click=${() => toggleModelPicker()}
+							title="Click to switch model"
+						>
+							<span class="max-w-24 truncate">${agent?.state.model?.id ?? "claude-sonnet-4-6"}</span>
+						</button>
+						${
+							showModelPicker
+								? html`
+								<div class="absolute top-full right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto min-w-64">
+									<div class="p-2 border-b border-zinc-700">
+										<div class="text-xs font-semibold text-zinc-300 px-2 py-1">Switch Model</div>
+										<div class="text-xs text-zinc-500 px-2">Free models first, GLM-5.2 for big tasks</div>
+									</div>
+									${getAvailableModels().map(
+										(m) => html`
+											<button
+												class="w-full text-left px-3 py-2 text-xs hover:bg-zinc-800 transition-colors flex justify-between items-center ${
+													agent?.state.model?.id === m.id
+														? "bg-emerald-500/10 text-emerald-400"
+														: "text-zinc-300"
+												}"
+												@click=${() => switchModel(m.model)}
+											>
+												<span class="truncate">${m.name}</span>
+												<span class="text-zinc-500 ml-2">${m.provider}</span>
+											</button>
+										`,
+									)}
+								</div>
+							`
+								: ""
+						}
+					</div>
+
 					<theme-toggle></theme-toggle>
 					${Button({
 						variant: "ghost",

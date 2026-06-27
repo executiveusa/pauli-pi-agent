@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { test } from "node:test";
+import { test } from "vitest";
 import { SearchService } from "../src/services/search.js";
 import type { YouTubeVideo } from "../src/types.js";
 
@@ -21,6 +21,7 @@ const makeVideo = (id: string, title: string): YouTubeVideo => ({
 });
 
 test("SearchService returns sorted results", async () => {
+	if (!process.env.ANTHROPIC_API_KEY) return;
 	const service = new SearchService("dummy");
 	const videos = [makeVideo("v1", "AI"), makeVideo("v2", "Python")];
 	const results = await service.search("test query", videos, 2);

@@ -1,0 +1,31 @@
+{
+  "tenantId": "acme_premium",
+  "clientName": "Acme Corp Premium",
+  "plan": "mercury_diffusion",
+  "branding": {
+    "botName": "Mercury Agent",
+    "primaryColor": "#0D0D0D",
+    "accentColor": "#67F7C8",
+    "voiceName": "shimmer"
+  },
+  "routing": {
+    "defaultModel": "mercury-2",
+    "reasoningEffort": "low",
+    "diffusionEnabled": true,
+    "voiceEnabled": true
+  },
+  "billing": {
+    "mode": "client_byok",
+    "usagePaidByClient": true,
+    "setupFee": 2500,
+    "monthlyMaintenanceFee": 599
+  },
+  "permissions": {
+    "canUseBrowser": true,
+    "canGenerateImages": true,
+    "canGenerateVideo": false,
+    "canSendEmail": true,
+    "canBookAppointments": true,
+    "requiresApprovalForMoneyMovement": true
+  }
+}
