@@ -133,16 +133,49 @@ function stubNodeOnlyPackages() {
 }
 
 export default defineConfig(() => {
-	// Build a __AGENT_ENV__ global with all the keys the smart-router needs
+	// Build a __AGENT_ENV_JSON__ string with all the keys the smart-router needs.
+	// This gets injected into index.html as window.__AGENT_ENV__ = JSON.parse(__AGENT_ENV_JSON__)
 	const env = loadAgentEnv();
 	const agentEnvDefine: Record<string, string> = {};
-	for (const [key, value] of Object.entries(env)) {
-		agentEnvDefine[`__AGENT_ENV__.${key}`] = JSON.stringify(value);
+	// Only include LLM provider keys (never expose Coolify SSH, Supabase service roles, etc.)
+	const llmKeys = [
+		"GOOGLE_API_KEY",
+		"GEMINI_API_KEY",
+		"GROQ_API_KEY",
+		"OPEN_ROUTER_API",
+		"OPENROUTER_API_KEY",
+		"ANTHROPIC_API_KEY",
+		"OPENAI_API_KEY",
+		"OPENAI_ORG_ID",
+		"MISTRAL_API_KEY",
+		"ZAI_API_KEY",
+		"GLM_API_KEY",
+		"MOONSHOT_AI_API",
+		"DEEPSEEK_API_KEY",
+		"FIRECRAWL_API_TOKEN",
+		"BRIGHT_DATA_API",
+		"COMMAND_CODE_API",
+		"NOTION_API_TOKEN",
+		"ELEVEN_LABS_API",
+		"HEYGEN_API",
+	];
+	const llmEnv: Record<string, string> = {};
+	for (const key of llmKeys) {
+		const value = env[key];
+		if (value) llmEnv[key] = value;
 	}
+	// Also inject the env vars directly into index.html via a transform plugin
+	const envScriptContent = `<script>try{window.__AGENT_ENV__=${JSON.stringify(JSON.stringify(llmEnv))}}catch(e){window.__AGENT_ENV__={}}</script>`;
 
 	return {
 		plugins: [
 			stubNodeOnlyPackages(),
+			{
+				name: "inject-agent-env",
+				transformIndexHtml(html: string) {
+					return html.replace("<!-- agent-env-injected -->", envScriptContent);
+				},
+			},
 			tailwindcss(),
 			nodePolyfills({
 				include: ["buffer", "process", "stream", "util", "events", "path"],
