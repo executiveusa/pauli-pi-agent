@@ -1,5 +1,6 @@
 import "@mariozechner/mini-lit/dist/ThemeToggle.js";
 import { Agent, type AgentMessage, type AgentTool } from "@mariozechner/pi-agent-core";
+import { getModels, getProviders, type Model } from "@mariozechner/pi-ai";
 import {
 	type AgentState,
 	ApiKeyPromptDialog,
@@ -32,7 +33,6 @@ import { createSystemNotification, customConvertToLlm, registerCustomMessageRend
 // ============================================================================
 // DEEP RESEARCH MODE
 // ============================================================================
-
 const DEEP_RESEARCH_API =
 	(import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
 
@@ -381,6 +381,57 @@ const loadSession = async (sessionId: string): Promise<boolean> => {
 	return true;
 };
 
+// ============================================================
+// MODEL SWITCHER — user can pick any model; token tracker syncs
+// ============================================================
+let showModelPicker = false;
+
+function switchModel(model: Model<any>) {
+	if (agent) {
+		// Recreate the agent with the new model, preserving messages and session
+		const currentModel = agent.state.model;
+		if (currentModel?.id === model.id && currentModel?.provider === model.provider) {
+			// Same model, no need to switch
+			showModelPicker = false;
+			renderApp();
+			return;
+		}
+		// Create new agent with the selected model
+		createAgent({
+			model,
+			thinkingLevel: agent.state.thinkingLevel,
+			messages: agent.state.messages,
+			tools: agent.state.tools,
+			systemPrompt: agent.state.systemPrompt,
+		}).then(() => {
+			window.dispatchEvent(
+				new CustomEvent("agent-model-changed", { detail: { model: model.id, provider: model.provider } }),
+			);
+		});
+	}
+	showModelPicker = false;
+	renderApp();
+}
+
+function toggleModelPicker() {
+	showModelPicker = !showModelPicker;
+	renderApp();
+}
+
+function getAvailableModels(): Array<{ provider: string; id: string; name: string; model: Model<any> }> {
+	const result: Array<{ provider: string; id: string; name: string; model: Model<any> }> = [];
+	try {
+		for (const provider of getProviders()) {
+			for (const model of getModels(provider as any)) {
+				result.push({ provider, id: model.id, name: model.name, model });
+			}
+		}
+	} catch {
+		// ignore
+	}
+	return result;
+}
+
 const newSession = () => {
 	const url = new URL(window.location.href);
 	url.search = "";
@@ -529,6 +580,48 @@ const renderApp = () => {
 						<span class="hidden sm:inline">${isDeepResearch ? "Researching" : "Research"}</span>
 						${isDeepResearch ? html`<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>` : ""}
 					</button>
+
+					<!-- Model Switcher -->
+					<div class="relative">
+						<button
+							class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+								showModelPicker
+									? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/50"
+									: "text-muted-foreground hover:bg-secondary hover:text-foreground"
+							}"
+							@click=${() => toggleModelPicker()}
+							title="Click to switch model"
+						>
+							<span class="max-w-24 truncate">${agent?.state.model?.id ?? "claude-sonnet-4-6"}</span>
+						</button>
+						${
+							showModelPicker
+								? html`
+								<div class="absolute top-full right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto min-w-64">
+									<div class="p-2 border-b border-zinc-700">
+										<div class="text-xs font-semibold text-zinc-300 px-2 py-1">Switch Model</div>
+										<div class="text-xs text-zinc-500 px-2">Free models first, GLM-5.2 for big tasks</div>
+									</div>
+									${getAvailableModels().map(
+										(m) => html`
+											<button
+												class="w-full text-left px-3 py-2 text-xs hover:bg-zinc-800 transition-colors flex justify-between items-center ${
+													agent?.state.model?.id === m.id
+														? "bg-emerald-500/10 text-emerald-400"
+														: "text-zinc-300"
+												}"
+												@click=${() => switchModel(m.model)}
+											>
+												<span class="truncate">${m.name}</span>
+												<span class="text-zinc-500 ml-2">${m.provider}</span>
+											</button>
+										`,
+									)}
+								</div>
+							`
+								: ""
+						}
+					</div>
 
 					<theme-toggle></theme-toggle>
 					${Button({

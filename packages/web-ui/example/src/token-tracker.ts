@@ -83,6 +83,13 @@ export class TokenTracker extends LitElement {
 			this.model = e.detail.model ?? this.model;
 			this.updateBudget();
 		}) as EventListener);
+		// Listen for model changes so we reset the token count
+		window.addEventListener("agent-model-changed", ((e: CustomEvent) => {
+			this.model = e.detail.model ?? this.model;
+			this.used = 0;
+			this.costCents = 0;
+			this.updateBudget();
+		}) as EventListener);
 	}
 
 	private updateBudget() {
@@ -138,6 +145,10 @@ declare global {
 			outputTokens: number;
 			costCents?: number;
 			model?: string;
+		}>;
+		"agent-model-changed": CustomEvent<{
+			model: string;
+			provider: string;
 		}>;
 	}
 }

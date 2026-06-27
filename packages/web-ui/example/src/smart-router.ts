@@ -1,6 +1,9 @@
 /**
  * Smart Model Router — cost-aware model selection for the Pi Web UI.
  *
+ * Reads keys from window.__AGENT_ENV__ (injected at build time by Vite define).
+ * This is the most reliable way to get env vars into a Vite SPA.
+ *
  * GOAL: Use FREE models for mechanical tool calls, GLM-5.2 for big tasks,
  * and AVOID expensive models (Opus, GPT-5.5) unless explicitly requested.
  *
@@ -28,20 +31,35 @@ export interface RouteResult {
 	estimatedCostPer1k: number;
 }
 
-export function pickModel(lane: TaskLane): RouteResult {
-	const has = (env: string) => {
-		try {
-			return Boolean((import.meta.env as Record<string, string | undefined>)[env] ?? process?.env?.[env]);
-		} catch {
-			return false;
-		}
-	};
+// Read env vars from the global injected by Vite's define.
+// window.__AGENT_ENV__ is populated in vite.config.ts from the agent's .env file.
+function getEnv(key: string): string | undefined {
+	try {
+		const agentEnv = (window as unknown as Record<string, unknown>).__AGENT_ENV__ as
+			| Record<string, string>
+			| undefined;
+		if (agentEnv?.[key]) return agentEnv[key];
+	} catch {
+		// ignore
+	}
+	// Fallback to import.meta.env (for dev mode)
+	try {
+		const viteEnv = import.meta.env as Record<string, string | undefined>;
+		if (viteEnv?.[`VITE_${key}`]) return viteEnv[`VITE_${key}`];
+	} catch {
+		// ignore
+	}
+	return undefined;
+}
 
-	const hasGroq = has("VITE_GROQ_API_KEY") || has("GROQ_API_KEY");
-	const hasGoogle = has("VITE_GOOGLE_API_KEY") || has("GOOGLE_API_KEY") || has("GEMINI_API_KEY");
-	const hasOpenRouter = has("VITE_OPEN_ROUTER_API") || has("OPEN_ROUTER_API") || has("OPENROUTER_API_KEY");
-	const hasGLM = has("VITE_GLM_API_KEY") || has("GLM_API_KEY") || has("ZAI_API_KEY");
-	const hasDeepSeek = has("VITE_DEEPSEEK_API_KEY") || has("DEEPSEEK_API_KEY");
+export function pickModel(lane: TaskLane): RouteResult {
+	const has = (key: string) => Boolean(getEnv(key));
+
+	const hasGroq = has("GROQ_API_KEY");
+	const hasGoogle = has("GOOGLE_API_KEY") || has("GEMINI_API_KEY");
+	const hasOpenRouter = has("OPEN_ROUTER_API") || has("OPENROUTER_API_KEY");
+	const hasGLM = has("GLM_API_KEY") || has("ZAI_API_KEY");
+	const hasDeepSeek = has("DEEPSEEK_API_KEY");
 
 	// 1. Fast lane — Groq Llama (free, very fast)
 	if (lane === "fast") {

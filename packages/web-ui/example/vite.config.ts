@@ -1,11 +1,34 @@
+import fs from "node:fs";
+import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
+// ============================================================
+// Load secrets from the agent's .env file (gitignored, real keys)
+// and inject them directly into the build as string replacements.
+// This is the most reliable way to get env vars into a Vite SPA.
+// ============================================================
+function loadAgentEnv(): Record<string, string> {
+	const envPath = path.resolve(__dirname, "../../../.env");
+	if (!fs.existsSync(envPath)) return {};
+	const raw = fs.readFileSync(envPath, "utf8");
+	const vars: Record<string, string> = {};
+	for (const line of raw.split("\n")) {
+		const trimmed = line.trim();
+		if (!trimmed || trimmed.startsWith("#")) continue;
+		const eqIdx = trimmed.indexOf("=");
+		if (eqIdx === -1) continue;
+		const key = trimmed.slice(0, eqIdx).trim();
+		const value = trimmed.slice(eqIdx + 1).trim();
+		if (key && value) vars[key] = value;
+	}
+	return vars;
+}
+
+// ============================================================
 // Stubs for Node-only modules that have no browser equivalent.
-// The pi-agent-core pulls in server-side code (postgres, fs, infisical secrets,
-// tenant loaders, migrations) that must never run in the browser. We stub them
-// at the import level so the browser bundle stays clean.
+// ============================================================
 const FS_STUB =
 	"export const readdirSync = () => []; export const readFileSync = () => ''; export const writeFileSync = () => {}; export const existsSync = () => false; export const mkdirSync = () => {}; export const statSync = () => ({ isDirectory: () => false }); export default {};";
 
@@ -24,13 +47,11 @@ export const initializeSchema = async () => {};
 export default { DataProcessor, FileIndexer, ChatGPTImporter, ClaudeImporter, NotionImporter, initializeSchema };
 `;
 
-// Agent dist modules that are pure server-side (fs/secret/tenant loaders).
-// Stub the whole module so its internal fs import never gets resolved.
 const INFISICAL_STUB = `
 export class InfisicalClient { constructor() {} async initialize() {} async getSecrets() { return {}; } async getSecret() { return undefined; } }
 export function initializeSecrets() { return undefined; }
 export function getSecretsClient() { return null; }
-export async function resolveSecret(name) { return process.env?.[name] ?? undefined; }
+export async function resolveSecret(name) { return undefined; }
 export async function getSecret(name, path, required) { return undefined; }
 export default { InfisicalClient, initializeSecrets, getSecretsClient, resolveSecret, getSecret };
 `;
@@ -48,8 +69,6 @@ export const getPendingMigrations = async () => [];
 export default { MigrationRunner, runMigrations, getPendingMigrations };
 `;
 
-// Stub the whole database barrel (re-exports migrations + types).
-// In the browser there is no postgres; the agent's DB layer is a no-op.
 const DATABASE_INDEX_STUB = `
 export class MigrationRunner { constructor() {} async run() {} async getPending() { return []; } }
 export const runMigrations = async () => {};
@@ -59,10 +78,7 @@ export default {};
 
 const DATABASE_TYPES_STUB = "export default {};";
 
-// Map of bare specifiers + agent dist paths to their stubs.
-// Keys are matched against the import source OR the resolved absolute path.
 function stubNodeOnlyPackages() {
-	// Bare specifiers -> virtual stubs
 	const bareStubs: Record<string, string> = {
 		fs: FS_STUB,
 		"node:fs": FS_STUB,
@@ -74,7 +90,6 @@ function stubNodeOnlyPackages() {
 		"node:stream/promises": "export const pipeline = () => {}; export default {};",
 		"@mariozechner/pi-data-processor": DATA_PROCESSOR_STUB,
 	};
-	// Absolute path suffixes (within agent/dist) -> stubs
 	const pathStubs: Array<{ suffix: string; code: string }> = [
 		{ suffix: "agent/dist/secrets/infisical-client.js", code: INFISICAL_STUB },
 		{ suffix: "agent/dist/secrets/infisical-client.mjs", code: INFISICAL_STUB },
@@ -92,18 +107,14 @@ function stubNodeOnlyPackages() {
 		name: "stub-node-only-packages",
 		enforce: "pre",
 		resolveId(source: string, importer: string | undefined) {
-			// 1. Bare specifier match (e.g. "fs", "pg")
 			if (bareStubs[source]) {
 				const id = `\0virtual:stub:${source}`;
 				idMap.set(id, bareStubs[source]);
 				return { id, moduleSideEffects: false };
 			}
-			// 2. Resolve relative imports that end in a stubbed agent dist file.
-			//    Vite gives us the importer; we resolve the source against it.
 			if (importer && (source.startsWith("./") || source.startsWith("../"))) {
 				const importerDir = importer.replace(/[/\\][^/\\]*$/, "");
 				const resolved = source.replace(/^\.\//, "").replace(/^\.\.\//, "");
-				// Normalize backslashes
 				const normalized = `${importerDir}/${resolved}`.replace(/\\/g, "/");
 				for (const { suffix, code } of pathStubs) {
 					if (normalized.toLowerCase().includes(suffix.toLowerCase())) {
@@ -121,40 +132,44 @@ function stubNodeOnlyPackages() {
 	};
 }
 
-export default defineConfig({
-	plugins: [
-		stubNodeOnlyPackages(),
-		tailwindcss(),
-		nodePolyfills({
-			include: ["buffer", "process", "stream", "util", "events", "path"],
-			exclude: ["fs"],
-			globals: {
-				Buffer: true,
-				global: true,
-				process: true,
+export default defineConfig(() => {
+	// Build a __AGENT_ENV__ global with all the keys the smart-router needs
+	const env = loadAgentEnv();
+	const agentEnvDefine: Record<string, string> = {};
+	for (const [key, value] of Object.entries(env)) {
+		agentEnvDefine[`__AGENT_ENV__.${key}`] = JSON.stringify(value);
+	}
+
+	return {
+		plugins: [
+			stubNodeOnlyPackages(),
+			tailwindcss(),
+			nodePolyfills({
+				include: ["buffer", "process", "stream", "util", "events", "path"],
+				exclude: ["fs"],
+				globals: {
+					Buffer: true,
+					global: true,
+					process: true,
+				},
+			}),
+		],
+		resolve: {
+			alias: {
+				pg: "data:text/javascript,export default {};",
+				"postgres-bytea": "data:text/javascript,export default {};",
+				"pg-types": "data:text/javascript,export default {};",
 			},
-		}),
-	],
-	resolve: {
-		alias: {
-			// Belt-and-suspenders: if any fs/pg import slips past the stub plugin,
-			// point it at a data: URL so it never hits the filesystem.
-			pg: "data:text/javascript,export default {};",
-			"postgres-bytea": "data:text/javascript,export default {};",
-			"pg-types": "data:text/javascript,export default {};",
 		},
-	},
-	optimizeDeps: {
-		// Don't pre-bundle the agent package; let it load via source with stubs
-		exclude: ["@mariozechner/pi-agent-core", "@mariozechner/pi-data-processor"],
-	},
-	define: {
-		global: "globalThis",
-	},
-	server: {
-		hmr: {
-			// Keep the error overlay but don't let it block reloads during iteration
-			overlay: true,
+		optimizeDeps: {
+			exclude: ["@mariozechner/pi-agent-core", "@mariozechner/pi-data-processor"],
 		},
-	},
+		define: {
+			global: "globalThis",
+			...agentEnvDefine,
+		},
+		server: {
+			hmr: { overlay: true },
+		},
+	};
 });
