@@ -1,0 +1,172 @@
+# Heartbeat Event Schemas — Cynthia Design Studio
+version: "1.0.0"
+
+# Base schema — all events extend this
+base_event:
+  type: string          # event type from the enum below
+  timestamp: string     # ISO 8601
+  agent_id: string      # which agent emitted
+  project_id: string    # nullable — some events are system-level
+  correlation_id: string # for tracing event chains
+
+# Event types organized by category
+event_types:
+
+  # AGENT LIFECYCLE
+  agent.started:
+    description: "Agent activated for a task"
+    fields:
+      task_type: string
+      task_id: string
+
+  agent.heartbeat:
+    description: "Periodic alive signal with current status"
+    fields:
+      status: "enum: idle, working, blocked, waiting_approval"
+      current_action: string
+      memory_writes_since_last: integer
+
+  agent.completed:
+    description: "Agent finished assigned work"
+    fields:
+      task_id: string
+      artifacts_produced: string[]
+      duration_seconds: number
+
+  agent.error:
+    description: "Agent encountered an error"
+    fields:
+      task_id: string
+      error_type: string
+      error_message: string
+      recoverable: boolean
+
+  agent.escalated:
+    description: "Agent escalated to human or senior agent"
+    fields:
+      task_id: string
+      escalation_reason: string
+      escalated_to: string
+
+  # JOB LIFECYCLE
+  job.created:
+    description: "New job entered the system"
+    fields:
+      job_type: string
+      source: "enum: client, internal, cron, audit"
+      priority: "enum: urgent, high, normal, low"
+      deadline: string
+
+  job.assigned:
+    description: "Job assigned to agent(s)"
+    fields:
+      assigned_agents: string[]
+      estimated_duration: string
+
+  job.variation_submitted:
+    description: "Builder submitted a design variation"
+    fields:
+      variation_number: integer
+      artifact_path: string
+      techniques_used: string[]
+
+  job.scored:
+    description: "Reviewer scored a variation"
+    fields:
+      variation_number: integer
+      overall_score: number
+      axis_scores: object  # { VHR: 8.5, TYP: 9.0, ... }
+      blocker_failures: string[]
+      verdict: "enum: approved, iterate, rejected"
+
+  job.synthesis:
+    description: "Synthesist wrote an iteration brief"
+    fields:
+      base_variation: integer
+      changes_requested: string[]
+      target_score: number
+
+  job.approved:
+    description: "Job passed quality gate"
+    fields:
+      final_score: number
+      approved_variation: integer
+      iterations_count: integer
+
+  job.delivered:
+    description: "Job delivered to client"
+    fields:
+      delivery_method: "enum: email, portal, download"
+      artifacts_delivered: string[]
+
+  # FINANCIAL
+  payment.received:
+    description: "Payment received from client"
+    fields:
+      amount_cents: integer
+      currency: string
+      provider: "enum: stripe, creem, cashapp"
+      invoice_id: string
+
+  payment.refunded:
+    description: "Refund issued"
+    fields:
+      amount_cents: integer
+      reason: string
+      original_payment_id: string
+
+  subscription.created:
+    description: "New subscription started"
+    fields:
+      plan: string
+      interval: "enum: monthly, annual"
+      amount_cents: integer
+
+  subscription.cancelled:
+    description: "Subscription cancelled"
+    fields:
+      reason: string
+      effective_date: string
+
+  # SYSTEM
+  system.cron_fired:
+    description: "Scheduled cron job executed"
+    fields:
+      cron_name: string
+      schedule: string
+
+  system.memory_compaction:
+    description: "Memory compaction cycle completed"
+    fields:
+      entries_processed: integer
+      insights_extracted: integer
+      duplicates_removed: integer
+
+  system.doctrine_updated:
+    description: "Doctrine file was modified"
+    fields:
+      file_path: string
+      change_type: "enum: create, update, deprecate"
+      approved_by: string
+
+  system.anti_pattern_detected:
+    description: "Anti-pattern found during validation"
+    fields:
+      pattern_id: string
+      severity: "enum: blocker, major, minor"
+      file_path: string
+      line_number: integer
+
+  system.error:
+    description: "System-level error"
+    fields:
+      component: string
+      error_message: string
+      severity: "enum: critical, warning, info"
+
+# Heartbeat schedule
+heartbeat_config:
+  interval_seconds: 60
+  timeout_seconds: 300  # agent considered dead after 5 min silence
+  alert_on_death: true
+  alert_channel: "telegram:bambu"

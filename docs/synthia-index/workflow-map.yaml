@@ -1,0 +1,92 @@
+# Workflow Map — Cynthia Design Studio
+# Version: 1.0.0
+
+workflows:
+
+  karpathy-council:
+    description: "Core build protocol. Position → Rebuttal → Synthesis loop."
+    steps:
+      - brief_arrives
+      - concierge_classifies
+      - architect_plans
+      - builder_produces_3_variations
+      - reviewer_scores_all_14_axes
+      - if_below_threshold_synthesist_writes_brief
+      - builder_iterates
+      - repeat_until_pass
+      - packaging_delivers
+    governance: UDEC 8.5 floor
+    agents: [concierge, architect, frontend, reviewer, refactor, packaging]
+
+  free-audit-funnel:
+    description: "Lead capture → automated site audit → proposal generation"
+    steps:
+      - lead_submits_url
+      - concierge_creates_audit_job
+      - growth_agent_analyzes_site
+      - reviewer_scores_current_state
+      - copy_agent_writes_summary
+      - packaging_creates_report
+      - human_approval_for_delivery
+      - report_delivered_to_lead
+    governance: human approval before external delivery
+    agents: [concierge, growth_audit, reviewer, copy, packaging]
+
+  newsletter-production:
+    description: "Newsletter creation pipeline"
+    steps:
+      - brief_with_topic_and_audience
+      - copy_agent_writes_content
+      - reviewer_scores_copy
+      - iterate_until_pass
+      - packaging_creates_html_email
+      - human_approval_for_send
+    governance: human approval before send
+    agents: [copy, reviewer, packaging]
+
+  design-refactor:
+    description: "Improve existing design artifacts"
+    steps:
+      - identify_refactoring_targets
+      - librarian_loads_doctrine
+      - refactor_agent_improves
+      - reviewer_scores_improvement
+      - iterate_until_pass
+      - memory_records_lessons
+    agents: [refactor, librarian, reviewer, memory]
+
+  component-normalization:
+    description: "Normalize scattered components into canonical registry"
+    steps:
+      - scan_for_components
+      - detect_duplicates
+      - classify_by_function
+      - merge_overlapping
+      - rename_to_canonical
+      - register_in_component_registry
+      - reviewer_validates
+    agents: [refactor, librarian, reviewer]
+
+  daily-research:
+    description: "Daily competitive research intake"
+    schedule: "0 6 * * * America/Mexico_City"
+    steps:
+      - scout_browses_awwwards_sotd
+      - scout_browses_codrops_latest
+      - scout_extracts_techniques
+      - scout_writes_report
+      - librarian_updates_if_new_techniques
+      - ops_notifies_team
+    agents: [scout, librarian, ops]
+
+  memory-compaction:
+    description: "Monthly memory hygiene"
+    schedule: "0 0 1 * * *"
+    steps:
+      - memory_agent_reviews_all_entries
+      - detect_duplicates_in_memory
+      - merge_related_lessons
+      - archive_stale_entries
+      - update_knowledge_index
+      - generate_compaction_report
+    agents: [memory, ops]

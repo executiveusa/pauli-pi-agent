@@ -2,6 +2,7 @@ import type { AgentMessage, AgentTool } from "@mariozechner/pi-agent-core";
 import type { ToolResultMessage } from "@mariozechner/pi-ai";
 import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
+import "./MercuryDiffusionBubble.js";
 
 export class StreamingMessageContainer extends LitElement {
 	@property({ type: Array }) tools: AgentTool[] = [];
@@ -78,18 +79,37 @@ export class StreamingMessageContainer extends LitElement {
 			// Skip standalone tool result in streaming; the stable list will render it immediiately
 			return html``;
 		} else if (msg.role === "assistant") {
-			// Assistant message - render inline tool messages during streaming
+			// Extract text content for the diffusion bubble
+			const streamingText = msg.content
+				.filter((c): c is { type: "text"; text: string } => c.type === "text")
+				.map((c) => c.text)
+				.join("");
+			// Non-text blocks (thinking, tool calls) still need the assistant-message renderer
+			const hasNonTextContent = msg.content.some((c) => c.type !== "text");
+
 			return html`
 				<div class="flex flex-col gap-3 mb-3">
-					<assistant-message
-						.message=${msg}
-						.tools=${this.tools}
-						.isStreaming=${this.isStreaming}
-						.pendingToolCalls=${this.pendingToolCalls}
-						.toolResultsById=${this.toolResultsById}
-						.hideToolCalls=${false}
-						.onCostClick=${this.onCostClick}
-					></assistant-message>
+					${
+						this.isStreaming && streamingText
+							? html`<mercury-diffusion-bubble
+									.diffusionState=${"diffusing"}
+									.text=${streamingText}
+								></mercury-diffusion-bubble>`
+							: ""
+					}
+					${
+						hasNonTextContent || !this.isStreaming
+							? html`<assistant-message
+									.message=${msg}
+									.tools=${this.tools}
+									.isStreaming=${this.isStreaming}
+									.pendingToolCalls=${this.pendingToolCalls}
+									.toolResultsById=${this.toolResultsById}
+									.hideToolCalls=${false}
+									.onCostClick=${this.onCostClick}
+								></assistant-message>`
+							: ""
+					}
 					${this.isStreaming ? html`<span class="mx-4 inline-block w-2 h-4 bg-muted-foreground animate-pulse"></span>` : ""}
 				</div>
 			`;

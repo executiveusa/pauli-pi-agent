@@ -1,0 +1,275 @@
+# UDEC Rubric — Machine-Readable Scoring Framework
+version: "1.0.0"
+quality_floor: 8.5
+blocker_floor: 7.0
+
+axes:
+  - id: VHR
+    name: Visual Hierarchy
+    weight: 0.12
+    blocker: false
+    criteria:
+      - F-pattern or Z-pattern scan path
+      - Clear 3-level hierarchy (primary, secondary, tertiary)
+      - Single dominant element per viewport
+      - Progressive disclosure of information
+    scoring:
+      "10": "Perfect hierarchy. Eye moves effortlessly. Zero ambiguity."
+      "8": "Strong hierarchy. Minor competing elements."
+      "6": "Hierarchy present but inconsistent across sections."
+      "4": "Unclear hierarchy. Multiple elements competing for attention."
+      "2": "No discernible hierarchy. Visual chaos."
+
+  - id: TYP
+    name: Typography Mastery
+    weight: 0.10
+    blocker: false
+    criteria:
+      - Maximum 2 typefaces
+      - Display type ≥ 5rem
+      - No banned fonts (Inter, Roboto, Arial, Helvetica, Open Sans, Montserrat, Poppins, Lato)
+      - Consistent type scale
+      - Proper line heights (body 1.5-1.7, display 0.9-1.1)
+    scoring:
+      "10": "Typography is the design. Masterful scale and pairing."
+      "8": "Strong type system. Minor inconsistencies."
+      "6": "Adequate typography. Generic but functional."
+      "4": "Poor type choices. Banned fonts or >2 typefaces."
+      "2": "No type system. Random sizes and weights."
+
+  - id: SPA
+    name: Spatial Composition
+    weight: 0.08
+    blocker: false
+    criteria:
+      - Minimum py-24 between sections
+      - Asymmetric layout preferred
+      - Grid-breaking elements present
+      - Breathing room around CTAs
+    scoring:
+      "10": "Space IS the design. Gallery-grade composition."
+      "8": "Generous spacing. Minor crowding in 1-2 areas."
+      "6": "Adequate spacing but predictable grid."
+      "4": "Cramped. Sections visually collide."
+      "2": "No spatial logic. Wall-to-wall content."
+
+  - id: CLR
+    name: Color System
+    weight: 0.08
+    blocker: false
+    criteria:
+      - Single accent color
+      - No purple
+      - WCAG AA contrast compliance
+      - Intentional color temperature
+    scoring:
+      "10": "Color elevates emotion. Single accent, zero waste."
+      "8": "Strong color system. Minor contrast issues."
+      "6": "Functional palette. Safe but generic."
+      "4": "Too many colors. Purple detected. Contrast fails."
+      "2": "No color system. Random or default palette."
+
+  - id: MOT
+    name: Motion & Interaction
+    weight: 0.12
+    blocker: true
+    criteria:
+      - Lenis smooth scroll active
+      - GSAP ScrollTrigger for reveals
+      - Spring physics (no linear easing)
+      - Staggered animations
+      - Meaningful motion (not decorative)
+    scoring:
+      "10": "Motion tells the story. Every animation has purpose."
+      "8": "Strong motion system. Spring physics throughout."
+      "6": "Some animations. Linear easing detected."
+      "4": "Minimal or broken motion. No scroll animations."
+      "2": "No motion. Static page. Or jarring animations."
+
+  - id: MAT
+    name: Material & Surface
+    weight: 0.08
+    blocker: false
+    criteria:
+      - Double-bezel card effects
+      - Glass refraction where appropriate
+      - Subtle grain/texture
+      - Depth through layering
+    scoring:
+      "10": "Surfaces feel tactile. Glass and depth are masterful."
+      "8": "Good material language. Consistent surfaces."
+      "6": "Flat but clean. No material system."
+      "4": "Inconsistent surfaces. Random shadows."
+      "2": "No material consideration. Defaults everywhere."
+
+  - id: COM
+    name: Component Architecture
+    weight: 0.08
+    blocker: false
+    criteria:
+      - Button-in-button CTA pattern
+      - Eyebrow tags for categories
+      - Visible hover/focus/active states
+      - Consistent component language
+    scoring:
+      "10": "Component system is elegant. Every element belongs."
+      "8": "Strong components. Minor inconsistencies."
+      "6": "Functional components. Default-ish styling."
+      "4": "Inconsistent components. Missing states."
+      "2": "No component system. Random elements."
+
+  - id: INF
+    name: Information Architecture
+    weight: 0.06
+    blocker: false
+    criteria:
+      - Krug usability laws followed
+      - One primary action per viewport
+      - Clear navigation hierarchy
+      - Logical content flow
+    scoring:
+      "10": "Effortless information flow. Zero confusion."
+      "8": "Clear IA. Minor navigation friction."
+      "6": "Adequate structure. Some unclear paths."
+      "4": "Confusing navigation. Competing CTAs."
+      "2": "No information architecture. Random content placement."
+
+  - id: MOB
+    name: Mobile Responsiveness
+    weight: 0.08
+    blocker: false
+    criteria:
+      - Clean at 375px viewport
+      - Touch targets ≥ 44px
+      - No parallax on mobile
+      - Thumb-reach optimized inputs
+    scoring:
+      "10": "Mobile feels native. Better than desktop in some ways."
+      "8": "Strong mobile experience. Minor issues."
+      "6": "Functional mobile. Clearly desktop-first."
+      "4": "Mobile breaks in several places. Small targets."
+      "2": "Not responsive. Desktop-only."
+
+  - id: PER
+    name: Performance Discipline
+    weight: 0.06
+    blocker: false
+    criteria:
+      - transform/opacity only animations
+      - IntersectionObserver (not scroll events)
+      - Lazy loading for below-fold content
+      - No layout thrashing
+    scoring:
+      "10": "60fps throughout. Buttery smooth on all devices."
+      "8": "Good performance. Minor jank in 1-2 areas."
+      "6": "Adequate. Some scroll performance issues."
+      "4": "Noticeable lag. Layout thrashing detected."
+      "2": "Unusable performance. Scroll hijacking. Heavy."
+
+  - id: ATM
+    name: Atmospheric Depth
+    weight: 0.06
+    blocker: false
+    criteria:
+      - Minimum 5 atmospheric techniques combined
+      - GLSL shader or equivalent
+      - Mist/fog layers
+      - Depth through parallax or perspective
+    scoring:
+      "10": "Atmospheric. Feels like entering a space."
+      "8": "Good depth. 4-5 techniques present."
+      "6": "Some depth. 2-3 techniques."
+      "4": "Flat. No atmospheric design."
+      "2": "No depth consideration whatsoever."
+
+  - id: CON
+    name: Content Quality
+    weight: 0.04
+    blocker: false
+    criteria:
+      - No lorem ipsum
+      - No placeholder content
+      - P.A.S.S. copy framework (Problem, Agitate, Solve, Ship)
+      - Specific, actionable CTAs
+    scoring:
+      "10": "Copy sells. Every word earns its place."
+      "8": "Strong copy. Minor placeholder elements."
+      "6": "Adequate copy. Generic in places."
+      "4": "Lorem ipsum detected. Stub buttons."
+      "2": "No real content. Placeholder throughout."
+
+  - id: ACC
+    name: Accessibility
+    weight: 0.02
+    blocker: true
+    criteria:
+      - Semantic HTML throughout
+      - ARIA labels where needed
+      - Full keyboard navigation
+      - WCAG AA compliance
+      - prefers-reduced-motion respected
+    scoring:
+      "10": "Exemplary accessibility. Inclusive by default."
+      "8": "Strong accessibility. Minor ARIA gaps."
+      "6": "Basic accessibility. Semantic HTML present."
+      "4": "Accessibility issues. div soup. No ARIA."
+      "2": "Inaccessible. No semantic structure."
+
+  - id: ORI
+    name: Originality
+    weight: 0.02
+    blocker: false
+    criteria:
+      - Does not look like a template
+      - Unexpected design choices present
+      - Unique interaction patterns
+      - Memorable visual identity
+    scoring:
+      "10": "Never seen before. Genuine innovation."
+      "8": "Fresh. Clear creative choices."
+      "6": "Competent but familiar."
+      "4": "Template-like. Seen this 100 times."
+      "2": "Pure template. Zero creative input."
+
+  # LUX — Luxury Psychology Conversion (embedded within CON axis for composite;
+  # scored separately for premium-market deliverables only)
+  - id: LUX
+    name: Luxury Psychology Conversion
+    weight: 0.0  # Does not change composite — checklist gate only
+    blocker: false
+    applies_when: "brief targets Affluent, HNW, VHNW, or UHNW audiences"
+    criteria:
+      - Wealth category explicitly identified before execution
+      - A.R.E. formula applied in primary copy (Acknowledge / Relate / Elevate)
+      - Psychology triggers calibrated to correct wealth tier
+      - Language register matches category (luxury transforms applied)
+      - Social proof type matches category signals (volume vs. singular names)
+      - Scarcity mechanism appropriate to tier (absent for UHNW)
+      - Price/investment framing follows price-quality heuristic
+      - CTA language matches category (no generic CTAs for VHNW+)
+      - P.A.S.S.™ structure present in sales copy (Problem / Amplification / Solution / System)
+    scoring:
+      "10": "All 9 checkpoints pass. Copy is psychologically precise."
+      "8": "7-8 checkpoints pass. Minor trigger misalignment."
+      "6": "5-6 checkpoints pass. Some generic copy patterns remain."
+      "4": "< 5 checkpoints pass. Psychology layer largely absent."
+      "2": "No luxury psychology applied. Generic marketing copy."
+    gate:
+      description: "For premium deliverables, LUX < 7.0 triggers soft rejection regardless of composite"
+      action: "BASS rewrites copy with luxury psychology skill before next Lena review"
+
+scoring_rules:
+  overall: "Weighted average of all 14 axes"
+  pass: "overall >= 8.5 AND no blocker below 7.0"
+  fail_soft: "overall < 8.5 → iteration required via Marco synthesis"
+  fail_hard: "any blocker axis < 7.0 → full rejection, rebuild required"
+  lux_gate: "For premium-market outputs: LUX < 7.0 → BASS copy revision before delivery"
+
+  workflow:
+    - "Lena scores all 14 axes for each variation"
+    - "If premium-market brief: Lena also scores LUX axis as checklist"
+    - "If fail_hard: reject immediately, specify which blocker failed"
+    - "If LUX < 7.0 on premium brief: route to Bass for copy revision"
+    - "If fail_soft: send to Marco for synthesis brief"
+    - "If pass: report to Hermes for delivery approval"
+    - "All scores logged to audits/ with timestamp"

@@ -1,0 +1,35 @@
+{
+  "agent_id": "judge",
+  "name": "Judge Agent",
+  "version": "1.0.0",
+  "role": "final_authority",
+  "priority": 0,
+  "permissions": ["approve_deployment", "block_deployment", "override_all_agents", "human_escalation"],
+  "thresholds": {
+    "business_viability": 7,
+    "design_quality_udec": 8.5,
+    "production_readiness": 80,
+    "security": 9,
+    "accessibility": 8,
+    "performance": 7,
+    "maintainability": 7,
+    "revenue_readiness": 6,
+    "user_experience": 8,
+    "deployment_readiness": 9
+  },
+  "auto_fail_conditions": [
+    "critical_security_issue",
+    "data_exposure",
+    "sql_injection",
+    "xss_vulnerability"
+  ],
+  "human_approval_required": [
+    "production_deployment",
+    "dns_changes",
+    "stripe_live",
+    "database_destructive",
+    "mass_communications"
+  ],
+  "verdicts": ["PASS", "PASS_WITH_CONDITIONS", "FAIL"],
+  "log_file": "logs/judge.jsonl"
+}

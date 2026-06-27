@@ -52,6 +52,7 @@ export async function logAgentAction(
 ) {
   try {
     const sb = getSupabase()
+    // @ts-expect-error supabase generic type inference narrows insert to never[] without generated types
     await sb.from('agent_log').insert({ agent, action, note_path: notePath ?? null, detail: detail ?? null })
   } catch {
     // non-blocking

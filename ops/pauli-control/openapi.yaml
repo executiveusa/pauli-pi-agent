@@ -1,0 +1,100 @@
+﻿openapi: 3.1.0
+info:
+  title: Pauli Pi Agent Control Bridge
+  version: 1.0.0
+  description: Secure bridge for sending structured work orders to Pauli Pi Agent.
+servers:
+  - url: https://REPLACE-WITH-YOUR-TAILSCALE-FUNNEL-OR-GATEWAY-URL
+paths:
+  /health:
+    get:
+      operationId: pauliHealth
+      summary: Check bridge health
+      responses:
+        "200":
+          description: Health status
+  /agents:
+    get:
+      operationId: listPauliAgents
+      summary: List available Pauli agents
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Agent list
+  /run:
+    post:
+      operationId: runPauliTask
+      summary: Run a Pauli Pi Agent task
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task
+              properties:
+                repo:
+                  type: string
+                  description: Repo folder inside PAULI_WORKSPACE_ROOT. Use "." or "pauli-pi-agent" for the Pauli repo.
+                mode:
+                  type: string
+                  enum: [plan, read, write, ship]
+                  description: plan/read are safe. write and ship require server-side env approval.
+                task:
+                  type: string
+                  description: Work order for the agent.
+                provider:
+                  type: string
+                  description: Optional provider, e.g. anthropic or openai.
+                model:
+                  type: string
+                  description: Optional model pattern or ID.
+                thinking:
+                  type: string
+                  enum: [off, minimal, low, medium, high, xhigh]
+                timeoutMinutes:
+                  type: integer
+                  minimum: 1
+                  maximum: 120
+      responses:
+        "200":
+          description: Job started
+  /runs/{jobId}:
+    get:
+      operationId: getPauliRun
+      summary: Get a Pauli job result
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job status and output
+  /runs/{jobId}/stop:
+    post:
+      operationId: stopPauliRun
+      summary: Stop a running Pauli job
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stop signal sent
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
