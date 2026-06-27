@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PainScorecard",
+  "type": "object",
+  "properties": {
+    "pain_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pain": {
+            "type": "string"
+          },
+          "revenue_impact": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "frequency": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "owner_stress": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "ease_of_demo": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "repeatability": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "trust_impact": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "local_advantage": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "pauli_sent_me_fit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "total_score": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pain",
+          "revenue_impact",
+          "frequency",
+          "owner_stress",
+          "ease_of_demo",
+          "repeatability",
+          "trust_impact",
+          "local_advantage",
+          "pauli_sent_me_fit",
+          "total_score"
+        ]
+      }
+    }
+  },
+  "required": [
+    "pain_points"
+  ]
+}

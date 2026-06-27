@@ -1,5 +1,5 @@
-import type { PostizPost, PostizChannel, PostizCampaign } from "./postiz.types";
-import { DEFAULT_POSTIZ_POLICY, validatePostForPublishing } from "./postiz.policy";
+import type { PostizPost, PostizChannel, PostizCampaign } from "./postiz.types.js";
+import { DEFAULT_POSTIZ_POLICY, validatePostForPublishing } from "./postiz.policy.js";
 
 export class PostizClient {
   private baseURL: string;

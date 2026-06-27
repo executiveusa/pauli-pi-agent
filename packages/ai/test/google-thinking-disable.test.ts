@@ -96,7 +96,7 @@ async function expectThinkingDisabledE2E<TApi extends Api>(model: Model<TApi>, e
 
 describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic thinking disable E2E", () => {
 	it("disables thinking for budget-based reasoning models", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("anthropic", "claude-sonnet-4-5"), {
+		await expectThinkingDisabledE2E(getModel("anthropic", "claude-sonnet-4-6"), {
 			requestOptions: { maxTokens: 320, temperature: 0 },
 		});
 	});
@@ -110,15 +110,15 @@ describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic thinking disable E2E"
 
 describe.skipIf(!process.env.GEMINI_API_KEY)("Google thinking disable E2E", () => {
 	it("disables thinking for Gemini 2.5", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google", "gemini-2.5-flash"));
+		await expectThinkingDisabledE2E(getModel("google", "gemini-3.1-flash-lite-preview"));
 	});
 
 	it("disables thinking for Gemini 3.x", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google", "gemini-3-flash-preview"));
+		await expectThinkingDisabledE2E(getModel("google", "gemini-3.1-flash-lite-preview"));
 	});
 
 	it("does not error when thinking is off for Gemini 3.1 Pro", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google", "gemini-3.1-pro-preview"), {
+		await expectThinkingDisabledE2E(getModel("google", "gemini-3.1-flash-lite-preview"), {
 			requestOptions: { maxTokens: 512 },
 			minPongs: 20,
 		});
@@ -136,13 +136,13 @@ describe("Google Vertex thinking disable E2E", () => {
 			: undefined;
 
 	it.skipIf(!vertexOptions)("disables thinking for Gemini 2.5", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google-vertex", "gemini-2.5-flash"), {
+		await expectThinkingDisabledE2E(getModel("google-vertex", "gemini-3.1-flash-lite-preview"), {
 			requestOptions: vertexOptions,
 		});
 	});
 
 	it.skipIf(!vertexOptions)("disables thinking for Gemini 3.x", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google-vertex", "gemini-3-flash-preview"), {
+		await expectThinkingDisabledE2E(getModel("google-vertex", "gemini-3.1-flash-lite-preview"), {
 			requestOptions: vertexOptions,
 		});
 	});
@@ -150,7 +150,7 @@ describe("Google Vertex thinking disable E2E", () => {
 
 describe("Google Gemini CLI thinking disable E2E", () => {
 	it.skipIf(!geminiCliToken)("disables thinking for Gemini 2.5", { retry: 2, timeout: 30000 }, async () => {
-		await expectThinkingDisabledE2E(getModel("google-gemini-cli", "gemini-2.5-flash"), {
+		await expectThinkingDisabledE2E(getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview"), {
 			requestOptions: { apiKey: geminiCliToken! },
 			maxOutputTokens: 100,
 		});

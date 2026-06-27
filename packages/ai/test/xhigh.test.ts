@@ -36,9 +36,9 @@ describe.skipIf(!process.env.OPENAI_API_KEY)("xhigh reasoning", () => {
 		});
 	});
 
-	describe("gpt-5-mini (does not support xhigh)", () => {
+	describe("gpt-5-chat-latest (does not support xhigh)", () => {
 		it("should error with openai-responses when using xhigh", async () => {
-			const model = getModel("openai", "gpt-5-mini");
+			const model = getModel("openai", "gpt-5-chat-latest");
 			const s = stream(model, makeContext(), { reasoningEffort: "xhigh" });
 
 			for await (const _ of s) {
@@ -51,7 +51,7 @@ describe.skipIf(!process.env.OPENAI_API_KEY)("xhigh reasoning", () => {
 		});
 
 		it("should error with openai-completions when using xhigh", async () => {
-			const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-mini");
+			const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest");
 			void _compat;
 			const model: Model<"openai-completions"> = {
 				...baseModel,

@@ -1,0 +1,102 @@
+{
+  "scan_metadata": {
+    "date": "2026-05-28T12:15:00Z",
+    "repository": "executiveusa/pauli-pi-agent",
+    "scan_phase": "Step 1 - Context Analysis",
+    "status": "complete",
+    "blockers": 0,
+    "warnings": 0
+  },
+  "repository_info": {
+    "type": "typescript_monorepo",
+    "package_manager": "npm",
+    "workspaces_enabled": true,
+    "node_version_required": ">=20.0.0",
+    "typescript_version": "5.7.3",
+    "strict_mode": true
+  },
+  "packages": [
+    {
+      "name": "@mariozechner/pi-agent-core",
+      "path": "packages/agent",
+      "version": "0.67.2",
+      "main_dependency": "@mariozechner/pi-ai@^0.67.2",
+      "description": "Core agent runtime with tool calling and state management"
+    }
+  ],
+  "agent_runtime": {
+    "primary_files": [
+      {
+        "path": "packages/agent/src/agent.ts",
+        "purpose": "Agent class definition and state management"
+      },
+      {
+        "path": "packages/agent/src/agent-loop.ts",
+        "purpose": "Main execution loop and event streaming"
+      },
+      {
+        "path": "packages/agent/src/types.ts",
+        "purpose": "TypeScript interfaces for agent system"
+      }
+    ]
+  },
+  "approval_gates": {
+    "existing_hooks": [
+      {
+        "name": "beforeToolCall",
+        "location": "Agent class",
+        "execution_timing": "before_tool_call"
+      },
+      {
+        "name": "afterToolCall",
+        "location": "Agent class",
+        "execution_timing": "after_tool_execution"
+      }
+    ]
+  },
+  "integration_points": [
+    {
+      "name": "Task Classification",
+      "hook": "beforeToolCall"
+    },
+    {
+      "name": "Goal Packet Creation",
+      "hook": "transformContext"
+    },
+    {
+      "name": "Depth Determination",
+      "hook": "beforeToolCall"
+    },
+    {
+      "name": "Token Budgeting",
+      "hook": "beforeToolCall + afterToolCall"
+    },
+    {
+      "name": "Loop Phase Enforcement",
+      "system": "orchestration/executor"
+    },
+    {
+      "name": "Evidence Policy Validation",
+      "hook": "afterToolCall"
+    },
+    {
+      "name": "Persona Routing",
+      "hook": "beforeToolCall"
+    },
+    {
+      "name": "Stability Guard",
+      "hook": "beforeToolCall"
+    },
+    {
+      "name": "Trace Recording",
+      "hook": "afterToolCall"
+    },
+    {
+      "name": "Approval Gate Respect",
+      "hook": "hook stacking"
+    }
+  ],
+  "status": "ready_for_implementation",
+  "blockers_found": 0,
+  "warnings_found": 0
+}

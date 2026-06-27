@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!--
+  ArchonX Mercury Voice Agent — Webflow Embed
+  Drop this inside a Webflow Custom Code block (site-wide or page-level).
+  Replace AGENT_ENDPOINT with your deployed agent URL.
+  The INCEPTION_API_KEY stays on your server; this file contains no secrets.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mercury Agent Embed</title>
+  <style>
+    :root {
+      --mercury-primary: #0D0D0D;
+      --mercury-accent: #67F7C8;
+      --mercury-radius: 16px;
+    }
+
+    body {
+      margin: 0;
+      background: transparent;
+    }
+
+    #archonx-launcher {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+    }
+
+    #archonx-toggle-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--mercury-accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px rgba(103, 247, 200, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #archonx-toggle-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 32px rgba(103, 247, 200, 0.5);
+    }
+
+    #archonx-toggle-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #0D0D0D;
+    }
+
+    #archonx-chat-frame {
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      width: 400px;
+      height: 600px;
+      border: none;
+      border-radius: var(--mercury-radius);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 9998;
+      background: var(--mercury-primary);
+    }
+
+    #archonx-chat-frame.open {
+      display: block;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      #archonx-chat-frame {
+        width: 100vw;
+        height: 100dvh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="archonx-launcher">
+  <!-- Chat iframe — src points to your deployed agent endpoint -->
+  <iframe
+    id="archonx-chat-frame"
+    src="https://YOUR_AGENT_ENDPOINT/chat?tenant=YOUR_TENANT_ID"
+    allow="microphone"
+    title="Mercury Agent"
+  ></iframe>
+
+  <!-- Launcher button -->
+  <button
+    id="archonx-toggle-btn"
+    aria-label="Open chat"
+    aria-expanded="false"
+    aria-controls="archonx-chat-frame"
+  >
+    <!-- Chat icon (open state) -->
+    <svg id="icon-chat" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+    </svg>
+    <!-- Close icon (will be swapped in JS) -->
+    <svg id="icon-close" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+(function () {
+  var btn   = document.getElementById('archonx-toggle-btn');
+  var frame = document.getElementById('archonx-chat-frame');
+  var iconChat  = document.getElementById('icon-chat');
+  var iconClose = document.getElementById('icon-close');
+  var open  = false;
+
+  btn.addEventListener('click', function () {
+    open = !open;
+    frame.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', String(open));
+    iconChat.style.display  = open ? 'none' : '';
+    iconClose.style.display = open ? ''     : 'none';
+  });
+
+  // Close when Escape is pressed
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && open) btn.click();
+  });
+
+  // Listen for close messages posted from within the iframe
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'archonx:close') {
+      if (open) btn.click();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

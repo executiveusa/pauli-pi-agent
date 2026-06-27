@@ -48,3 +48,12 @@ collect.sh
 screenshots/
 test-results/
 playwright-report/
+
+# Pauli secrets — never commit the cosmos vault or any local secret dump
+Cosmos_Vault.env
+*Cosmos_Vault*
+*secrets*.env
+*credentials*.json
+
+# Brainstorming visual-companion mockups (local-only design artifacts)
+.superpowers/

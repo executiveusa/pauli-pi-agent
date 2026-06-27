@@ -151,7 +151,7 @@ async function verifyToolResultImagesStayInFunctionCallOutput<TApi extends Api>(
 
 describe("Responses API tool result images", () => {
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses Provider (gpt-5-mini)", () => {
-		const model = getModel("openai", "gpt-5-mini");
+		const model = getModel("openai", "gpt-5-chat-latest");
 
 		it("should send tool result images in function_call_output", { retry: 3, timeout: 30000 }, async () => {
 			await verifyToolResultImagesStayInFunctionCallOutput(model, { reasoningEffort: "low" });
@@ -159,7 +159,7 @@ describe("Responses API tool result images", () => {
 	});
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses Provider (gpt-4o-mini)", () => {
-		const model = getModel("azure-openai-responses", "gpt-4o-mini");
+		const model = getModel("azure-openai-responses", "gpt-5-chat-latest");
 		const azureDeploymentName = resolveAzureDeploymentName(model.id);
 		const azureOptions = azureDeploymentName ? { azureDeploymentName } : {};
 
@@ -169,7 +169,7 @@ describe("Responses API tool result images", () => {
 	});
 
 	describe("GitHub Copilot Responses Provider (gpt-5-mini)", () => {
-		const model = getModel("github-copilot", "gpt-5-mini");
+		const model = getModel("github-copilot", "gpt-5-chat-latest");
 
 		it.skipIf(!githubCopilotToken)(
 			"should send tool result images in function_call_output",

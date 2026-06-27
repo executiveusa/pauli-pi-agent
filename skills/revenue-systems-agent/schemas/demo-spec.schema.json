@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DemoSpec",
+  "type": "object",
+  "properties": {
+    "demo_name": {
+      "type": "string"
+    },
+    "niche": {
+      "type": "string"
+    },
+    "business_result": {
+      "type": "string"
+    },
+    "recommended_demo_type": {
+      "type": "string",
+      "enum": [
+        "static",
+        "clickable",
+        "live-mini-app",
+        "video-walkthrough"
+      ]
+    },
+    "screens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "screen": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "screen",
+          "purpose"
+        ]
+      }
+    },
+    "automations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_model": {
+      "type": "object"
+    },
+    "build_complexity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  },
+  "required": [
+    "demo_name",
+    "niche",
+    "business_result",
+    "screens",
+    "automations"
+  ]
+}
