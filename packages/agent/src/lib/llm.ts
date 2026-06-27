@@ -12,7 +12,10 @@ export type TaskType =
 	| "long-context"
 	| "vision"
 	| "github-free"
-	| "default";
+	| "default"
+	| "mercury-fast"
+	| "mercury-voice"
+	| "mercury-diffusion";
 
 export interface LLMMessage {
 	role: "user" | "assistant" | "system";
@@ -52,6 +55,27 @@ const TASK_ROUTES: Record<TaskType, RouteConfig> = {
 		provider: "https://models.github.ai/inference",
 		apiKeyEnv: "GITHUB_TOKEN",
 		maxTokens: 4096,
+	},
+	"mercury-fast": {
+		model: "mercury-2",
+		direct: true,
+		provider: process.env.MERCURY_BASE_URL || "https://api.inceptionlabs.ai/v1",
+		apiKeyEnv: "INCEPTION_API_KEY",
+		maxTokens: 4096,
+	},
+	"mercury-voice": {
+		model: "mercury-2",
+		direct: true,
+		provider: process.env.MERCURY_BASE_URL || "https://api.inceptionlabs.ai/v1",
+		apiKeyEnv: "INCEPTION_API_KEY",
+		maxTokens: 2048,
+	},
+	"mercury-diffusion": {
+		model: "mercury-2",
+		direct: true,
+		provider: process.env.MERCURY_BASE_URL || "https://api.inceptionlabs.ai/v1",
+		apiKeyEnv: "INCEPTION_API_KEY",
+		maxTokens: 8192,
 	},
 	default: { model: "claude-sonnet-4-5", maxTokens: 4096 },
 };

@@ -13,7 +13,7 @@
 //   const { taskId } = await workflow.spawn(query);
 
 import type { Absurd } from "absurd-sdk";
-import { GEO_REGIONS, type BrightDataTool, type GeoRegion } from "./tools/brightdata.js";
+import { type BrightDataTool, GEO_REGIONS, type GeoRegion } from "./tools/brightdata.js";
 import type { FirecrawlTool } from "./tools/firecrawl.js";
 
 export const RESEARCH_TASK = "deep-research";

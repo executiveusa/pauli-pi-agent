@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { test } from "node:test";
+import { test } from "vitest";
 import { DEFAULT_CONFIG, loadConfig } from "../src/services/config.js";
 
 test("DEFAULT_CONFIG has required fields", () => {

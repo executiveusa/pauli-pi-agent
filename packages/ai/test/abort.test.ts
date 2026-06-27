@@ -103,7 +103,7 @@ async function testAbortThenNewMessage<TApi extends Api>(llm: Model<TApi>, optio
 
 describe("AI Providers Abort Tests", () => {
 	describe.skipIf(!process.env.GEMINI_API_KEY)("Google Provider Abort", () => {
-		const llm = getModel("google", "gemini-2.5-flash");
+		const llm = getModel("google", "gemini-3.1-flash-lite-preview");
 
 		it("should abort mid-stream", { retry: 3 }, async () => {
 			await testAbortSignal(llm, { thinking: { enabled: true } });
@@ -115,7 +115,7 @@ describe("AI Providers Abort Tests", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Completions Provider Abort", () => {
-		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+		const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 		void _compat;
 		const llm: Model<"openai-completions"> = {
 			...baseModel,
@@ -132,7 +132,7 @@ describe("AI Providers Abort Tests", () => {
 	});
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses Provider Abort", () => {
-		const llm = getModel("openai", "gpt-5-mini");
+		const llm = getModel("openai", "gpt-5-chat-latest");
 
 		it("should abort mid-stream", { retry: 3 }, async () => {
 			await testAbortSignal(llm);
@@ -144,7 +144,7 @@ describe("AI Providers Abort Tests", () => {
 	});
 
 	describe.skipIf(!hasAzureOpenAICredentials())("Azure OpenAI Responses Provider Abort", () => {
-		const llm = getModel("azure-openai-responses", "gpt-4o-mini");
+		const llm = getModel("azure-openai-responses", "gpt-5-chat-latest");
 		const azureDeploymentName = resolveAzureDeploymentName(llm.id);
 		const azureOptions = azureDeploymentName ? { azureDeploymentName } : {};
 
@@ -158,7 +158,7 @@ describe("AI Providers Abort Tests", () => {
 	});
 
 	describe.skipIf(!process.env.ANTHROPIC_OAUTH_TOKEN)("Anthropic Provider Abort", () => {
-		const llm = getModel("anthropic", "claude-opus-4-1-20250805");
+		const llm = getModel("anthropic", "claude-opus-4-6");
 
 		it("should abort mid-stream", { retry: 3 }, async () => {
 			await testAbortSignal(llm, { thinkingEnabled: true, thinkingBudgetTokens: 2048 });
@@ -220,12 +220,12 @@ describe("AI Providers Abort Tests", () => {
 	// Google Gemini CLI / Antigravity share the same provider, so one test covers both
 	describe("Google Gemini CLI Provider Abort", () => {
 		it.skipIf(!geminiCliToken)("should abort mid-stream", { retry: 3 }, async () => {
-			const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+			const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 			await testAbortSignal(llm, { apiKey: geminiCliToken });
 		});
 
 		it.skipIf(!geminiCliToken)("should handle immediate abort", { retry: 3 }, async () => {
-			const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+			const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 			await testImmediateAbort(llm, { apiKey: geminiCliToken });
 		});
 	});

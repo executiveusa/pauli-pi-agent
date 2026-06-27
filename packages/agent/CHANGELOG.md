@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+- Mercury 2 (Inception Labs) client and stream layer (`src/mercury/`)
+  - `createMercuryModel()` — OpenAI-compat model with Inception provider overrides
+  - `streamMercuryChat()`, `streamMercuryDiffusion()` — server-only streaming helpers
+  - Diffusion mode injects `diffusing: true` via `onPayload` hook
+- Voice stability gate (`src/voice/stability-gate.ts`)
+  - Sentence-boundary detection buffer between diffusion stream and TTS
+  - Raw diffusion fragments are never passed directly to TTS
+- Multi-tenant system (`src/tenants/`)
+  - `TenantConfig` schema with plan enforcement (clean / voice / mercury_diffusion)
+  - Local file + remote control plane config loading
+  - Permission assertions for voice, diffusion, and tool access
+  - Client-safe usage ledger with secret redaction
+- Tool registry and router (`src/tools/`)
+  - `registerTool()`, `routeToolCall()` with permission + approval gates
+  - Built-in stubs: lead_capture, appointment_request, quote_request, upload_context, generate_asset_request
+
 ## [0.67.2] - 2026-04-14
 
 ## [0.67.1] - 2026-04-13

@@ -1,6 +1,6 @@
 import "@mariozechner/mini-lit/dist/ThemeToggle.js";
-import { Agent, type AgentMessage } from "@mariozechner/pi-agent-core";
-import { getModel } from "@mariozechner/pi-ai";
+import { Agent, type AgentMessage, type AgentTool } from "@mariozechner/pi-agent-core";
+import { getModels, getProviders, type Model } from "@mariozechner/pi-ai";
 import {
 	type AgentState,
 	ApiKeyPromptDialog,
@@ -21,6 +21,9 @@ import {
 } from "@mariozechner/pi-web-ui";
 import { html, render } from "lit";
 import { Bell, Globe, History, Plus, Settings } from "lucide";
+import { registerMercuryDiffusionRenderer } from "./mercury-diffusion-renderer.js";
+import { pickModel } from "./smart-router.js";
+import "./token-tracker.js";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
@@ -30,8 +33,8 @@ import { createSystemNotification, customConvertToLlm, registerCustomMessageRend
 // ============================================================================
 // DEEP RESEARCH MODE
 // ============================================================================
-
-const DEEP_RESEARCH_API = (import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
+const DEEP_RESEARCH_API =
+	(import.meta.env as Record<string, string | undefined>).VITE_DEEP_RESEARCH_API ?? "http://localhost:3456";
 
 const DEEP_RESEARCH_SYSTEM_PROMPT = `You are a deep research agent specializing in comprehensive, globally balanced analysis.
 
@@ -83,7 +86,7 @@ const GEO_HINT_MAP: Record<string, string[]> = {
 };
 
 // Web search tool — conforms to AgentTool<any> for the ChatPanel toolsFactory
-function createWebSearchTool() {
+function createWebSearchTool(): AgentTool<any> {
 	return {
 		label: "Web Search",
 		name: "web_search",
@@ -130,7 +133,10 @@ function createWebSearchTool() {
 							error?: string;
 						};
 						if (snapshot.status === "completed" && snapshot.result?.document) {
-							return { content: [{ type: "text", text: snapshot.result.document }], details: snapshot.result.document };
+							return {
+								content: [{ type: "text", text: snapshot.result.document }],
+								details: snapshot.result.document,
+							};
 						}
 						if (snapshot.status === "failed") {
 							const msg = `Deep research task failed: ${snapshot.error ?? "unknown error"}`;
@@ -152,6 +158,8 @@ function createWebSearchTool() {
 
 // Register custom message renderers
 registerCustomMessageRenderers();
+// Register Mercury diffusion renderer (visual effect for diffusion models)
+registerMercuryDiffusionRenderer();
 
 // Create stores
 const settings = new SettingsStore();
@@ -298,8 +306,10 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 	agent = new Agent({
 		initialState: initialState || {
 			systemPrompt: baseSystemPrompt,
-			model: getModel("anthropic", "claude-sonnet-4-6"),
-			thinkingLevel: isDeepResearch ? "auto" : "off",
+			// Smart router: default to a FREE model for tool calls / chat.
+			// User can override via the model selector in the UI.
+			model: pickModel("fast").model,
+			thinkingLevel: "off",
 			messages: [],
 			tools: [],
 		},
@@ -339,7 +349,7 @@ Feel free to use these tools when needed to provide accurate and helpful respons
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
 			if (isDeepResearch) {
-				return [replTool, createWebSearchTool() as typeof replTool];
+				return [replTool, createWebSearchTool()];
 			}
 			return [replTool];
 		},
@@ -371,6 +381,57 @@ const loadSession = async (sessionId: string): Promise<boolean> => {
 	return true;
 };
 
+// ============================================================
+// MODEL SWITCHER — user can pick any model; token tracker syncs
+// ============================================================
+let showModelPicker = false;
+
+function switchModel(model: Model<any>) {
+	if (agent) {
+		// Recreate the agent with the new model, preserving messages and session
+		const currentModel = agent.state.model;
+		if (currentModel?.id === model.id && currentModel?.provider === model.provider) {
+			// Same model, no need to switch
+			showModelPicker = false;
+			renderApp();
+			return;
+		}
+		// Create new agent with the selected model
+		createAgent({
+			model,
+			thinkingLevel: agent.state.thinkingLevel,
+			messages: agent.state.messages,
+			tools: agent.state.tools,
+			systemPrompt: agent.state.systemPrompt,
+		}).then(() => {
+			window.dispatchEvent(
+				new CustomEvent("agent-model-changed", { detail: { model: model.id, provider: model.provider } }),
+			);
+		});
+	}
+	showModelPicker = false;
+	renderApp();
+}
+
+function toggleModelPicker() {
+	showModelPicker = !showModelPicker;
+	renderApp();
+}
+
+function getAvailableModels(): Array<{ provider: string; id: string; name: string; model: Model<any> }> {
+	const result: Array<{ provider: string; id: string; name: string; model: Model<any> }> = [];
+	try {
+		for (const provider of getProviders()) {
+			for (const model of getModels(provider as any)) {
+				result.push({ provider, id: model.id, name: model.name, model });
+			}
+		}
+	} catch {
+		// ignore
+	}
+	return result;
+}
+
 const newSession = () => {
 	const url = new URL(window.location.href);
 	url.search = "";
@@ -386,6 +447,8 @@ const renderApp = () => {
 
 	const appHtml = html`
 		<div class="w-full h-screen flex flex-col bg-background text-foreground overflow-hidden">
+			<!-- Token Tracker (floating, bottom-left) -->
+			<token-tracker></token-tracker>
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-border shrink-0">
 				<div class="flex items-center gap-2 px-4 py-">
@@ -517,6 +580,48 @@ const renderApp = () => {
 						<span class="hidden sm:inline">${isDeepResearch ? "Researching" : "Research"}</span>
 						${isDeepResearch ? html`<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>` : ""}
 					</button>
+
+					<!-- Model Switcher -->
+					<div class="relative">
+						<button
+							class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+								showModelPicker
+									? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/50"
+									: "text-muted-foreground hover:bg-secondary hover:text-foreground"
+							}"
+							@click=${() => toggleModelPicker()}
+							title="Click to switch model"
+						>
+							<span class="max-w-24 truncate">${agent?.state.model?.id ?? "claude-sonnet-4-6"}</span>
+						</button>
+						${
+							showModelPicker
+								? html`
+								<div class="absolute top-full right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto min-w-64">
+									<div class="p-2 border-b border-zinc-700">
+										<div class="text-xs font-semibold text-zinc-300 px-2 py-1">Switch Model</div>
+										<div class="text-xs text-zinc-500 px-2">Free models first, GLM-5.2 for big tasks</div>
+									</div>
+									${getAvailableModels().map(
+										(m) => html`
+											<button
+												class="w-full text-left px-3 py-2 text-xs hover:bg-zinc-800 transition-colors flex justify-between items-center ${
+													agent?.state.model?.id === m.id
+														? "bg-emerald-500/10 text-emerald-400"
+														: "text-zinc-300"
+												}"
+												@click=${() => switchModel(m.model)}
+											>
+												<span class="truncate">${m.name}</span>
+												<span class="text-zinc-500 ml-2">${m.provider}</span>
+											</button>
+										`,
+									)}
+								</div>
+							`
+								: ""
+						}
+					</div>
 
 					<theme-toggle></theme-toggle>
 					${Button({

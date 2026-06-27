@@ -1,0 +1,59 @@
+# ArchonX Tool Permission Matrix
+# Defines which tools are available per plan and permission flag.
+# All tool calls pass through packages/agent/src/tools/tool-router.ts
+
+tools:
+  lead_capture:
+    scope: lead_capture
+    requires_approval: false
+    plans: [clean, voice, mercury_diffusion]
+    description: Capture visitor contact information for CRM follow-up
+
+  appointment_request:
+    scope: appointment
+    requires_approval: false
+    plans: [clean, voice, mercury_diffusion]
+    permission_flag: canBookAppointments
+    description: Request appointment or consultation booking
+
+  quote_request:
+    scope: quote
+    requires_approval: false
+    plans: [clean, voice, mercury_diffusion]
+    description: Request service quote or estimate
+
+  upload_context:
+    scope: upload
+    requires_approval: false
+    plans: [voice, mercury_diffusion]
+    description: Upload document for conversation context
+
+  generate_asset_request:
+    scope: asset_generation
+    requires_approval: true
+    plans: [mercury_diffusion]
+    permission_flag: canGenerateImages
+    description: Request generation of image, video, or document asset
+
+  web_search:
+    scope: browser
+    requires_approval: false
+    plans: [mercury_diffusion]
+    permission_flag: canUseBrowser
+    description: Search the web for current information
+
+  send_email:
+    scope: email
+    requires_approval: true
+    plans: [mercury_diffusion]
+    permission_flag: canSendEmail
+    description: Send email on behalf of the agent
+
+approval_gates:
+  money_tools:
+    - transfer_funds
+    - pay_invoice
+    - initiate_payment
+    - purchase
+    - refund
+  requires_approval_flag: requiresApprovalForMoneyMovement
