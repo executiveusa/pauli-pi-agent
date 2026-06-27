@@ -1,6 +1,9 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "cd brain-dashboard && npm run build",
-  "outputDirectory": "brain-dashboard/.next",
-  "installCommand": "npm install"
+  "framework": "vite",
+  "buildCommand": "cd packages/web-ui/example && npm run build",
+  "outputDirectory": "packages/web-ui/example/dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
