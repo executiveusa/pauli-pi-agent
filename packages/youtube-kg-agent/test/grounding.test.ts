@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { test } from "node:test";
+import { test } from "vitest";
 import { GroundingService } from "../src/services/grounding.js";
 import type { YouTubeVideo } from "../src/types.js";
 

@@ -3,72 +3,115 @@
   "title": "ArchonX Tenant Configuration",
   "type": "object",
   "required": ["tenantId", "clientName", "plan", "branding", "routing", "billing", "permissions"],
-  "properties": {
-    "tenantId": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
-      "description": "Globally unique tenant identifier (slug format)"
-    },
-    "clientName": {
-      "type": "string",
-      "description": "Human-readable client/company name"
-    },
-    "plan": {
-      "type": "string",
-      "enum": ["clean", "voice", "mercury_diffusion"],
-      "description": "Feature plan controlling which capabilities are available"
-    },
-    "branding": {
-      "type": "object",
-      "required": ["botName"],
+  "allOf": [
+    {
       "properties": {
-        "botName": { "type": "string" },
-        "logoUrl": { "type": "string", "format": "uri" },
-        "primaryColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
-        "accentColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
-        "voiceName": {
+        "tenantId": {
           "type": "string",
-          "enum": ["shimmer", "alloy", "echo", "fable", "onyx", "nova"]
+          "pattern": "^[a-z0-9_-]+$",
+          "description": "Globally unique tenant identifier (slug format)"
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Human-readable client/company name"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["clean", "voice", "mercury_diffusion"],
+          "description": "Feature plan controlling which capabilities are available"
+        },
+        "branding": {
+          "type": "object",
+          "required": ["botName"],
+          "properties": {
+            "botName": { "type": "string" },
+            "logoUrl": { "type": "string", "format": "uri" },
+            "primaryColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "accentColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "voiceName": {
+              "type": "string",
+              "description": "Voice name for TTS output (provider-specific, e.g., OpenAI: shimmer, alloy, echo, fable, onyx, nova)"
+            }
+          }
+        },
+        "routing": {
+          "type": "object",
+          "required": ["defaultModel", "reasoningEffort", "diffusionEnabled", "voiceEnabled"],
+          "properties": {
+            "defaultModel": { "type": "string" },
+            "reasoningEffort": {
+              "type": "string",
+              "enum": ["instant", "low", "medium", "high"]
+            },
+            "diffusionEnabled": { "type": "boolean" },
+            "voiceEnabled": { "type": "boolean" }
+          }
+        },
+        "billing": {
+          "type": "object",
+          "required": ["mode", "usagePaidByClient"],
+          "properties": {
+            "mode": { "type": "string", "enum": ["client_byok", "managed_pass_through"] },
+            "usagePaidByClient": { "type": "boolean" },
+            "setupFee": { "type": "number", "minimum": 0 },
+            "monthlyMaintenanceFee": { "type": "number", "minimum": 0 }
+          }
+        },
+        "permissions": {
+          "type": "object",
+          "required": [
+            "canUseBrowser", "canGenerateImages", "canGenerateVideo",
+            "canSendEmail", "canBookAppointments", "requiresApprovalForMoneyMovement"
+          ],
+          "properties": {
+            "canUseBrowser": { "type": "boolean" },
+            "canGenerateImages": { "type": "boolean" },
+            "canGenerateVideo": { "type": "boolean" },
+            "canSendEmail": { "type": "boolean" },
+            "canBookAppointments": { "type": "boolean" },
+            "requiresApprovalForMoneyMovement": { "type": "boolean" }
+          }
         }
       }
     },
-    "routing": {
-      "type": "object",
-      "required": ["defaultModel", "reasoningEffort", "diffusionEnabled", "voiceEnabled"],
-      "properties": {
-        "defaultModel": { "type": "string" },
-        "reasoningEffort": {
-          "type": "string",
-          "enum": ["instant", "low", "medium", "high"]
-        },
-        "diffusionEnabled": { "type": "boolean" },
-        "voiceEnabled": { "type": "boolean" }
+    {
+      "if": { "properties": { "plan": { "const": "clean" } } },
+      "then": {
+        "properties": {
+          "routing": {
+            "properties": {
+              "voiceEnabled": { "const": false },
+              "diffusionEnabled": { "const": false }
+            }
+          }
+        }
       }
     },
-    "billing": {
-      "type": "object",
-      "required": ["mode", "usagePaidByClient"],
-      "properties": {
-        "mode": { "type": "string", "enum": ["client_byok", "managed_pass_through"] },
-        "usagePaidByClient": { "type": "boolean" },
-        "setupFee": { "type": "number", "minimum": 0 },
-        "monthlyMaintenanceFee": { "type": "number", "minimum": 0 }
+    {
+      "if": { "properties": { "plan": { "const": "voice" } } },
+      "then": {
+        "properties": {
+          "routing": {
+            "properties": {
+              "voiceEnabled": { "const": true },
+              "diffusionEnabled": { "const": false }
+            }
+          }
+        }
       }
     },
-    "permissions": {
-      "type": "object",
-      "required": [
-        "canUseBrowser", "canGenerateImages", "canGenerateVideo",
-        "canSendEmail", "canBookAppointments", "requiresApprovalForMoneyMovement"
-      ],
-      "properties": {
-        "canUseBrowser": { "type": "boolean" },
-        "canGenerateImages": { "type": "boolean" },
-        "canGenerateVideo": { "type": "boolean" },
-        "canSendEmail": { "type": "boolean" },
-        "canBookAppointments": { "type": "boolean" },
-        "requiresApprovalForMoneyMovement": { "type": "boolean" }
+    {
+      "if": { "properties": { "plan": { "const": "mercury_diffusion" } } },
+      "then": {
+        "properties": {
+          "routing": {
+            "properties": {
+              "voiceEnabled": { "const": true },
+              "diffusionEnabled": { "const": true }
+            }
+          }
+        }
       }
     }
-  }
+  ]
 }

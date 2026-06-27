@@ -14,9 +14,8 @@ import { Absurd } from "absurd-sdk";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import { DEEP_RESEARCH_SYSTEM_PROMPT } from "./prompts.js";
-import { BrightDataTool } from "./tools/brightdata.js";
+import { BrightDataTool, GEO_REGIONS, type GeoRegion } from "./tools/brightdata.js";
 import { FirecrawlTool } from "./tools/firecrawl.js";
-import { GEO_REGIONS, type GeoRegion } from "./tools/brightdata.js";
 import { ResearchWorkflow } from "./workflow.js";
 
 const PORT = Number(process.env.PORT ?? 3456);
@@ -74,7 +73,11 @@ app.get("/health", (_req: Request, res: Response) => {
 
 // Spawn a new research task
 app.post("/api/research", async (req: Request, res: Response) => {
-	const { query, regions: rawRegions, maxSources } = req.body as {
+	const {
+		query,
+		regions: rawRegions,
+		maxSources,
+	} = req.body as {
 		query?: string;
 		regions?: unknown;
 		maxSources?: number;
@@ -86,7 +89,7 @@ app.post("/api/research", async (req: Request, res: Response) => {
 	}
 
 	const validRegions: GeoRegion[] | undefined = Array.isArray(rawRegions)
-		? (rawRegions.filter((r): r is GeoRegion => GEO_REGIONS.includes(r as GeoRegion)))
+		? rawRegions.filter((r): r is GeoRegion => GEO_REGIONS.includes(r as GeoRegion))
 		: undefined;
 
 	try {

@@ -67,6 +67,22 @@ export function getAllRecords(): Readonly<UsageRecord[]> {
 	return ledgerEntries;
 }
 
+/** Returns aggregated usage for a tenant. */
+export function getTenantUsageLedger(tenantId: string): {
+	inputTokens: number;
+	outputTokens: number;
+	estimatedCost: number;
+} {
+	const entries = ledgerEntries.filter((e) => e.tenantId === tenantId);
+	const inputTokens = entries.reduce((sum, e) => sum + e.estimatedInputTokens, 0);
+	const outputTokens = entries.reduce((sum, e) => sum + e.estimatedOutputTokens, 0);
+
+	// Rough cost estimate: $0.01 per 1k input tokens, $0.03 per 1k output tokens
+	const estimatedCost = (inputTokens / 1000) * 0.01 + (outputTokens / 1000) * 0.03;
+
+	return { inputTokens, outputTokens, estimatedCost };
+}
+
 function sanitizeEntry(entry: UsageRecord): UsageRecord {
 	// Strip any field that looks like an API key
 	const safe = { ...entry };

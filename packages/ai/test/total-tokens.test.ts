@@ -109,7 +109,7 @@ describe("totalTokens field", () => {
 			"claude-3-5-haiku - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("anthropic", "claude-3-5-haiku-20241022");
+				const llm = getModel("anthropic", "claude-sonnet-4-6");
 
 				console.log(`\nAnthropic / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: process.env.ANTHROPIC_API_KEY });
@@ -132,7 +132,7 @@ describe("totalTokens field", () => {
 			"claude-sonnet-4 - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("anthropic", "claude-sonnet-4-20250514");
+				const llm = getModel("anthropic", "claude-sonnet-4-6");
 
 				console.log(`\nAnthropic OAuth / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: anthropicOAuthToken });
@@ -159,7 +159,7 @@ describe("totalTokens field", () => {
 			"gpt-4o-mini - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const { compat: _compat, ...baseModel } = getModel("openai", "gpt-4o-mini")!;
+				const { compat: _compat, ...baseModel } = getModel("openai", "gpt-5-chat-latest")!;
 				void _compat;
 				const llm: Model<"openai-completions"> = {
 					...baseModel,
@@ -180,7 +180,7 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!process.env.OPENAI_API_KEY)("OpenAI Responses", () => {
 		it("gpt-4o - should return totalTokens equal to sum of components", { retry: 3, timeout: 60000 }, async () => {
-			const llm = getModel("openai", "gpt-4o");
+			const llm = getModel("openai", "gpt-5-chat-latest");
 
 			console.log(`\nOpenAI Responses / ${llm.id}:`);
 			const { first, second } = await testTotalTokensWithCache(llm);
@@ -198,7 +198,7 @@ describe("totalTokens field", () => {
 			"gpt-4o-mini - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("azure-openai-responses", "gpt-4o-mini");
+				const llm = getModel("azure-openai-responses", "gpt-5-chat-latest");
 				const azureDeploymentName = resolveAzureDeploymentName(llm.id);
 				const azureOptions = azureDeploymentName ? { azureDeploymentName } : {};
 
@@ -223,7 +223,7 @@ describe("totalTokens field", () => {
 			"gemini-2.0-flash - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("google", "gemini-2.0-flash");
+				const llm = getModel("google", "gemini-3.1-flash-lite-preview");
 
 				console.log(`\nGoogle / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm);
@@ -246,7 +246,7 @@ describe("totalTokens field", () => {
 			"grok-3-fast - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("xai", "grok-3-fast");
+				const llm = getModel("xai", "grok-code-fast-1");
 
 				console.log(`\nxAI / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: process.env.XAI_API_KEY });
@@ -540,7 +540,7 @@ describe("totalTokens field", () => {
 			"gpt-4o - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("github-copilot", "gpt-4o");
+				const llm = getModel("github-copilot", "gpt-5-chat-latest");
 
 				console.log(`\nGitHub Copilot / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: githubCopilotToken });
@@ -557,7 +557,7 @@ describe("totalTokens field", () => {
 			"claude-sonnet-4 - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4-6");
 
 				console.log(`\nGitHub Copilot / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: githubCopilotToken });
@@ -580,7 +580,7 @@ describe("totalTokens field", () => {
 			"gemini-2.5-flash - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("google-gemini-cli", "gemini-2.5-flash");
+				const llm = getModel("google-gemini-cli", "gemini-3.1-flash-lite-preview");
 
 				console.log(`\nGoogle Gemini CLI / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: geminiCliToken });
@@ -620,7 +620,7 @@ describe("totalTokens field", () => {
 			"claude-sonnet-4-5 - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("google-antigravity", "claude-sonnet-4-5");
+				const llm = getModel("google-antigravity", "claude-sonnet-4-6");
 
 				console.log(`\nGoogle Antigravity / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm, { apiKey: antigravityToken });
