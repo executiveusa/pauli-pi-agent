@@ -28,8 +28,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "check": "tsc --noEmit",
-    "test": "vitest --run",
-    "test:watch": "vitest --watch"
+    "test": "node --test --import tsx test/**/*.test.ts",
+    "test:watch": "node --test --import tsx --watch test/**/*.test.ts"
   },
   "keywords": [
     "ai",
@@ -50,7 +50,6 @@
   "devDependencies": {
     "@types/node": "^24.3.0",
     "typescript": "^5.7.3",
-    "tsx": "^4.16.2",
-    "vitest": "^3.2.4"
+    "tsx": "^4.16.2"
   }
 }
