@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "cd packages/web-ui/example && npm run build",
+  "buildCommand": "npm run build --workspace @mariozechner/pi-ai && npm run build --workspace @mariozechner/pi-agent-core && npm run build --workspace @mariozechner/pi-web-ui && cd packages/web-ui/example && npm run build",
   "outputDirectory": "packages/web-ui/example/dist",
   "installCommand": "npm install",
   "rewrites": [
