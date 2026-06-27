@@ -1,46 +1,33 @@
 /**
  * Smart Model Router — cost-aware model selection for the Pi Web UI.
  *
- * Goal: use FREE models for mechanical tool calls, expensive models only for
- * hard reasoning. This is the "cheap tool-calling tier" from the factory plan.
+ * GOAL: Use FREE models for mechanical tool calls, GLM-5.2 for big tasks,
+ * and AVOID expensive models (Opus, GPT-5.5) unless explicitly requested.
  *
- * Providers with free tiers (keys in Cosmos_Vault.env):
- *   - Google Gemini Flash  (GOOGLE_API_KEY)        — free, fast, vision
- *   - Groq Llama           (GROQ_API_KEY)          — free, very fast
- *   - OpenRouter :free     (OPEN_ROUTER_API)       — free tier models
- *   - HuggingFace          (HUGGINGFACE_API_KEY)   — free inference
+ * Provider priority (cheapest first):
+ *   1. Groq Llama (free, fast)        — fast/code lanes
+ *   2. Gemini Flash (free, capable)   — vision/long-context lanes
+ *   3. GLM-5.2 via Z.AI (cheap, 1M ctx) — reasoning/big-task lane
+ *   4. OpenRouter :free models        — fallback free tier
+ *   5. DeepSeek (free coding)         — code lane alternative
  *
- * Routing logic:
- *   - "fast"      → Gemini Flash or Groq Llama (free)
- *   - "code"      → Gemini Flash or Groq Llama (free)
- *   - "balanced"  → OpenRouter auto (cheap)
- *   - "reasoning" → Claude Sonnet / GPT-5 (paid, reserved for hard tasks)
- *   - "vision"    → Gemini Flash (free vision)
- *   - "long-context" → Gemini 2.5 Flash (1M context, free)
- *
- * Usage:
- *   import { pickModel } from "./smart-router.js";
- *   const model = pickModel("fast"); // → free model
- *
- * The user can still override manually via the model selector in the UI.
- * This router only sets the DEFAULT; the UI selector wins once changed.
+ * AVOID by default (expensive):
+ *   - Claude Opus (use GLM-5.2 instead)
+ *   - GPT-5.5 (use GLM-5.2 or Claude Sonnet)
  */
 
 import { getModel, getModels, type Model } from "@mariozechner/pi-ai";
 
-export type TaskLane = "fast" | "code" | "balanced" | "reasoning" | "vision" | "long-context";
+export type TaskLane = "fast" | "code" | "balanced" | "reasoning" | "vision" | "long-context" | "big-task";
 
 export interface RouteResult {
 	model: Model<any>;
 	provider: string;
 	reason: string;
 	free: boolean;
+	estimatedCostPer1k: number;
 }
 
-/**
- * Pick the best model for a task lane, preferring free tiers.
- * Falls back to a paid model if no free key is configured.
- */
 export function pickModel(lane: TaskLane): RouteResult {
 	const has = (env: string) => {
 		try {
@@ -50,18 +37,21 @@ export function pickModel(lane: TaskLane): RouteResult {
 		}
 	};
 
-	const hasGoogle = has("VITE_GOOGLE_API_KEY") || has("GOOGLE_API_KEY");
 	const hasGroq = has("VITE_GROQ_API_KEY") || has("GROQ_API_KEY");
-	const hasOpenRouter = has("VITE_OPEN_ROUTER_API") || has("OPEN_ROUTER_API");
+	const hasGoogle = has("VITE_GOOGLE_API_KEY") || has("GOOGLE_API_KEY") || has("GEMINI_API_KEY");
+	const hasOpenRouter = has("VITE_OPEN_ROUTER_API") || has("OPEN_ROUTER_API") || has("OPENROUTER_API_KEY");
+	const hasGLM = has("VITE_GLM_API_KEY") || has("GLM_API_KEY") || has("ZAI_API_KEY");
+	const hasDeepSeek = has("VITE_DEEPSEEK_API_KEY") || has("DEEPSEEK_API_KEY");
 
-	// 1. Free lanes — prefer Groq for speed, Gemini for capability
-	if (lane === "fast" || lane === "code") {
+	// 1. Fast lane — Groq Llama (free, very fast)
+	if (lane === "fast") {
 		if (hasGroq) {
 			return {
 				model: getModel("groq", "llama-3.3-70b-versatile"),
 				provider: "groq",
 				reason: "free + fast",
 				free: true,
+				estimatedCostPer1k: 0,
 			};
 		}
 		if (hasGoogle) {
@@ -70,6 +60,7 @@ export function pickModel(lane: TaskLane): RouteResult {
 				provider: "google",
 				reason: "free + capable",
 				free: true,
+				estimatedCostPer1k: 0,
 			};
 		}
 		if (hasOpenRouter) {
@@ -78,10 +69,43 @@ export function pickModel(lane: TaskLane): RouteResult {
 				provider: "openrouter",
 				reason: "free via OpenRouter",
 				free: true,
+				estimatedCostPer1k: 0,
 			};
 		}
 	}
 
+	// 2. Code lane — DeepSeek (free coding) or Groq Llama
+	if (lane === "code") {
+		if (hasDeepSeek) {
+			return {
+				model: getModel("openrouter", "deepseek/deepseek-coder:free"),
+				provider: "openrouter",
+				reason: "free coding model",
+				free: true,
+				estimatedCostPer1k: 0,
+			};
+		}
+		if (hasGroq) {
+			return {
+				model: getModel("groq", "llama-3.3-70b-versatile"),
+				provider: "groq",
+				reason: "free + fast code",
+				free: true,
+				estimatedCostPer1k: 0,
+			};
+		}
+		if (hasGoogle) {
+			return {
+				model: getModel("google", "gemini-2.5-flash"),
+				provider: "google",
+				reason: "free + capable",
+				free: true,
+				estimatedCostPer1k: 0,
+			};
+		}
+	}
+
+	// 3. Vision lane — Gemini Flash (free vision)
 	if (lane === "vision") {
 		if (hasGoogle) {
 			return {
@@ -89,11 +113,12 @@ export function pickModel(lane: TaskLane): RouteResult {
 				provider: "google",
 				reason: "free vision",
 				free: true,
+				estimatedCostPer1k: 0,
 			};
 		}
-		// Fall through to paid vision models
 	}
 
+	// 4. Long-context lane — Gemini Flash (1M context, free) or GLM-5.2
 	if (lane === "long-context") {
 		if (hasGoogle) {
 			return {
@@ -101,62 +126,121 @@ export function pickModel(lane: TaskLane): RouteResult {
 				provider: "google",
 				reason: "free 1M context",
 				free: true,
+				estimatedCostPer1k: 0,
+			};
+		}
+		if (hasGLM) {
+			return {
+				model: getModel("zai", "glm-5.2"),
+				provider: "zai",
+				reason: "1M context, cheap",
+				free: false,
+				estimatedCostPer1k: 0.0014,
 			};
 		}
 	}
 
+	// 5. Balanced lane — GLM-5.2 (cheap, long-horizon coding)
 	if (lane === "balanced") {
+		if (hasGLM) {
+			return {
+				model: getModel("zai", "glm-5.2"),
+				provider: "zai",
+				reason: "cheap long-horizon coding",
+				free: false,
+				estimatedCostPer1k: 0.0014,
+			};
+		}
 		if (hasOpenRouter) {
 			return {
-				model: getModel("openrouter", "anthropic/claude-3.5-sonnet"),
+				model: getModel("openrouter", "mistralai/mistral-small"),
 				provider: "openrouter",
 				reason: "cheap via OpenRouter",
 				free: false,
+				estimatedCostPer1k: 0.002,
 			};
 		}
 	}
 
-	// 2. Reasoning lane — paid, reserved for hard tasks
-	if (lane === "reasoning") {
+	// 6. Reasoning / big-task lane — GLM-5.2 (AVOID Opus, GPT-5.5)
+	if (lane === "reasoning" || lane === "big-task") {
+		if (hasGLM) {
+			return {
+				model: getModel("zai", "glm-5.2"),
+				provider: "zai",
+				reason: "big-task: GLM-5.2 (avoids Opus/GPT-5.5)",
+				free: false,
+				estimatedCostPer1k: 0.0014,
+			};
+		}
 		return {
 			model: getModel("anthropic", "claude-sonnet-4-6"),
 			provider: "anthropic",
-			reason: "hard reasoning",
+			reason: "fallback (Sonnet, not Opus)",
 			free: false,
+			estimatedCostPer1k: 0.012,
 		};
 	}
 
-	// 3. Fallback — whatever the user has configured
+	// 7. Fallback — Claude Sonnet (NOT Opus, NOT GPT-5.5)
 	return {
 		model: getModel("anthropic", "claude-sonnet-4-6"),
 		provider: "anthropic",
-		reason: "default fallback",
+		reason: "default fallback (Sonnet)",
 		free: false,
+		estimatedCostPer1k: 0.012,
 	};
 }
 
-/**
- * List all available free models (for display in the UI).
- */
 export function listFreeModels(): Array<{ provider: string; id: string; name: string }> {
 	const free: Array<{ provider: string; id: string; name: string }> = [];
 	try {
-		const googleModels = getModels("google");
-		for (const m of googleModels) {
-			if (m.id.includes("flash")) {
-				free.push({ provider: "google", id: m.id, name: m.name });
-			}
+		for (const m of getModels("google")) {
+			if (m.id.includes("flash")) free.push({ provider: "google", id: m.id, name: m.name });
 		}
 	} catch {
 		/* ignore */
 	}
 	try {
-		const groqModels = getModels("groq");
-		for (const m of groqModels) {
+		for (const m of getModels("groq")) {
 			free.push({ provider: "groq", id: m.id, name: m.name });
 		}
 	} catch {
 		/* ignore */
 	}
 	return free;
+}
+
+// ============================================================
+// TOKEN BUDGET TRACKER — warns when approaching model context limits
+// ============================================================
+
+export interface TokenBudget {
+	model: string;
+	maxContext: number;
+	used: number;
+	remaining: number;
+	percentUsed: number;
+	warningLevel: "safe" | "warn" | "critical";
+}
+
+const MODEL_CONTEXT_LIMITS: Record<string, number> = {
+	"llama-3.3-70b-versatile": 128000,
+	"gemini-2.5-flash": 1000000,
+	"gemini-2.0-flash": 1000000,
+	"meta-llama/llama-3.3-70b-instruct:free": 128000,
+	"deepseek/deepseek-coder:free": 128000,
+	"glm-5.2": 1000000,
+	"claude-sonnet-4-6": 200000,
+	"claude-opus-4-5": 200000,
+};
+
+export function getTokenBudget(modelId: string, usedTokens: number): TokenBudget {
+	const maxContext = MODEL_CONTEXT_LIMITS[modelId] ?? 128000;
+	const remaining = Math.max(0, maxContext - usedTokens);
+	const percentUsed = (usedTokens / maxContext) * 100;
+	let warningLevel: "safe" | "warn" | "critical" = "safe";
+	if (percentUsed >= 90) warningLevel = "critical";
+	else if (percentUsed >= 75) warningLevel = "warn";
+	return { model: modelId, maxContext, used: usedTokens, remaining, percentUsed, warningLevel };
 }

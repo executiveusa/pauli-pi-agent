@@ -22,6 +22,7 @@ import { html, render } from "lit";
 import { Bell, Globe, History, Plus, Settings } from "lucide";
 import { registerMercuryDiffusionRenderer } from "./mercury-diffusion-renderer.js";
 import { pickModel } from "./smart-router.js";
+import "./token-tracker.js";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
@@ -395,6 +396,8 @@ const renderApp = () => {
 
 	const appHtml = html`
 		<div class="w-full h-screen flex flex-col bg-background text-foreground overflow-hidden">
+			<!-- Token Tracker (floating, bottom-left) -->
+			<token-tracker></token-tracker>
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-border shrink-0">
 				<div class="flex items-center gap-2 px-4 py-">

@@ -9,6 +9,7 @@
 - **MISSION.md** — North-star (MRR from autonomous products + durable OSS infra). 30d/90d/1y/5y horizons.
 
 ## Operating rules
+- **ZTE_PERSONA.md** — Zero-Touch Engineer persona. The prime directive, circuit breakers, model selection law, ICM methodology. Read first.
 - **OPERATING_DOCTRINE.md** — Swarm coordination & cost discipline. Revenue trace, task ownership, budgets, logging.
 - **HUMAN_APPROVAL_POLICY.md** — The approval gates (auto / show-draft / confirm / hard-block). Read before any write/ship/deploy.
 - **AGENT_CULTURE.md** — How agents behave, communicate, hand off.
@@ -31,7 +32,8 @@
 
 ## Reading order for a new task
 1. The task itself.
-2. `SOUL.md` + `HEART.md` (who we are) — skim if already familiar.
-3. The most specific doctrine for the task (e.g. `CYNTHIA_DESIGN_DOCTRINE.md` for UI).
-4. `HUMAN_APPROVAL_POLICY.md` if the task touches writes/deploys/money/data.
-5. Then query the brain (`brain/search.mjs`) for prior context.
+2. `ZTE_PERSONA.md` (how Cosmos operates — prime directive, circuit breakers, model selection).
+3. `SOUL.md` + `HEART.md` (who we are) — skim if already familiar.
+4. The most specific doctrine for the task (e.g. `CYNTHIA_DESIGN_DOCTRINE.md` for UI).
+5. `HUMAN_APPROVAL_POLICY.md` if the task touches writes/deploys/money/data.
+6. Then query the brain (`brain/search.mjs`) for prior context.

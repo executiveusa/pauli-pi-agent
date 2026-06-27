@@ -19,6 +19,7 @@ This directory maps and indexes the specialized skills, tools, and Model Context
 | Skill | File | When to load |
 |-------|------|--------------|
 | MCP Apps (ext-apps) | [`skills/mcp-ext-apps.md`](./skills/mcp-ext-apps.md) | When serving interactive UI from an MCP server to external hosts (Claude, ChatGPT). For in-app artifacts, use the native pi-web-ui artifacts system instead. |
+| Sandcastle | [`skills/sandcastle.md`](./skills/sandcastle.md) | When running multiple agent instances in parallel (overnight builds, multi-repo factory). Pairs with command-code for project scaffolding. |
 
 ---
 
