@@ -136,6 +136,7 @@ export class ChatGPTImporter {
 				conversationIds.push(convResult.rows[0].id);
 
 				// Extract messages
+				let messageIndex = 0;
 				for (const [nodeId, node] of Object.entries(conv.mapping || {})) {
 					const msg = node as ChatGPTMessage;
 					if (!msg.message) continue;
@@ -161,7 +162,7 @@ export class ChatGPTImporter {
 						 (id, conversation_id, role, content, content_hash, message_index)
 						 VALUES ($1, $2, $3, $4, $5, $6)
 						 RETURNING id`,
-						[msgId, convId, role, msgContent, contentHash, nodeId],
+						[msgId, convId, role, msgContent, contentHash, messageIndex++],
 					);
 
 					messageIds.push(msgResult.rows[0].id);
