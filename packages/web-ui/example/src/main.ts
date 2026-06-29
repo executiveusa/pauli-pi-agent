@@ -24,6 +24,9 @@ import { Bell, Globe, History, Plus, Settings } from "lucide";
 import { registerMercuryDiffusionRenderer } from "./mercury-diffusion-renderer.js";
 import { pickModel } from "./smart-router.js";
 import "./token-tracker.js";
+import "./cosmos-sidebar.js";
+import "./knowledge-graph.js";
+import "./library-browser.js";
 import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
@@ -201,6 +204,21 @@ let chatPanel: ChatPanel;
 let agentUnsubscribe: (() => void) | undefined;
 let showFlipbook = false;
 let isDeepResearch = false;
+let showRightPanel = true;
+let rightPanelView: "graph" | "library" = "graph";
+let sessionList: Array<{ id: string; title: string; preview?: string }> = [];
+let libraryEntries: Array<{ path: string; category: string; shelf: string; title: string; summary: string }> = [];
+let graphNodes: Array<{
+	id: string;
+	label: string;
+	shelf: string;
+	x: number;
+	y: number;
+	vx: number;
+	vy: number;
+	connections: number;
+}> = [];
+let graphEdges: Array<{ source: string; target: string }> = [];
 
 const generateTitle = (messages: AgentMessage[]): string => {
 	const firstUserMsg = messages.find((m) => m.role === "user" || m.role === "user-with-attachments");
@@ -438,6 +456,106 @@ const newSession = () => {
 	window.location.href = url.toString();
 };
 
+// ============================================================
+// SESSION LIST + LIBRARY DATA LOADING
+// ============================================================
+async function refreshSessionList() {
+	if (!storage.sessions) return;
+	try {
+		const metadatas = await storage.sessions.getAllMetadata();
+		sessionList = metadatas
+			.map((m: any) => ({ id: m.id, title: m.title, preview: m.preview }))
+			.sort((a: any, b: any) => (b.lastModified || "").localeCompare(a.lastModified || ""));
+		renderApp();
+	} catch {
+		// ignore
+	}
+}
+
+async function loadLibraryIndex() {
+	try {
+		// The library index is baked into the build via Vite's import
+		// We fetch it at runtime from the built JSON
+		const resp = await fetch("/library-index.json");
+		if (resp.ok) {
+			const data = await resp.json();
+			libraryEntries = (data.entries || []).slice(0, 500); // limit for perf
+			buildGraphFromLibrary();
+			renderApp();
+		}
+	} catch {
+		// Library index not available — that's OK, the panels show empty state
+	}
+}
+
+function buildGraphFromLibrary() {
+	graphNodes = [];
+	graphEdges = [];
+	const shelfMap = new Map<string, string[]>();
+	for (const entry of libraryEntries) {
+		const nodeId = entry.path;
+		graphNodes.push({
+			id: nodeId,
+			label: entry.title || entry.path.split("/").pop() || entry.path,
+			shelf: entry.shelf,
+			x: 0,
+			y: 0,
+			vx: 0,
+			vy: 0,
+			connections: 0,
+		});
+		if (!shelfMap.has(entry.shelf)) shelfMap.set(entry.shelf, []);
+		shelfMap.get(entry.shelf)!.push(nodeId);
+	}
+	// Connect nodes in the same shelf (co-occurrence)
+	for (const [_shelf, ids] of shelfMap) {
+		// Limit edges per shelf to avoid clutter
+		const limit = Math.min(ids.length, 20);
+		for (let i = 0; i < limit - 1; i++) {
+			graphEdges.push({ source: ids[i], target: ids[i + 1] });
+			const a = graphNodes.find((n) => n.id === ids[i]);
+			const b = graphNodes.find((n) => n.id === ids[i + 1]);
+			if (a) a.connections++;
+			if (b) b.connections++;
+		}
+	}
+}
+
+function handleSkill(skillId: string) {
+	switch (skillId) {
+		case "watch":
+			// Inject a prompt to watch a video
+			if (agent) {
+				agent.steer(
+					createSystemNotification(
+						"🎬 Video ingestion ready. Paste a YouTube URL in the chat to ingest it into the knowledge graph.",
+					),
+				);
+			}
+			break;
+		case "scrape":
+			if (agent) {
+				agent.steer(createSystemNotification("🌐 Web scrape ready. Paste a URL to scrape using Bright Data."));
+			}
+			break;
+		case "crawl":
+			if (agent) {
+				agent.steer(createSystemNotification("🕷️ Site crawl ready. Paste a site URL to crawl with Firecrawl."));
+			}
+			break;
+		case "graph":
+			rightPanelView = "graph";
+			showRightPanel = true;
+			renderApp();
+			break;
+		case "brain":
+			if (agent) {
+				agent.steer(createSystemNotification("🧠 Brain search ready. Ask a question to search your second brain."));
+			}
+			break;
+	}
+}
+
 // ============================================================================
 // RENDER
 // ============================================================================
@@ -634,8 +752,107 @@ const renderApp = () => {
 				</div>
 			</div>
 
-			<!-- Chat Panel / Voice Flipbook -->
-			${showFlipbook ? html`<voice-flipbook></voice-flipbook>` : chatPanel}
+			<!-- 3-column layout: Sidebar | Chat | Right Panel -->
+			<div class="flex-1 flex overflow-hidden">
+				<!-- Left Sidebar (LibreChat-style) -->
+				<div style="width: 240px; flex-shrink: 0;" class="hidden md:block">
+					<cosmos-sidebar
+						.sessions=${sessionList}
+						.currentSessionId=${currentSessionId}
+						.onNewChat=${() => newSession()}
+						.onLoadSession=${(id: string) => loadSession(id)}
+						.onSkill=${(skillId: string) => handleSkill(skillId)}
+						.onSettings=${() => SettingsDialog.open([new ProvidersModelsTab(), new ProxyTab()])}
+					></cosmos-sidebar>
+				</div>
+
+				<!-- Centered Chat Panel -->
+				<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+					<!-- Chat Panel / Voice Flipbook -->
+					${showFlipbook ? html`<voice-flipbook></voice-flipbook>` : chatPanel}
+				</div>
+
+				<!-- Right Panel (Knowledge Graph / Library Browser) -->
+				${
+					showRightPanel
+						? html`
+							<div style="width: 320px; flex-shrink: 0;" class="hidden lg:block border-l border-border">
+								<div class="flex border-b border-border">
+									<button
+										class="flex-1 px-3 py-2 text-xs font-medium ${
+											rightPanelView === "graph"
+												? "text-emerald-400 border-b-2 border-emerald-400"
+												: "text-muted-foreground"
+										}"
+										@click=${() => {
+											rightPanelView = "graph";
+											renderApp();
+										}}
+									>
+										Graph
+									</button>
+									<button
+										class="flex-1 px-3 py-2 text-xs font-medium ${
+											rightPanelView === "library"
+												? "text-emerald-400 border-b-2 border-emerald-400"
+												: "text-muted-foreground"
+										}"
+										@click=${() => {
+											rightPanelView = "library";
+											renderApp();
+										}}
+									>
+										Library
+									</button>
+									<button
+										class="px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+										@click=${() => {
+											showRightPanel = false;
+											renderApp();
+										}}
+										title="Hide panel"
+									>
+										✕
+									</button>
+								</div>
+								<div class="flex-1 overflow-hidden" style="height: calc(100% - 40px);">
+									${
+										rightPanelView === "graph"
+											? html`<knowledge-graph
+													.nodes=${graphNodes}
+													.edges=${graphEdges}
+													.onNodeClick=${(nodeId: string) => {
+														if (agent) {
+															agent.steer(createSystemNotification(`📂 Opened: ${nodeId}`));
+														}
+													}}
+												></knowledge-graph>`
+											: html`<library-browser
+													.entries=${libraryEntries}
+													.onFileClick=${(path: string) => {
+														if (agent) {
+															agent.steer(createSystemNotification(`📂 Opened: ${path}`));
+														}
+													}}
+												></library-browser>`
+									}
+								</div>
+							</div>
+						`
+						: html`
+							<button
+								class="px-2 py-1 text-xs text-muted-foreground hover:text-foreground border-l border-border"
+								@click=${() => {
+									showRightPanel = true;
+									renderApp();
+								}}
+								title="Show panel"
+							>
+								◀
+							</button>
+						`
+				}
+			</div>
 		</div>
 	`;
 
@@ -667,6 +884,10 @@ async function initApp() {
 
 	// Create ChatPanel
 	chatPanel = new ChatPanel();
+
+	// Load session list and library index for sidebar + right panel
+	refreshSessionList();
+	loadLibraryIndex();
 
 	// Check for session in URL
 	const urlParams = new URLSearchParams(window.location.search);
