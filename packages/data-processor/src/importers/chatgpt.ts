@@ -137,7 +137,7 @@ export class ChatGPTImporter {
 
 				// Extract messages
 				let messageIndex = 0;
-				for (const [nodeId, node] of Object.entries(conv.mapping || {})) {
+				for (const [_nodeId, node] of Object.entries(conv.mapping || {})) {
 					const msg = node as ChatGPTMessage;
 					if (!msg.message) continue;
 
