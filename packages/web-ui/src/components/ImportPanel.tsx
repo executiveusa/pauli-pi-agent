@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './ImportPanel.css';
 
 interface ImportPanelProps {
-	onImport: (type: string, file?: File) => Promise<void>;
+	onImport: (type: string, file?: File | { apiKey: string }) => Promise<void>;
 	isLoading?: boolean;
 }
 
