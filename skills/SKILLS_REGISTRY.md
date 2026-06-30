@@ -58,6 +58,11 @@
 | `space-agent` | agent workspace, autonomous agent, tasks | clone/reference | 8 | medium |
 | `ponytail` | coding agent, workflow, automation | verify first | 6 | low |
 
+### Agent Harness / Multi-Model Deployment
+| Skill | Trigger | Action | Leverage | Confidence |
+|-------|---------|--------|----------|------------|
+| `masterstack-flywheel` (local: `skills/masterstack-flywheel/`) | deploy agent stack, VPS, LiteLLM gateway, masterstack, flywheel, Hermes orchestrator, Infisical secrets | clone/reference — see skill folder | 9 | high |
+
 ### Agent Harness / Claude Code
 | Skill | Trigger | Action | Leverage | Confidence |
 |-------|---------|--------|----------|------------|

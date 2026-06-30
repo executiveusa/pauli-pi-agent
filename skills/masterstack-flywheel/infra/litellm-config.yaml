@@ -1,0 +1,43 @@
+# Masterstack Flywheel — LiteLLM gateway routing config.
+#
+# Model IDs below are PLACEHOLDERS copied from the original stack spec. Confirm
+# each one against the live OpenRouter/MiniMax/provider catalog before relying
+# on this file — see SKILL.md "Model Identifiers Are Placeholders". Generate the
+# real version of this file per-deployment from stack.manifest.json (workflow.md
+# step 2), keeping every api_key as an `os.environ/...` reference.
+
+model_list:
+  - model_name: studio-orchestrator
+    litellm_params:
+      model: openrouter/REPLACE_WITH_VERIFIED_MODEL_ID
+      api_key: "os.environ/OPENROUTER_API_KEY"
+      tpm: 200000
+
+  - model_name: site-developer
+    litellm_params:
+      model: openrouter/REPLACE_WITH_VERIFIED_MODEL_ID
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: avatar-generator
+    litellm_params:
+      model: minimax/REPLACE_WITH_VERIFIED_MODEL_ID
+      api_key: "os.environ/MINIMAX_API_KEY"
+
+  - model_name: voice-master
+    litellm_params:
+      model: openai/f5-tts
+      api_base: "http://tts-local-worker:8000/v1"
+      api_key: "local-bypass"
+
+  - model_name: speed-copywriter
+    litellm_params:
+      model: openai/REPLACE_WITH_VERIFIED_MODEL_ID
+      api_base: "http://vllm-local-worker:8000/v1"
+      api_key: "local-bypass"
+
+litellm_settings:
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+
+router_settings:
+  routing_strategy: latency-based-routing
+  enable_failing_api_logging: true

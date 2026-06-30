@@ -1,0 +1,85 @@
+version: "3.8"
+
+# Masterstack Flywheel — example compose file.
+#
+# SECURITY: every `environment:` value below is `${VAR}` form, resolved from the
+# PROCESS environment at `docker compose up` time. Nothing here reads a checked-in
+# .env file. Run this via:
+#
+#   infisical run --env=prod -- docker compose -f infra/docker-compose.yml up -d
+#
+# `infisical run` injects the secrets as process env for the duration of that one
+# command; nothing is written to disk. Do not add `env_file: .env` to this file.
+
+services:
+  # Centralized API Gateway — routes orchestrator/worker traffic to remote and
+  # local models under one bearer key. See infra/litellm-config.yaml.
+  litellm-gateway:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: flywheel_gateway
+    ports:
+      - "127.0.0.1:4000:4000" # bind to localhost only; do not expose publicly without review
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml:ro
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health/liveliness"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Optional local worker: high-speed copy/codegen model via vLLM. Remove this
+  # service from the manifest-generated compose file if the deployment doesn't
+  # need a local GPU worker.
+  vllm-local-worker:
+    image: vllm/vllm-openai:latest
+    container_name: flywheel_local_worker
+    profiles: ["gpu-worker"]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: >
+      --model ${LOCAL_WORKER_MODEL:-Qwen/Qwen2.5-14B-Instruct}
+      --port 8000
+      --max-model-len 32768
+      --gpu-memory-utilization 0.90
+    restart: unless-stopped
+
+  # Optional local worker: voice synthesis container. Remove if unused.
+  tts-local-worker:
+    image: ${TTS_IMAGE:-mphi/f5-tts:latest}
+    container_name: flywheel_tts_worker
+    profiles: ["gpu-worker"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ./shared_assets/voice_references:/app/references
+      - ./shared_assets/generated_audio:/app/outputs
+    restart: unless-stopped
+
+  # Shared workspace volume for build artifacts produced through the stack.
+  flywheel-workspace:
+    image: alpine
+    container_name: flywheel_workspace
+    volumes:
+      - ./production_sites:/www/sites
+      - ./shared_assets:/www/assets
+    command: ["tail", "-f", "/dev/null"]
