@@ -126,7 +126,7 @@ export class SecretsLoader {
       console.log('Errors:');
       Object.entries(result.errors).forEach(([key, msgs]) => {
         console.log(`  ${key}:`);
-        msgs.forEach(msg => { console.log(`    - ${msg}`); });
+        msgs.forEach(msg => console.log(`    - ${msg}`));
       });
       console.log();
     }

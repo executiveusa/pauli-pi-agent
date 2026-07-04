@@ -8,7 +8,7 @@ if (!result.valid) {
   console.error('Errors:');
   Object.entries(result.errors).forEach(([key, msgs]) => {
     console.error(`  ${key}:`);
-    msgs.forEach(msg => { console.error(`    - ${msg}`); });
+    msgs.forEach(msg => console.error(`    - ${msg}`));
   });
   process.exit(1);
 }
