@@ -1,0 +1,24 @@
+{
+  "name": "@pauli/content-engine",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "scrape": "tsx src/scraper/run.ts",
+    "score": "tsx src/scorer/run.ts",
+    "synthesize": "tsx src/synthesizer/run.ts",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "dependencies": {
+    "@pauli/secrets": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsx": "^4.20.3",
+    "@types/node": "^22.10.5"
+  }
+}

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { SecretsLoader, createSecretsLoader } from './loader';
-import { SecretsSchema } from './schema';
 
 describe('SecretsLoader', () => {
   describe('basic loading', () => {

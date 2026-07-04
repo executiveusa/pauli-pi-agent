@@ -55,7 +55,7 @@ export const SecretsSchema = z.object({
 
   // Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-}).strict();
+}).passthrough();
 
 export type Secrets = z.infer<typeof SecretsSchema>;
 
