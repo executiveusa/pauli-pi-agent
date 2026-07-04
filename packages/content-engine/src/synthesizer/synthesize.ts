@@ -58,7 +58,9 @@ export const synthesizeCompanyBrief = (
   date: string,
 ): CompanySignalBrief => {
   const geo = COMPANY_GEO_MAP[company];
-  const geoSignals = allSignals.filter((s) => s.geo === geo || s.geo === "global");
+  const geoSignals = allSignals
+    .filter((s) => s.geo === geo || s.geo === "global")
+    .sort((a, b) => b.viralScore - a.viralScore);
   const top = geoSignals.slice(0, 10);
 
   const topicFocus = GEO_TOPIC_FOCUS[geo] ?? GEO_TOPIC_FOCUS.global;
