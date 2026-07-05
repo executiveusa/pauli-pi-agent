@@ -83,6 +83,22 @@ export const SecretsSchema = z.object({
   AGENT_AUTO_UPDATE: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
   AGENT_UPDATE_INTERVAL_MINUTES: z.coerce.number().default(360), // 6 hours
   AGENT_COMMIT_UPDATES: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+
+  // Model Selection & Cost Control
+  CASCADIA_MODEL_OVERRIDE: z.enum(['deepseek-4', 'deepseek-flash', 'mistral-free', 'opencode']).optional(),
+  PROMPT_FOR_MODEL_SELECTION: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+  COST_WARNING_ENABLED: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+  MAX_MONTHLY_SPEND_USD: z.coerce.number().default(50),
+
+  // OpenRouter Configuration
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_DEEPSEEK_MODEL: z.string().default('deepseek/deepseek-chat'),
+  OPENROUTER_DEEPSEEK_FLASH_MODEL: z.string().default('deepseek/deepseek-chat'),
+
+  // OpenCode Configuration (Free backup)
+  OPENCODE_API_KEY: z.string().optional(),
+  OPENCODE_MODEL: z.string().default('mistral-7b'),
+  OPENCODE_ENABLED: z.enum(['true', 'false']).transform(v => v === 'true').default('false'),
 }).passthrough();
 
 export type Secrets = z.infer<typeof SecretsSchema>;

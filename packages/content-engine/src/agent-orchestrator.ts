@@ -4,6 +4,7 @@ import { join } from 'path';
 import type { AgentId, AgentContext } from '../../../packages/secrets/src/agent-context.js';
 import { loadAgentContext, loadAgentSignals, enforceAgentIsolation } from '../../../packages/secrets/src/agent-context.js';
 import type { Secrets } from '../../../packages/secrets/src/schema.js';
+import { promptModelSelection, getModelEndpoint, getModelId, type ModelChoice } from './model-selector.js';
 
 export interface AgentUpdate {
 	agent: AgentId;
@@ -72,9 +73,14 @@ export class MasterAgentOrchestrator {
 	}
 
 	/**
-	 * Invoke agent with isolated context + dedicated API key
+	 * Invoke agent with isolated context + model selection (for Cascadia)
 	 */
 	private async invokeAgent(context: AgentContext, signals: string): Promise<string> {
+		// Cascadia: prompt for model selection before running
+		if (context.agent === 'cascadia') {
+			return this.invokeCascadiaWithModelSelection(context, signals);
+		}
+
 		// Hermes uses NousResearch API
 		if (context.agent === 'hermes') {
 			const response = await fetch('https://inference-api.nousresearch.com/v1/chat/completions', {
@@ -127,6 +133,53 @@ export class MasterAgentOrchestrator {
 
 		const data = (await response.json()) as any;
 		return data.content[0].text;
+	}
+
+	/**
+	 * Cascadia special: model selection + cost control
+	 */
+	private async invokeCascadiaWithModelSelection(
+		context: AgentContext,
+		signals: string,
+	): Promise<string> {
+		// Prompt user to select model (or use override)
+		const selectedModel = await promptModelSelection(this.secrets);
+
+		// Get endpoint and model ID
+		const endpoint = getModelEndpoint(selectedModel, this.secrets);
+		const modelId = getModelId(selectedModel, this.secrets);
+
+		console.log(`\n🚀 Invoking Cascadia with ${selectedModel}...`);
+
+		const response = await fetch(endpoint.url, {
+			method: 'POST',
+			headers: {
+				...endpoint.headers,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				model: modelId,
+				max_tokens: 2048,
+				messages: [
+					{
+						role: 'system',
+						content: `You are ${context.company}'s master content agent (${context.voice || 'English'}). Generate demo-first, viral ${context.platforms?.join('/')} content based on ONLY the signals provided. You ONLY work with ${context.company} data. Focus on showing the 3D knowledge galaxy visualization.`,
+					},
+					{
+						role: 'user',
+						content: `${signals}\n\nGenerate 3-5 ${context.geo} demo-driven posts for ${context.platforms?.join('/')}. Each post should showcase the 3D knowledge galaxy feature. Format clearly.`,
+					},
+				],
+			}),
+		});
+
+		if (!response.ok) {
+			const error = (await response.json()) as any;
+			throw new Error(`Model API error: ${error.error?.message || 'Unknown error'}`);
+		}
+
+		const data = (await response.json()) as any;
+		return data.choices[0].message.content;
 	}
 
 	/**
