@@ -1,5 +1,6 @@
 import * as readline from 'readline';
 import type { Secrets } from '../../../packages/secrets/src/schema.js';
+import { FREE_LLM_REGISTRY, getFreeLLMEndpoint } from '../../../packages/secrets/src/free-llm-registry.js';
 
 export type ModelChoice = 'deepseek-4' | 'deepseek-flash' | 'mistral-free' | 'opencode';
 
@@ -275,13 +276,102 @@ export async function findAvailableModel(secrets: Secrets): Promise<ModelChoice>
 	);
 }
 
+/**
+ * Discover available free LLM models (agent self-awareness feature)
+ * Checks which free providers have API keys configured
+ */
+export function getAvailableFreeLLMs(secrets: Secrets): string[] {
+	const available: string[] = [];
+
+	if (secrets.GOOGLE_GEMINI_API_KEY) available.push('google-gemini-free');
+	if (secrets.MISTRAL_API_KEY) available.push('mistral-free');
+	if (secrets.COHERE_API_KEY) available.push('cohere-free');
+	if (secrets.CEREBRAS_API_KEY) available.push('cerebras-free');
+	if (secrets.AION_API_KEY) available.push('aion-free');
+	if (secrets.ZAI_API_KEY) available.push('zai-free');
+
+	return available;
+}
+
+/**
+ * Verify free LLM availability
+ */
+export async function verifyFreeLLMAvailable(
+	providerKey: string,
+	secrets: Secrets,
+): Promise<boolean> {
+	const provider = FREE_LLM_REGISTRY[providerKey];
+	if (!provider) return false;
+
+	console.log(`\n🔍 Verifying ${provider.name}...`);
+
+	try {
+		const endpoint = getFreeLLMEndpoint(providerKey, secrets as unknown as Record<string, string | undefined>);
+		if (!endpoint) {
+			console.log(`⚠️  ${provider.name} missing API key`);
+			return false;
+		}
+
+		// Test call
+		const response = await fetch(endpoint.url, {
+			method: 'POST',
+			headers: {
+				...endpoint.headers,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				messages: [{ role: 'user', content: 'Say "ok"' }],
+				max_tokens: 5,
+			}),
+		});
+
+		if (response.ok) {
+			console.log(`✅ ${provider.name} available (${provider.rateLimit})`);
+			return true;
+		} else {
+			const error = await response.json();
+			console.log(`❌ ${provider.name} unavailable: ${error.error?.message || 'Unknown error'}`);
+			return false;
+		}
+	} catch (error) {
+		console.log(`❌ ${provider.name} error: ${error}`);
+		return false;
+	}
+}
+
+/**
+ * Show available free models (for interactive selection)
+ */
+export function listFreeModelsForAgent(agentId: string, secrets: Secrets): string {
+	const available = getAvailableFreeLLMs(secrets);
+	if (available.length === 0) return 'No free LLM APIs configured';
+
+	let output = `\n🆓 Free LLM Options Available for ${agentId}:\n`;
+
+	available.forEach((providerKey, index) => {
+		const provider = FREE_LLM_REGISTRY[providerKey];
+		if (provider) {
+			output += `  ${index + 1}. ${provider.name}\n`;
+			output += `     Quality: ${provider.quality} | Speed: Medium\n`;
+			output += `     Rate: ${provider.rateLimit} | Cost: $0/run\n`;
+			output += `     Best for: ${provider.useCaseOptimal.join(', ')}\n\n`;
+		}
+	});
+
+	return output;
+}
+
 export const ModelSelector = {
 	promptModelSelection,
 	getModelEndpoint,
 	getModelId,
 	verifyModelAvailable,
 	findAvailableModel,
+	getAvailableFreeLLMs,
+	verifyFreeLLMAvailable,
+	listFreeModelsForAgent,
 	MODELS,
+	FREE_LLM_REGISTRY,
 };
 
 export default ModelSelector;

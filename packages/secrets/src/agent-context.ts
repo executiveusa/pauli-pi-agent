@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Secrets } from './schema.js';
+import { shouldUseFreeModel, selectFreeFallback, type AgentFallbackStrategy } from './free-llm-registry.js';
 
 export type AgentId = 'hermes' | 'vyapari' | 'pauli' | 'kupuri' | 'cheggie' | 'cascadia';
 
@@ -13,6 +14,8 @@ export interface AgentContext {
 	voice?: string;
 	geo?: string;
 	platforms?: string[];
+	fallbackEnabled?: boolean;
+	fallbackProvider?: string;
 }
 
 const AGENT_CONFIG: Record<AgentId, Partial<AgentContext>> = {
@@ -109,10 +112,80 @@ export function enforceAgentIsolation(agent: AgentId, requestedPath: string): bo
 	return requestedPath.startsWith(agentContextPath);
 }
 
+/**
+ * Agent self-awareness: detect when free model fallback should activate
+ * Factors: budget constraints, demo mode, primary model unavailable
+ */
+export function detectFallbackNeeded(
+	agent: AgentId,
+	secrets: Secrets,
+	trigger?: 'budget' | 'demo' | 'unavailable' | 'cost-control',
+): boolean {
+	const context = {
+		budgetExceeded: secrets.MAX_MONTHLY_SPEND_USD ?
+			(secrets.COST_WARNING_ENABLED === 'true' && trigger === 'budget') : false,
+		demoMode: trigger === 'demo' || secrets.CASCADIA_MODEL_OVERRIDE === 'mistral-free',
+		primaryUnavailable: trigger === 'unavailable',
+		costControlActive: secrets.PROMPT_FOR_MODEL_SELECTION === 'true' && trigger === 'cost-control',
+	};
+
+	return shouldUseFreeModel(agent, context);
+}
+
+/**
+ * Get best free fallback provider for agent
+ * Agent is self-aware of optimal models for their use case
+ */
+export function getAgentFreeFallback(agent: AgentId, secrets: Secrets): string | null {
+	// Check which free providers are available (have API keys)
+	const availableProviders: string[] = [];
+
+	if (secrets.GOOGLE_GEMINI_API_KEY) availableProviders.push('google-gemini-free');
+	if (secrets.MISTRAL_API_KEY) availableProviders.push('mistral-free');
+	if (secrets.COHERE_API_KEY) availableProviders.push('cohere-free');
+	if (secrets.CEREBRAS_API_KEY) availableProviders.push('cerebras-free');
+	if (secrets.AION_API_KEY) availableProviders.push('aion-free');
+	if (secrets.ZAI_API_KEY) availableProviders.push('zai-free');
+
+	if (availableProviders.length === 0) return null;
+
+	// Agent selects its preferred fallback from available options
+	return selectFreeFallback(agent, availableProviders);
+}
+
+/**
+ * Agent knows its own fallback strategy
+ */
+export function getAgentFallbackStrategy(agent: AgentId): AgentFallbackStrategy | null {
+	// Import from free-llm-registry
+	const strategies: Record<string, AgentFallbackStrategy> = {
+		cascadia: {
+			agentId: 'cascadia',
+			triggers: { budgetExceeded: true, demoMode: true, primaryUnavailable: true, costControlActive: true },
+			preferredFallbacks: ['google-gemini-free', 'mistral-free', 'cerebras-free', 'cohere-free'],
+		},
+		pauli: {
+			agentId: 'pauli',
+			triggers: { budgetExceeded: true, demoMode: true, primaryUnavailable: true, costControlActive: true },
+			preferredFallbacks: ['mistral-free', 'google-gemini-free', 'cerebras-free', 'aion-free'],
+		},
+		hermes: {
+			agentId: 'hermes',
+			triggers: { budgetExceeded: true, demoMode: true, primaryUnavailable: true, costControlActive: true },
+			preferredFallbacks: ['google-gemini-free', 'mistral-free', 'cerebras-free', 'cohere-free'],
+		},
+	};
+
+	return strategies[agent] || null;
+}
+
 export default {
 	loadAgentContext,
 	loadAgentSignals,
 	loadAgentApprovedContent,
 	loadAgentBriefs,
 	enforceAgentIsolation,
+	detectFallbackNeeded,
+	getAgentFreeFallback,
+	getAgentFallbackStrategy,
 };
