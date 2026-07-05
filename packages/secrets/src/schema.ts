@@ -55,6 +55,34 @@ export const SecretsSchema = z.object({
 
   // Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // Agent Context Isolation (Per-Company)
+  // Each agent gets ONLY their company's context, signals, and briefs
+  AGENT_ISOLATION_MODE: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+
+  // Master Agents - One API key per company, no cross-access
+  HERMES_NOUS_API_KEY: z.string().optional(), // Macs Digital only
+  HERMES_CONTEXT_PATH: z.string().default('companies/macs-digital'),
+
+  VYAPARI_ANTHROPIC_API_KEY: z.string().optional(), // MyWebLane only (Hindi+EN)
+  VYAPARI_CONTEXT_PATH: z.string().default('companies/myweb-lane'),
+
+  PAULI_ANTHROPIC_API_KEY: z.string().optional(), // Pauli Effect only
+  PAULI_CONTEXT_PATH: z.string().default('companies/pauli-effect'),
+
+  KUPURI_ANTHROPIC_API_KEY: z.string().optional(), // Kupuri Media only
+  KUPURI_CONTEXT_PATH: z.string().default('companies/kupuri-media'),
+
+  CHEGGIE_ANTHROPIC_API_KEY: z.string().optional(), // Cheggie only
+  CHEGGIE_CONTEXT_PATH: z.string().default('companies/cheggie'),
+
+  CASCADIA_ANTHROPIC_API_KEY: z.string().optional(), // Cascadia Atlas only
+  CASCADIA_CONTEXT_PATH: z.string().default('companies/cascadia-atlas'),
+
+  // Agent Update & Circulation
+  AGENT_AUTO_UPDATE: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+  AGENT_UPDATE_INTERVAL_MINUTES: z.coerce.number().default(360), // 6 hours
+  AGENT_COMMIT_UPDATES: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
 }).passthrough();
 
 export type Secrets = z.infer<typeof SecretsSchema>;
