@@ -102,6 +102,40 @@ export const SecretsSchema = z.object({
   OPENCODE_API_KEY: z.string().optional(),
   OPENCODE_MODEL: z.string().default('mistral-7b'),
   OPENCODE_ENABLED: z.enum(['true', 'false']).transform(v => v === 'true').default('false'),
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // THIRD-PARTY INTEGRATIONS (Agent Mail + Composio + Latitude)
+  // Note: Currently sharing API keys (acknowledged as "spaghetti" - refactor later)
+  // ═════════════════════════════════════════════════════════════════════════
+
+  // Agent Mail Configuration
+  // Service: Email communication for agents
+  // Console: https://console.agentmail.to/dashboard/api-keys
+  AGENTMAIL_API_KEY: z.string().optional(),
+  AGENTMAIL_FROM_EMAIL: z.string().email().optional(),
+  AGENTMAIL_REPLY_TO: z.string().email().optional(),
+  AGENTMAIL_MAX_EMAILS_PER_DAY: z.coerce.number().default(100),
+  AGENTMAIL_ENABLE_AUTO_REPLY: z.enum(['true', 'false']).transform(v => v === 'true').default('false'),
+  AGENTMAIL_WEBHOOK_URL: z.string().url().optional(),
+
+  // Composio Configuration
+  // Service: 100+ app integrations (Slack, GitHub, Jira, Gmail, etc.)
+  // Console: https://dashboard.composio.dev/executiveusa/HERMES/settings/api-keys
+  COMPOSIO_API_KEY: z.string().optional(),
+  COMPOSIO_WORKSPACE_ID: z.string().optional(),
+  COMPOSIO_ENABLED_ACTIONS: z.string().default('github,slack,jira,gmail,notion'),
+  COMPOSIO_RATE_LIMIT: z.coerce.number().default(1000),
+  COMPOSIO_TIMEOUT_MS: z.coerce.number().default(30000),
+
+  // Latitude Configuration
+  // Service: AI workflow engine, conversation management, analytics
+  // Console: https://console.latitude.so/projects/the-pauli-effect-s-project/onboarding
+  LATITUDE_API_KEY: z.string().optional(),
+  LATITUDE_PROJECT_ID: z.string().optional(),
+  LATITUDE_ENVIRONMENT: z.enum(['dev', 'staging', 'production']).default('production'),
+  LATITUDE_ENABLE_TELEMETRY: z.enum(['true', 'false']).transform(v => v === 'true').default('true'),
+  LATITUDE_BASE_URL: z.string().url().default('https://api.latitude.so'),
+  LATITUDE_WEBHOOK_URL: z.string().url().optional(),
 }).passthrough();
 
 export type Secrets = z.infer<typeof SecretsSchema>;
