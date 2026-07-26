@@ -25,6 +25,18 @@ test("fans out six lessons, retries one failure, and fans results into ICM artif
   assert.equal(result.courseSynthesis.moduleIds.length, 2);
   assert.match(result.courseSynthesis.completionStatement, /6 lessons completed/);
 
+  const firstCompletionSequence = result.events.find(
+    (event) => event.type === "lesson_completed" || event.type === "lesson_failed",
+  )?.sequence;
+  assert.ok(firstCompletionSequence);
+  const initialStarts = result.events.filter(
+    (event) => event.type === "lesson_started" && event.sequence < firstCompletionSequence,
+  );
+  assert.deepEqual(
+    initialStarts.map((event) => event.lessonId),
+    ["lesson-01", "lesson-02"],
+  );
+
   const retriedJob = result.jobs.find((job) => job.lessonId === "lesson-02");
   assert.ok(retriedJob);
   assert.equal(retriedJob.status, "completed");
