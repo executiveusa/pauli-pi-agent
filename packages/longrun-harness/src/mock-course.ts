@@ -31,7 +31,7 @@ export const createMockCourseManifest = (): CourseManifest => ({
           kind: "video-and-text",
           durationMinutes: 14,
           transcriptAvailable: true,
-          prerequisites: ["lesson-01"],
+          prerequisites: [],
           sourceText:
             "Evidence must retain the source title, location, timestamp when relevant, capture time, and confidence. Inferences must be labeled separately from statements made by the source.",
         },
@@ -71,7 +71,7 @@ export const createMockCourseManifest = (): CourseManifest => ({
           kind: "text",
           durationMinutes: 12,
           transcriptAvailable: false,
-          prerequisites: ["lesson-04"],
+          prerequisites: ["lesson-03"],
           sourceText:
             "Lesson outputs should be reduced into module syntheses before course-level synthesis. Hierarchical reduction prevents the final model from receiving every raw transcript at once.",
         },
