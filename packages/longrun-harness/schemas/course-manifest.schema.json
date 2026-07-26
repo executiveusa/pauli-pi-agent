@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pauli.local/schemas/course-manifest.schema.json",
+  "title": "Digital Student Course Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "subject", "source", "accessMode", "objective", "modules"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "subject": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "accessMode": {
+      "enum": ["mock", "public", "authenticated-read-only", "owner-authorized"]
+    },
+    "objective": { "type": "string", "minLength": 1 },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "order", "lessons"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "order": { "type": "integer", "minimum": 1 },
+          "lessons": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "title",
+                "order",
+                "kind",
+                "durationMinutes",
+                "transcriptAvailable",
+                "prerequisites",
+                "sourceText"
+              ],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "title": { "type": "string", "minLength": 1 },
+                "order": { "type": "integer", "minimum": 1 },
+                "kind": { "enum": ["text", "video", "video-and-text"] },
+                "durationMinutes": { "type": "number", "minimum": 0 },
+                "transcriptAvailable": { "type": "boolean" },
+                "prerequisites": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                },
+                "sourceText": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
