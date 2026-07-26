@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pauli.local/schemas/homework-packet.schema.json",
+  "title": "Digital Student Homework Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "missionId",
+    "courseId",
+    "moduleId",
+    "lessonId",
+    "studentWorkerId",
+    "attempt",
+    "completedAt",
+    "coverage",
+    "conciseSummary",
+    "detailedSummary",
+    "knowledgeUnits",
+    "actionItems",
+    "unresolvedQuestions",
+    "knownLimitations",
+    "acceptanceCriteriaPassed"
+  ],
+  "properties": {
+    "missionId": { "type": "string", "minLength": 1 },
+    "courseId": { "type": "string", "minLength": 1 },
+    "moduleId": { "type": "string", "minLength": 1 },
+    "lessonId": { "type": "string", "minLength": 1 },
+    "studentWorkerId": { "type": "string", "minLength": 1 },
+    "attempt": { "type": "integer", "minimum": 1 },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "textReviewed",
+        "transcriptReviewed",
+        "visualSegmentsReviewed",
+        "fullAudiovisualReview"
+      ],
+      "properties": {
+        "textReviewed": { "type": "boolean" },
+        "transcriptReviewed": { "type": "boolean" },
+        "visualSegmentsReviewed": { "type": "boolean" },
+        "fullAudiovisualReview": { "type": "boolean" }
+      }
+    },
+    "conciseSummary": { "type": "string", "minLength": 1 },
+    "detailedSummary": { "type": "string", "minLength": 1 },
+    "knowledgeUnits": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "title",
+          "summary",
+          "evidence",
+          "sourceLocation",
+          "confidence",
+          "relatedTopics"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": {
+            "enum": [
+              "concept",
+              "claim",
+              "procedure",
+              "framework",
+              "example",
+              "warning",
+              "question",
+              "application"
+            ]
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "sourceLocation": { "type": "string", "minLength": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "relatedTopics": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "actionItems": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unresolvedQuestions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "knownLimitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "acceptanceCriteriaPassed": { "const": true }
+  }
+}
