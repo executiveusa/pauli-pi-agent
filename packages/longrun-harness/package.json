@@ -1,0 +1,18 @@
+{
+  "name": "@pauli/longrun-harness",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx --test test/*.test.ts",
+    "demo": "tsx src/cli/run-mock-course.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
