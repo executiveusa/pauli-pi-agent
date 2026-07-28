@@ -1,0 +1,64 @@
+domain: skool.com
+adapter: skool-read-only
+status: restricted
+authentication:
+  method: manual-user-login
+  browser_visibility: required
+  browser_profile: local-persistent
+  credential_access: prohibited
+  cookie_export: prohibited
+  token_extraction: prohibited
+  captcha_bypass: prohibited
+allowed:
+  - open_official_login_page
+  - wait_for_manual_authentication
+  - verify_non_sensitive_authenticated_ui
+  - open_user_selected_group
+  - open_user_selected_classroom
+  - inventory_accessible_courses
+  - read_accessible_lesson_text
+  - identify_embedded_video_provider
+  - control_media_playback
+  - process_available_captions
+  - create_private_evidence_backed_notes
+approval_required:
+  - download_authorized_resource
+  - follow_external_resource_link
+blocked:
+  - fill_password
+  - read_mfa_code
+  - export_browser_session
+  - bypass_access_control
+  - join_group
+  - purchase
+  - post
+  - comment
+  - reply
+  - react
+  - message
+  - invite
+  - point_farming
+  - scrape_members
+  - bulk_feed_harvesting
+  - account_change
+  - admin_change
+  - private_api_reverse_engineering
+limits:
+  concurrent_pages: 1
+  active_tabs: 3
+  lessons_per_run: 5
+  run_minutes: 45
+  automatic_retries: 1
+  minimum_navigation_interval_ms: 2500
+on_unknown_action: block
+on_auth_expired: pause_and_checkpoint
+on_locked_content: record_and_skip
+on_access_denied: stop
+on_platform_warning: stop
+on_security_challenge: return_control_to_user
+logging:
+  redact_credentials: true
+  redact_cookies: true
+  redact_tokens: true
+  record_navigation: true
+  record_evidence_locations: true
