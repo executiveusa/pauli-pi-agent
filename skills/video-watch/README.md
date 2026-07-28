@@ -1,8 +1,6 @@
 # Video Watch Skill
 
-Analyze any video URL. Summarize it, extract key points, review a competitor's demo, study a tutorial, or break down what makes a video viral.
-
----
+Analyze authorized video material. Summarize it, extract key points, review a competitor demo, study a tutorial, or convert a lesson into evidence-backed knowledge.
 
 ## Quick Start
 
@@ -10,113 +8,105 @@ Analyze any video URL. Summarize it, extract key points, review a competitor's d
 /video-watch https://youtube.com/watch?v=VIDEO_ID
 ```
 
-Or just paste a video URL into chat:
+Or paste a video URL with a goal:
 
 ```text
-Watch this video and summarize it: https://youtube.com/watch?v=VIDEO_ID
+Watch this video and summarize the main argument: https://youtube.com/watch?v=VIDEO_ID
 ```
-
----
 
 ## What It Does
 
-1. Validates the URL and checks accessibility.
-2. Retrieves title, creator, duration, and description.
-3. Fetches the transcript or captions (prefers native captions, falls back to audio transcription).
-4. Selects the right analysis mode based on your request.
-5. Returns a structured answer: summary, key points, timestamps, and a direct reply to your question.
-
----
+1. Validates the source and authorization mode.
+2. Retrieves available metadata.
+3. Prefers native captions or transcripts.
+4. Falls back to authorized transcription when necessary.
+5. Reviews visual frames when the answer depends on slides, code, diagrams, interfaces, or demonstrations.
+6. Assigns an accurate coverage label.
+7. Separates source statements, visual observations, and inference.
+8. Returns a structured answer with limitations.
 
 ## Analysis Modes
 
 | Mode | What it produces |
 |---|---|
 | **Summary** | Overview, key points, timestamps, main takeaway |
-| **Content / Viral** | Hook analysis, structure, emotional triggers, virality score, adaptation ideas |
-| **Competitor** | Positioning, claims, pain points, proof, weaknesses, how to outperform |
+| **Content** | Hook, structure, emotional triggers, retention, virality, adaptation ideas |
+| **Competitor** | Positioning, claims, pain points, proof, weaknesses, opportunities |
 | **Technical** | Tools, architecture, code patterns, setup steps, implementation checklist |
-| **Business** | Core thesis, market assumptions, risks, leverage points, actionable takeaways |
-| **Study** | Structured notes, definitions, examples, study questions, flashcards |
+| **Business** | Thesis, market assumptions, risks, leverage points, actionable takeaways |
+| **Study** | Notes, definitions, evidence-backed knowledge units, questions, flashcards, proposed memory patch |
 
----
+## Coverage Labels
+
+Every result states the strongest review level completed:
+
+- `METADATA ONLY`
+- `TRANSCRIPT REVIEWED`
+- `AUDIO TRANSCRIBED`
+- `VISUAL SEGMENTS REVIEWED`
+- `FULL AUDIOVISUAL REVIEW`
+
+The skill does not claim visual review when it only processed a transcript.
+
+## Evidence Labels
+
+- `SOURCE STATES`
+- `VISUALLY SHOWN`
+- `STUDENT INFERENCE`
+- `UNRESOLVED`
+- `ACTION PROPOSAL`
 
 ## Example Requests
 
 ```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-Summarize this video.
+/video-watch https://youtube.com/watch?v=VIDEO_ID Summarize the video.
 ```
 
 ```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-What makes this video go viral? Analyze the hook and structure.
+/video-watch https://youtube.com/watch?v=VIDEO_ID What makes the opening work?
 ```
 
 ```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-This is a competitor demo. Extract their claims, positioning, and weaknesses.
+/video-watch https://youtube.com/watch?v=VIDEO_ID Analyze from 0:30 to 2:00.
 ```
 
 ```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-Analyze only the first 2 minutes.
+/video-watch https://youtube.com/watch?v=VIDEO_ID Turn this tutorial into study notes and candidate knowledge units.
 ```
 
-```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-Turn this tutorial into step-by-step notes.
-```
+## Digital Student Mode
 
----
+When called from `icm/workstreams/digital-student/`, study mode can produce:
 
-## Time Range
+- Source and lesson hierarchy
+- Transcript-linked or timestamp-linked notes
+- Evidence-backed knowledge units
+- Cross-topic relationships
+- Written briefing
+- Proposed second-brain memory patch
 
-You can focus analysis on a specific section:
+Durable memory is not silently committed when review is required.
 
-```text
-Watch this video from 0:30 to 3:00 and extract the main argument.
-```
+## Boundaries
 
----
+The skill does not:
 
-## Output Format
+- Collect credentials, cookies, tokens, or verification codes
+- Bypass login, paywalls, DRM, CAPTCHA, or private-content controls
+- Download or redistribute full protected videos
+- Reproduce a complete third-party transcript without an appropriate basis
+- Claim to have watched visuals that were not inspected
 
-By default the skill returns:
-
-- **URL, title, creator, duration**
-- **Summary** — concise overview
-- **Key points** — numbered list
-- **Notable moments** — timestamps with notes
-- **Answer to your question** — direct reply
-- **Strategic notes** — optional insights and recommendations
-- **Limitations** — what could not be accessed (if anything)
-
-You can request alternate formats:
-
-```text
-Give me the output as bullet points only.
-Turn the notes into a blog post outline.
-Give me the key points as flashcards.
-```
-
----
-
-## What It Cannot Do
-
-- Access private, login-gated, DRM-protected, or paywalled videos
-- Download or store full video files
-- Expose platform API keys or credentials
-
-If a video cannot be accessed, the skill will explain why and ask for an alternative (transcript, captions file, audio clip, or screenshots).
-
----
+When a source cannot be accessed, the skill reports what failed and requests an authorized alternative such as user-provided captions, transcript, audio, or screenshots.
 
 ## Skill Files
 
 | File | Purpose |
 |---|---|
-| `SKILL.md` | Core skill definition, trigger phrases, operating rules |
-| `workflow.md` | Step-by-step execution process |
-| `pi-loading-rules.md` | When and how PI loads this skill |
-| `README.md` | This file — user-facing documentation |
+| `SKILL.md` | Mission, triggers, evidence contract, and required outputs |
+| `CONTEXT.md` | ICM inputs, stage routing, dependencies, outputs, and stop conditions |
+| `policy.md` | Authorization, copyright, evidence, external processing, and memory policy |
+| `workflow.md` | Step-by-step analysis process |
+| `pi-loading-rules.md` | Lazy-load rules and execution routing |
+| `tests/acceptance-cases.md` | Deterministic policy and output acceptance fixtures |
+| `README.md` | User-facing documentation |
