@@ -2,53 +2,46 @@
 
 ## Slash Command: `/video-watch`
 
-Analyze any video URL — summarize it, extract key points, break down the hook, review a competitor demo, or turn a tutorial into structured notes.
+Analyze authorized video material and return evidence-backed output with an explicit review-coverage label.
 
 ## Usage
 
 ```text
-/video-watch [video URL] [optional: your question or goal]
+/video-watch [video URL] [optional question, mode, or time range]
 ```
 
-## Examples
+## Required load order
 
-```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID
-```
+1. `skills/video-watch/SKILL.md`
+2. `skills/video-watch/CONTEXT.md`
+3. `skills/video-watch/policy.md`
+4. `skills/video-watch/workflow.md`
+5. `icm/workstreams/digital-student/CONTEXT.md` only for course study or second-brain capture
 
-```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID What makes this video go viral?
-```
+## Modes
 
-```text
-/video-watch https://youtube.com/watch?v=VIDEO_ID Analyze from 0:30 to 2:00
-```
+- `summary`
+- `content`
+- `competitor`
+- `technical`
+- `business`
+- `study`
 
-## What This Does
+## Required output
 
-1. Loads `skills/video-watch/SKILL.md`
-2. Runs the full workflow from `skills/video-watch/workflow.md`
-3. Selects the analysis mode based on your request:
-   - `summary` — overview, key points, timestamps, main takeaway
-   - `content` — hook, structure, virality, emotional triggers, adaptation ideas
-   - `competitor` — positioning, claims, proof, weaknesses, opportunities
-   - `technical` — tools, architecture, code patterns, implementation checklist
-   - `business` — thesis, market assumptions, risks, leverage, takeaways
-   - `study` — structured notes, definitions, study questions, flashcards
-4. Returns structured output with summary, key points, timestamps, and a direct answer
-
-## Default Output
-
-- Video metadata (title, creator, duration)
+- Source metadata
+- Review coverage label
 - Summary
-- Key points
-- Notable timestamps
-- Direct answer to your question
-- Strategic notes when relevant
-- Limitations if transcript or frames were unavailable
+- Evidence-labeled key points
+- Timestamps when available
+- Direct answer
+- Strategic or study notes when relevant
+- Limitations and unresolved claims
 
-## Core Rule
+## Safety boundary
 
-**Never say "I cannot watch videos" when tools are available.**
+Do not bypass authentication, paywalls, DRM, locked lessons, private-video controls, CAPTCHA, or platform restrictions. Do not collect credentials, cookies, tokens, or verification codes. Do not download or redistribute full protected videos.
 
-Always retrieve transcript or captions first, fall back to audio transcription, then frame analysis. Answer the user's actual question from the retrieved content.
+## Digital Student behavior
+
+When invoked for an authorized lesson, produce candidate knowledge units with evidence locations, confidence, relationships, a briefing, and a proposed memory patch. Do not silently commit durable second-brain memory.
