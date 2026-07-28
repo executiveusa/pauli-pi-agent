@@ -1,104 +1,129 @@
 ---
 name: video-watch
-description: Analyze, summarize, and extract insights from video URLs — YouTube, demos, tutorials, competitor content, lectures, and more.
+description: Analyze, summarize, and extract evidence-backed insights from authorized video URLs, lessons, demos, tutorials, lectures, and competitor content.
 ---
 
 # Video Watch Skill
 
 ## Mission
 
-Use this skill to analyze any video URL the user provides and return structured, actionable insight.
+Analyze authorized video material and return structured, evidence-backed insight without overstating what was actually reviewed.
 
-This skill does not say "I cannot watch videos." It retrieves transcripts, captions, metadata, and — when available — visual frame data, then answers the user's actual question.
+This skill retrieves available metadata, captions, transcripts, audio, and selected visual frames, then answers the user's actual question. It must distinguish transcript evidence, visual evidence, and agent inference.
 
 ## PI Relationship
 
-This is a folder-based skill for PI.
+PI remains the master agent. Load this skill only when a task involves analyzing existing video material.
 
-PI remains the master agent.
-
-This skill is loaded only when the user provides a video URL or asks PI to watch, analyze, summarize, or extract content from a video.
-
-## Branch and Folders
+Canonical folder:
 
 ```text
-Branch: claude/video-watch-skill-mh0v6q
-Skill folder: skills/video-watch/
-Output folder: factory/video-watch/
+skills/video-watch/
 ```
 
-Video analysis outputs may also be saved alongside related business work:
+Default output folder:
 
 ```text
-clients/{slug}/video-analysis/
-prospects/{niche}/{slug}/video-analysis/
+factory/video-watch/
+```
+
+Digital Student outputs may instead route through:
+
+```text
+icm/workstreams/digital-student/
 ```
 
 ## Trigger Phrases
 
-Use this skill when the user:
+Load this skill when the user:
 
-- Provides a YouTube, Vimeo, Loom, or other video URL
+- Provides a YouTube, Vimeo, Loom, Wistia, or direct video URL
 - Says "watch this video"
 - Says "summarize this video"
 - Says "analyze this video"
-- Says "what is the hook in this video"
-- Says "extract key points from this video"
-- Says "review this tutorial"
-- Says "critique this demo"
-- Says "analyze my competitor's video"
-- Says "what does this video say about X"
-- Says "turn this video into notes / a blog post / a content brief"
-- Says "why is this video going viral"
-- Says "analyze the first 30 seconds"
-- Says "what is the call to action in this video"
-- Says "compare this video to our product"
+- Asks about a video's hook, structure, virality, claims, or call to action
+- Requests notes, flashcards, definitions, or an implementation checklist from a video
+- Requests competitor, technical, business, or study analysis
+- Selects a course lesson containing embedded video
 
 ## Supported Analysis Modes
 
-| Mode | Use When |
+| Mode | Use when |
 |---|---|
-| `summary` | User wants a general overview |
-| `content` | User asks about hooks, virality, structure, or creator strategy |
-| `competitor` | Video is a competitor demo, pitch, ad, or landing-page video |
-| `technical` | Video is a coding tutorial, architecture talk, or software demo |
-| `business` | Video covers strategy, fundraising, operations, or market analysis |
-| `study` | User wants to learn from the video (notes, flashcards, definitions) |
+| `summary` | General overview and key points |
+| `content` | Hooks, retention, structure, emotion, virality, or creator strategy |
+| `competitor` | Product demo, pitch, advertisement, positioning, or market claims |
+| `technical` | Coding tutorial, architecture talk, setup, or software demo |
+| `business` | Strategy, fundraising, operations, business model, or market analysis |
+| `study` | Learning notes, concepts, questions, flashcards, or second-brain capture |
+
+## Evidence Labels
+
+Every material claim must use or inherit one of these labels:
+
+- `SOURCE STATES` — explicitly present in transcript, captions, or visible source text
+- `VISUALLY SHOWN` — observed in reviewed frames or screen content
+- `STUDENT INFERENCE` — reasoned conclusion not directly stated
+- `UNRESOLVED` — unclear, inaccessible, contradictory, or not verified
+- `ACTION PROPOSAL` — recommended next step, not source fact
+
+## Coverage Labels
+
+State the strongest review level actually completed:
+
+- `METADATA ONLY`
+- `TRANSCRIPT REVIEWED`
+- `AUDIO TRANSCRIBED`
+- `VISUAL SEGMENTS REVIEWED`
+- `FULL AUDIOVISUAL REVIEW`
+
+Never claim to have watched or visually verified content when only a transcript was processed.
 
 ## Operating Rules
 
-1. Never say "I cannot watch videos" if tools are available.
-2. Prefer native captions and transcripts over audio transcription.
-3. Prefer audio transcription over frame-only analysis.
-4. When visuals matter (slides, code, diagrams), inspect high-resolution frames.
-5. Always distinguish: what the video explicitly says vs. what is visually shown vs. your interpretation.
-6. Include timestamps when they improve usefulness.
-7. Do not bypass paywalls, DRM, private videos, or login-gated content.
-8. Do not expose API keys, credentials, or raw video data to external services unnecessarily.
-9. If the video cannot be accessed, explain what failed and ask for a transcript, captions, screenshots, or audio file.
-10. Respect platform terms of service and copyright restrictions.
+1. Prefer native captions and transcripts over audio transcription.
+2. Prefer local or approved transcription over unnecessary external upload.
+3. Inspect visual frames when slides, code, interfaces, diagrams, demonstrations, or body language materially affect the answer.
+4. Include timestamps when they improve traceability.
+5. Separate source statements, visual observations, and inference.
+6. Do not bypass paywalls, DRM, authentication, permissions, private-video controls, or platform restrictions.
+7. Do not expose credentials, session data, API keys, or raw protected media.
+8. Do not download or redistribute full copyrighted video files.
+9. Stop and report limitations when access or evidence is insufficient.
+10. Follow `policy.md`, `CONTEXT.md`, and `workflow.md`.
 
-## Required Workflow
+## Digital Student Study Contract
 
-See `workflow.md` for the full step-by-step process.
+When loaded by the Digital Student workstream, study mode must produce:
+
+1. Source metadata and course or lesson hierarchy
+2. Review coverage label
+3. Transcript-linked or timestamp-linked notes
+4. At least five knowledge units when the source supports them
+5. Evidence location and confidence for each knowledge unit
+6. At least one relationship or cross-topic link when justified
+7. A concise written briefing
+8. A proposed second-brain memory patch
+9. No automatic durable-memory commit without the configured approval step
 
 ## Required Outputs
 
 Every completed run produces at minimum:
 
-1. Video metadata (URL, title, creator, duration, publish date)
-2. Concise summary
-3. Key points (numbered list)
-4. Notable timestamps
-5. Direct answer to the user's question
-6. Strategic notes or recommendations (when relevant)
-7. Limitations notice (if transcript or frames were unavailable)
+1. Source metadata
+2. Review coverage label
+3. Concise summary
+4. Key points with evidence labels
+5. Notable timestamps when available
+6. Direct answer to the user's question
+7. Strategic or study notes when relevant
+8. Limitations and unresolved claims
 
 ## Quality Rules
 
-- Summary must be specific to the actual video content, not generic.
-- Key points must reflect what the video explicitly states.
-- Timestamps must be accurate when included.
-- Competitor analysis must identify specific claims, not generic observations.
-- Technical analysis must include tools, dependencies, and implementation steps.
-- Study notes must be structured for actual learning use.
+- Summaries must reflect retrieved evidence, not generic assumptions.
+- Timestamps must correspond to the cited transcript or reviewed segment.
+- Competitor analysis must separate explicit claims from interpretation.
+- Technical analysis must identify tools, dependencies, assumptions, and uncertainty.
+- Study outputs must be usable for recall, application, and second-brain organization.
+- A missing transcript or missing visual review must be disclosed prominently.
