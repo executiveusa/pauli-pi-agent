@@ -9,9 +9,13 @@ export const SecretsSchema = z.object({
   // API Keys - LLM Providers
   OPENROUTER_API_KEY: z.string().min(1, 'OPENROUTER_API_KEY is required').optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
+  GOOGLE_GEMINI_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
   GROQ_API_KEY: z.string().min(1).optional(),
-  MISTRAL_API_KEY: z.string().min(1).optional(),
-  ZAI_API_KEY: z.string().min(1).optional(),
+  MISTRAL_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
+  ZAI_API_KEY: z.string().min(1).optional(), // Z AI / Zhipu free tier
+  COHERE_API_KEY: z.string().min(1).optional(), // Free trial tier
+  CEREBRAS_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
+  AION_API_KEY: z.string().min(1).optional(), // Aion Labs permanent free tier
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
 
