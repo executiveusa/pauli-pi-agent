@@ -1,100 +1,142 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
-import { buildCheckpoint } from "./checkpoint.js";
-import { compileLesson } from "./knowledge-compiler.js";
-import type { LessonResult, LessonSnapshot } from "./types.js";
+import { Absurd } from "absurd-sdk";
+import { registerDigitalStudentCourseTask } from "./durable-task.js";
+import {
+  courseTaskIdempotencyKey,
+  DIGITAL_STUDENT_TASK,
+  lessonEventName,
+  manifestEventName,
+} from "./events.js";
+import { parseCourseManifest, parseLessonSnapshot } from "./manifest.js";
+import type { CourseCheckpoint, CourseManifest } from "./types.js";
 
 const inputDir = process.env.SKOOL_STUDY_INPUT ?? "./skool-study/input";
 const outputDir = process.env.SKOOL_STUDY_OUTPUT ?? "./skool-study/output";
 const pollMs = Number(process.env.SKOOL_STUDY_POLL_MS ?? 2000);
+const queueName = process.env.SKOOL_ABSURD_QUEUE ?? "digital-student";
+const workerConcurrency = Number(process.env.SKOOL_ABSURD_CONCURRENCY ?? 1);
+const claimTimeout = Number(process.env.SKOOL_ABSURD_CLAIM_TIMEOUT ?? 900);
 
-async function loadSnapshot(path: string): Promise<LessonSnapshot> {
-  return JSON.parse(await readFile(path, "utf8")) as LessonSnapshot;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-async function saveJson(path: string, value: unknown): Promise<void> {
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+async function readJson(path: string): Promise<unknown> {
+  return JSON.parse(await readFile(path, "utf8")) as unknown;
+}
+
+async function isCourseComplete(courseId: string): Promise<boolean> {
+  try {
+    const value = await readJson(join(outputDir, "course-complete-actionable-knowledge.json"));
+    if (!isRecord(value)) return false;
+    return value.courseId === courseId && value.checkpointType === "final" && value.runState !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+async function emitManifest(app: Absurd, manifest: CourseManifest): Promise<string> {
+  await app.emitEvent(manifestEventName(manifest.courseId), manifest);
+  const spawned = await app.spawn(
+    DIGITAL_STUDENT_TASK,
+    {
+      courseId: manifest.courseId,
+      courseTitle: manifest.courseTitle,
+      classroomUrl: manifest.classroomUrl,
+    },
+    {
+      maxAttempts: 100,
+      retryStrategy: {
+        kind: "exponential",
+        baseSeconds: 2,
+        factor: 2,
+        maxSeconds: 300,
+      },
+      idempotencyKey: courseTaskIdempotencyKey(manifest.courseId),
+    },
+  );
+
+  console.log(
+    `${spawned.created ? "Spawned" : "Resumed"} durable course task ${spawned.taskID} for ${manifest.courseId}`,
+  );
+  return spawned.taskID;
 }
 
 async function main(): Promise<void> {
   await mkdir(inputDir, { recursive: true });
   await mkdir(outputDir, { recursive: true });
 
-  const completed = new Map<number, LessonResult>();
-  let firstThreeWritten = false;
-  let courseComplete = false;
-  let courseId = "unknown";
-  let courseTitle = "Unknown Course";
+  const app = new Absurd({ queueName });
+  registerDigitalStudentCourseTask(app, outputDir);
+  const worker = await app.startWorker({
+    concurrency: workerConcurrency,
+    claimTimeout,
+    batchSize: workerConcurrency,
+    pollInterval: 0.5,
+    fatalOnLeaseTimeout: false,
+    onError: (error) => console.error("Absurd worker error:", error),
+  });
 
-  console.log(`Skool assisted study runner watching: ${inputDir}`);
-  console.log("Navigate lessons manually and save one lesson snapshot JSON per lesson.");
-  console.log("The process checkpoints after lesson 3 and continues until a snapshot declares courseComplete=true.");
+  const seen = new Set<string>();
+  let activeManifest: CourseManifest | null = null;
+  let activeTaskID: string | null = null;
+  let stopping = false;
 
-  while (!courseComplete) {
-    const files = (await readdir(inputDir))
-      .filter((name) => name.endsWith(".json"))
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const requestStop = (): void => {
+    stopping = true;
+  };
+  process.once("SIGINT", requestStop);
+  process.once("SIGTERM", requestStop);
 
-    for (const file of files) {
-      const snapshot = await loadSnapshot(join(inputDir, file));
-      if (completed.has(snapshot.lessonIndex)) continue;
+  console.log(`Skool durable study runner watching: ${inputDir}`);
+  console.log(`Absurd queue: ${queueName}`);
+  console.log("Capture course-manifest.json once, then feed lesson-###.json snapshots in manifest order.");
 
-      courseId = snapshot.courseId;
-      courseTitle = snapshot.courseTitle;
-      console.log(`Studying lesson ${snapshot.lessonIndex}: ${snapshot.lessonTitle}`);
+  try {
+    while (!stopping) {
+      const files = (await readdir(inputDir))
+        .filter((name) => name.endsWith(".json"))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-      const result = await compileLesson(snapshot);
-      completed.set(snapshot.lessonIndex, result);
-      await saveJson(join(outputDir, `lesson-${String(snapshot.lessonIndex).padStart(3, "0")}.json`), result);
-
-      const ordered = [...completed.values()].sort((a, b) => a.lessonIndex - b.lessonIndex);
-      courseComplete = Boolean(snapshot.courseComplete);
-
-      await saveJson(
-        join(outputDir, "progress.json"),
-        buildCheckpoint({
-          courseId,
-          courseTitle,
-          lessons: ordered,
-          checkpointType: courseComplete ? "final" : "progress",
-          courseComplete,
-        }),
-      );
-
-      if (ordered.length >= 3 && !firstThreeWritten) {
-        const firstThree = ordered.slice(0, 3);
-        await saveJson(
-          join(outputDir, "first-three-actionable-knowledge.json"),
-          buildCheckpoint({
-            courseId,
-            courseTitle,
-            lessons: firstThree,
-            checkpointType: "first-three",
-            courseComplete: false,
-          }),
-        );
-        firstThreeWritten = true;
-        console.log(`Checkpoint ready: ${join(outputDir, "first-three-actionable-knowledge.json")}`);
+      if (files.includes("course-manifest.json") && !seen.has("course-manifest.json")) {
+        try {
+          const manifest = parseCourseManifest(await readJson(join(inputDir, "course-manifest.json")));
+          activeManifest = manifest;
+          activeTaskID = await emitManifest(app, manifest);
+          seen.add("course-manifest.json");
+          console.log(`Manifest accepted: ${manifest.lessons.length} lessons expected.`);
+        } catch (error: unknown) {
+          console.error("Manifest rejected; fix course-manifest.json and retry:", error);
+        }
       }
 
-      if (courseComplete) {
-        await saveJson(
-          join(outputDir, "course-complete-actionable-knowledge.json"),
-          buildCheckpoint({
-            courseId,
-            courseTitle,
-            lessons: ordered,
-            checkpointType: "final",
-            courseComplete: true,
-          }),
-        );
-        console.log("Course marked complete. Final actionable knowledge JSON written.");
+      for (const file of files) {
+        if (file === "course-manifest.json" || seen.has(file)) continue;
+        try {
+          const snapshot = parseLessonSnapshot(await readJson(join(inputDir, file)));
+          await app.emitEvent(lessonEventName(snapshot.courseId, snapshot.lessonIndex), snapshot);
+          seen.add(file);
+          console.log(`Lesson ${snapshot.lessonIndex} submitted durably: ${snapshot.lessonTitle}`);
+        } catch (error: unknown) {
+          console.error(`Snapshot ${file} rejected; fix it and retry:`, error);
+        }
+      }
+
+      if (activeManifest && activeTaskID && (await isCourseComplete(activeManifest.courseId))) {
+        console.log(`Course complete. Durable task: ${activeTaskID}`);
+        console.log(`Final export: ${join(outputDir, "course-complete-actionable-knowledge.json")}`);
         break;
       }
-    }
 
-    if (!courseComplete) await sleep(pollMs);
+      await sleep(pollMs);
+    }
+  } finally {
+    process.removeListener("SIGINT", requestStop);
+    process.removeListener("SIGTERM", requestStop);
+    await worker.close();
+    await app.close();
   }
 }
 
