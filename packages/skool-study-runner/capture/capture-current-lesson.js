@@ -1,11 +1,10 @@
 (() => {
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  const lessonIndex = Number(window.prompt("Lesson number?", "1") || "1");
+  const lessonIndex = Number(window.prompt("Lesson number from course-manifest.json?", "1") || "1");
   const moduleTitle = window.prompt("Module title?", "") || "";
   const courseTitle = window.prompt("Course title?", "AI Automation Circle") || "AI Automation Circle";
   const courseId = window.prompt("Course ID?", "the-ai-automation-circle") || "the-ai-automation-circle";
   const lessonTitle = normalize(document.querySelector("h1, h2, [data-testid*='title']")?.textContent) || document.title;
-  const courseComplete = window.confirm("Is this the final lesson in the classroom?");
 
   const blockedSelectors = ["script", "style", "nav", "header", "footer", "button", "input", "textarea"];
   const clone = document.body.cloneNode(true);
@@ -23,10 +22,9 @@
     url: window.location.href,
     capturedAt: new Date().toISOString(),
     text,
-    courseComplete,
   };
 
-  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+  const blob = new Blob([`${JSON.stringify(snapshot, null, 2)}\n`], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
