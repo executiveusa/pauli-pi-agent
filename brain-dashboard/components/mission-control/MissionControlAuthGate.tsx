@@ -11,6 +11,10 @@ import {
 } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { getPauliBrowserSupabase } from '@/lib/pauli-supabase'
+import type {
+  PauliIncident,
+  PauliRuntimeProvider,
+} from './RuntimeReadinessPanel'
 
 export type PauliMembership = {
   organization_id: string
@@ -100,6 +104,8 @@ export type PauliContext = {
   missions: PauliMission[]
   approvals: PauliApproval[]
   events: PauliMissionEvent[]
+  runtimeProviders: PauliRuntimeProvider[]
+  incidents: PauliIncident[]
   generatedAt: string
 }
 
