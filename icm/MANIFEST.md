@@ -1,64 +1,100 @@
-# Repository Domain Manifest
+# PAULI ICM Manifest
 
-## Runtime and product code
+## Architecture rule
 
-| Domain | Canonical location | Rule |
+ICM is the canonical context and navigation architecture. Executable code remains in stable runtime paths; ICM nodes point to it. Physical moves require a consumer inventory, import/deployment review, verification, and rollback plan.
+
+## Root planes
+
+| Plane | Canonical location | What it owns |
 |---|---|---|
-| LLM providers and model APIs | `packages/ai/` | Preserve package API and lazy registration conventions. |
-| Core agent runtime | `packages/agent/` | Approval, tool, tenant, voice, and orchestration logic. |
-| Coding agent | `packages/coding-agent/` | CLI and coding-agent behavior. |
-| Data ingestion and second brain | `packages/data-processor/` | Durable imports, evidence, embeddings, and knowledge storage. |
-| Deep research | `packages/deep-research/` | Durable external research workflow. |
-| Content engine | `packages/content-engine/` | Signals, scoring, and synthesis. |
-| Interfaces | `packages/tui/`, `packages/web-ui/`, `packages/mom/` | User-facing control surfaces. |
-| Infrastructure | `packages/pods/`, `packages/secrets/` | Compute and secret resolution. |
+| Engineering law | `AGENTS.md`, `WORKFLOW.md` | repo rules, QA/security/release gates |
+| Context architecture | `icm/` | routing, domains, surfaces, integrations, workstreams, evidence/history |
+| Runtime | `packages/`, `ops/`, `agents/` | executable behavior |
+| Skills | `skills/`, compatibility skill roots | reusable instructions |
+| Company context | `companies/` | company-scoped facts, briefs, signals, products |
+| Product/factory outputs | `factory/`, workstream outputs | generated artifacts and reusable patterns |
 
-## Agent context
-
-| Domain | Current locations | ICM treatment |
-|---|---|---|
-| Repository rules | `AGENTS.md`, `WORKFLOW.md`, `WIKI.md` | Root governance; load before consequential work. |
-| Runtime agents | `agents/` | Executable or configuration-backed agent roles. |
-| Claude review agents | `.claude/agents/` | Independent QA, security, and release roles. |
-| Company agents | `companies/*/agent/` | Company-scoped identity and market context. |
-| Commands | `.claude/commands/`, `.pi/prompts/` | Surface-specific entry points; route to canonical skills. |
-
-## Skills
-
-The repository currently uses more than one skill convention:
-
-- `skills/<skill>/` - PI-native and shared skills.
-- `.agents/skills/<skill>/` - portable agent skills.
-- `agents/<role>/SKILL.md` - role agents packaged as skills.
-- `.claude/agents/*.md` - Claude-specific review roles.
-- `skills/SKILLS_REGISTRY.md` - 76 lazy-load references across 47 categories.
-- `skills.md` - legacy top-level directory and routing notes.
-
-No mass physical move is allowed until consumers and path references are verified. `skills/CATALOG.md` is the canonical logical index during migration.
-
-## Company context
-
-`companies/` remains the canonical company partition. Each company should converge on:
+## ICM shelves
 
 ```text
-companies/<slug>/
-├── CONTEXT.md
-├── agent/
-├── briefs/
-├── knowledge/
-├── content/
-├── _signals/
-├── evidence/
-└── archive/
+icm/
+├── _meta/             # graph/schema rules
+├── stages/            # 01 inspect → 05 release
+├── domains/           # 13 capability families
+├── surfaces/          # chat, mission control, brain, terminal, control bridge
+├── integrations/      # external platform/data connection inventory
+├── workstreams/       # bounded initiatives
+├── audits/            # evidence-backed wiring/security findings
+├── history/           # Pauli evolution/provenance
+├── upstream/          # selective Pi harvest decisions
+├── migration/         # compatibility/path migration records
+├── handoffs/          # durable task continuation state when used
+└── evidence/          # verification artifacts when used
 ```
 
-Existing files remain valid while missing folders are added as needed.
+## Capability domains
 
-## Migration policy
+1. Control Plane
+2. Agent Runtime
+3. Coding
+4. Design
+5. Storytelling & Content
+6. Video & Media
+7. Research & Learning
+8. Memory & Knowledge
+9. Browser Automation
+10. Integrations
+11. Infrastructure & Deployment
+12. Security & Governance
+13. Business & Revenue
 
-1. Add logical routing first.
-2. Inventory every consumer before moving a path.
-3. Move one skill or domain at a time.
-4. Add compatibility references when a tool expects a legacy location.
-5. Verify loading, tests, and commands.
-6. Record rollback in `icm/migration/`.
+Route through `domains/CONTEXT.md`.
+
+## Canonical control-plane direction
+
+One operator product should converge on:
+
+`Mission Control (chat-first) → authenticated server routes → permission/approval → mission/control service → Pi runtime/tools → durable state/evidence`.
+
+Current surfaces are catalogued under `surfaces/`; they must not be treated as equally canonical.
+
+## Runtime owners that remain in place
+
+- `packages/agent/` — core agent/runtime extensions.
+- `packages/ai/` — model/provider layer.
+- `packages/coding-agent/` — Pi coding CLI/session runtime.
+- `packages/tui/` — terminal UI.
+- `packages/web-ui/example/` — existing hosted compatibility chat SPA.
+- `brain-dashboard/` — second-brain/Mission Control UI source to be consolidated.
+- `ops/pauli-control/` — current real backend run/status/stop bridge.
+- `packages/data-processor/`, `packages/deep-research/`, `packages/content-engine/`, `packages/youtube-kg-agent/`, `packages/pods/`, `packages/secrets/` — domain runtimes.
+
+## Skill locations
+
+The logical catalog is `skills/CATALOG.md`. Existing compatible loaders may still discover skills under:
+
+- `skills/<name>/`
+- `.agents/skills/<name>/`
+- `.pi/skills/<name>/`
+- `.claude/skills/<name>/`
+- `.claude/agents/`
+- `.claude/commands/`
+
+Canonical reusable skills should converge under `skills/`; compatibility copies/pointers may remain until every consumer is verified.
+
+## Active workstreams
+
+- `workstreams/control-plane/` — consolidate control surfaces, secret boundary, durable mission state, New Look, upstream harvest.
+- `workstreams/digital-student/` — authorized learning and second-brain ingestion.
+
+## Migration law
+
+1. Inventory current consumers.
+2. Add canonical ICM node/path.
+3. Update routing/consumers.
+4. Verify old and new entry points.
+5. Remove/move legacy paths only when evidence proves safety.
+6. Record rollback.
+
+No folder is moved merely to make the tree prettier.
