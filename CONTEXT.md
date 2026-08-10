@@ -7,8 +7,9 @@ This repository uses the Interpretable Context Methodology (ICM): filesystem str
 1. Read `AGENTS.md` — repository engineering law.
 2. Read `WORKFLOW.md` — QA, security, release, and human gates.
 3. Read `icm/CONTEXT.md` — canonical task router.
-4. Load one active stage, one primary domain, and only the required skills.
-5. Follow links to runtime owners; do not load the whole repository or skill library.
+4. Read `docs/icm/HERMES-PAULIVERSE-ORCHESTRATOR.md` for cross-repository portfolio, ontology, financial-routing, consolidation, or master-brain work.
+5. Load one active stage, one primary domain, and only the required skills.
+6. Follow links to runtime owners; do not load the whole repository or skill library.
 
 ## Canonical ICM shelves
 
@@ -29,6 +30,12 @@ This repository uses the Interpretable Context Methodology (ICM): filesystem str
 - `agents/`, `.claude/agents/` — specialized runtime/review roles.
 - `companies/` — company-scoped context and products.
 - `factory/` — generated work and reusable production patterns.
+
+## Portfolio boundary
+
+Hermes coordinates the wider portfolio; it does not silently become the authoritative home for Pauli runtime truth. Cross-repository work follows the Hermes charter: inventory before touching, reuse before adding, one authoritative home per fact, explicit human gates for consequential actions, and financial opportunities routed to Pauli's Place rather than embedded ad hoc in source repos.
+
+Within this repository, Pauli's ICM domains, surfaces, integrations, control-plane state, and runtime owners remain authoritative.
 
 ## Active initiatives
 
