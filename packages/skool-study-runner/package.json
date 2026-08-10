@@ -10,7 +10,7 @@
     "absurd:tasks": "absurdctl list-tasks --queue=digital-student --limit=20"
   },
   "dependencies": {
-    "absurd-sdk": "^0.5.0",
+    "absurd-sdk": "0.4.0",
     "pg": "^8.0.0"
   },
   "devDependencies": {
