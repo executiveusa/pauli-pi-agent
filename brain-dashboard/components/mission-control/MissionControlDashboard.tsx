@@ -14,6 +14,11 @@ import {
 } from 'lucide-react'
 import { pauliAuthorizedFetch } from '@/lib/pauli-api'
 import AgentHealthCard, { type AgentHealthCardProps } from './AgentHealthCard'
+import ApprovalDecisionControls from './ApprovalDecisionControls'
+import RuntimeReadinessPanel, {
+  type PauliIncident,
+  type PauliRuntimeProvider,
+} from './RuntimeReadinessPanel'
 import {
   type PauliAgent,
   type PauliApproval,
@@ -24,24 +29,25 @@ import {
 
 type SystemStatus = 'OPERATIONAL' | 'DEGRADED' | 'OFFLINE'
 
+type ExtendedPauliContext = ReturnType<typeof useMissionControlContext>['data'] & {
+  runtimeProviders?: PauliRuntimeProvider[]
+  incidents?: PauliIncident[]
+}
+
 const TERMINAL_MISSION_STATUSES = new Set(['COMPLETED', 'CLOSED', 'CANCELLED', 'FAILED'])
 
 function formatRelativeTime(value: string | null | undefined): string {
   if (!value) return 'No activity recorded'
-
   const timestamp = new Date(value).getTime()
   if (Number.isNaN(timestamp)) return value
 
-  const diff = Date.now() - timestamp
-  const minutes = Math.max(0, Math.floor(diff / 60_000))
+  const minutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60_000))
   if (minutes < 1) return 'just now'
   if (minutes < 60) return `${minutes}m ago`
 
   const hours = Math.floor(minutes / 60)
   if (hours < 24) return `${hours}h ago`
-
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return `${Math.floor(hours / 24)}d ago`
 }
 
 function formatMoney(cents: number | null | undefined): string {
@@ -57,7 +63,9 @@ function normalizeAgentStatus(status: string): AgentHealthCardProps['status'] {
   const normalized = status.toLowerCase()
   if (normalized === 'active') return 'active'
   if (normalized === 'error' || normalized === 'failed') return 'error'
-  if (normalized === 'paused' || normalized === 'blocked') return 'paused'
+  if (normalized === 'paused' || normalized === 'blocked' || normalized === 'paused_for_review') {
+    return 'paused'
+  }
   return 'idle'
 }
 
@@ -105,15 +113,22 @@ function riskTone(risk: string): { border: string; text: string; bg: string } {
   return { border: 'hsl(142,76%,36%)', text: 'hsl(142,76%,60%)', bg: 'hsl(142,76%,10%)' }
 }
 
-function getSystemStatus(agents: PauliAgent[], missions: PauliMission[]): SystemStatus {
+function getSystemStatus(
+  agents: PauliAgent[],
+  missions: PauliMission[],
+  runtimeProviders: PauliRuntimeProvider[]
+): SystemStatus {
   if (agents.length === 0) return 'OFFLINE'
 
   const hasAgentError = agents.some((agent) => ['error', 'failed'].includes(agent.status.toLowerCase()))
   const hasMissionProblem = missions.some((mission) =>
     ['BLOCKED', 'FAILED', 'ERROR'].includes(mission.status.toUpperCase())
   )
+  const hasHealthyRuntime = runtimeProviders.some(
+    (provider) => provider.health_status.toLowerCase() === 'healthy'
+  )
 
-  if (hasAgentError || hasMissionProblem) return 'DEGRADED'
+  if (hasAgentError || hasMissionProblem || !hasHealthyRuntime) return 'DEGRADED'
   return 'OPERATIONAL'
 }
 
@@ -159,8 +174,6 @@ function MissionCard({
   onStart: (missionId: string) => void
 }) {
   const tone = missionTone(mission.status)
-  const budget = mission.autonomous_budget_cents
-  const spent = mission.spent_cents ?? 0
   const waitingForStart = mission.status.toUpperCase() === 'WAITING_APPROVAL'
 
   return (
@@ -191,18 +204,18 @@ function MissionCard({
         </div>
         <div>
           <p className="uppercase tracking-wider text-slate-600">Spend</p>
-          <p className="mt-1 text-slate-300">{formatMoney(spent)}</p>
+          <p className="mt-1 text-slate-300">{formatMoney(mission.spent_cents ?? 0)}</p>
         </div>
         <div>
           <p className="uppercase tracking-wider text-slate-600">Budget</p>
-          <p className="mt-1 text-slate-300">{formatMoney(budget)}</p>
+          <p className="mt-1 text-slate-300">{formatMoney(mission.autonomous_budget_cents)}</p>
         </div>
       </div>
 
       {waitingForStart ? (
         <div className="mt-4 rounded-lg border border-amber-900/60 bg-amber-950/20 p-3">
           <p className="text-[10px] leading-4 text-amber-200">
-            This intent is held. Pauli's 10-second mission scheduler will ignore it until an authorized human explicitly starts it.
+            This intent is held. Pauli's 10-second mission scheduler ignores it until an authorized human explicitly starts it.
           </p>
           {canStart ? (
             <button
@@ -228,7 +241,15 @@ function MissionCard({
   )
 }
 
-function ApprovalCard({ approval }: { approval: PauliApproval }) {
+function ApprovalCard({
+  approval,
+  role,
+  refresh,
+}: {
+  approval: PauliApproval
+  role: string
+  refresh: () => Promise<void>
+}) {
   const tone = riskTone(approval.risk_class)
 
   return (
@@ -255,11 +276,7 @@ function ApprovalCard({ approval }: { approval: PauliApproval }) {
         <span>Requested {formatRelativeTime(approval.created_at)}</span>
       </div>
 
-      {approval.status.toLowerCase() === 'pending' ? (
-        <div className="mt-3 rounded-lg border border-amber-900/60 bg-amber-950/20 px-3 py-2 text-[10px] leading-4 text-amber-300">
-          Decision controls are intentionally read-only in this slice. The authenticated approval endpoint is the next control-plane action contract.
-        </div>
-      ) : null}
+      <ApprovalDecisionControls approval={approval} role={role} refresh={refresh} />
     </article>
   )
 }
@@ -288,6 +305,10 @@ function EventRow({ event }: { event: PauliMissionEvent }) {
 
 export default function MissionControlDashboard() {
   const { data, refresh } = useMissionControlContext()
+  const extendedData = data as ExtendedPauliContext
+  const runtimeProviders = extendedData.runtimeProviders ?? []
+  const incidents = extendedData.incidents ?? []
+
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [intent, setIntent] = useState('')
   const [isCreatingMission, setIsCreatingMission] = useState(false)
@@ -303,7 +324,7 @@ export default function MissionControlDashboard() {
     () => data.approvals.filter((approval) => approval.status.toLowerCase() === 'pending'),
     [data.approvals]
   )
-  const systemStatus = getSystemStatus(data.agents, data.missions)
+  const systemStatus = getSystemStatus(data.agents, data.missions, runtimeProviders)
   const activeRole = data.memberships[0]?.role?.toLowerCase() ?? 'member'
   const canStartMissions = ['owner', 'admin', 'operator'].includes(activeRole)
 
@@ -446,7 +467,7 @@ export default function MissionControlDashboard() {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-400">Pauli</p>
               <h1 className="text-xl font-semibold tracking-tight">Mission Control</h1>
-              <p className="mt-1 text-xs text-slate-500">State and governed mission intake are backed by Botanic Creations.</p>
+              <p className="mt-1 text-xs text-slate-500">State and governed mission control are backed by Botanic Creations.</p>
             </div>
           </div>
 
@@ -455,7 +476,7 @@ export default function MissionControlDashboard() {
               {systemStatus}
             </span>
             <span className="rounded-lg border border-blue-900/60 bg-blue-950/30 px-3 py-1.5 text-[10px] uppercase tracking-wider text-blue-300">
-              Intake + explicit release live
+              Intake · release · approvals live
             </span>
             <button
               type="button"
@@ -514,6 +535,8 @@ export default function MissionControlDashboard() {
           </div>
         </section>
 
+        <RuntimeReadinessPanel providers={runtimeProviders} incidents={incidents} />
+
         <section>
           <div className="mb-3 flex items-end justify-between gap-3">
             <SectionLabel>Agent runtime</SectionLabel>
@@ -564,7 +587,9 @@ export default function MissionControlDashboard() {
             </div>
             <div className="space-y-3">
               {data.approvals.length > 0 ? (
-                data.approvals.map((approval) => <ApprovalCard key={approval.id} approval={approval} />)
+                data.approvals.map((approval) => (
+                  <ApprovalCard key={approval.id} approval={approval} role={activeRole} refresh={refresh} />
+                ))
               ) : (
                 <div className="flex min-h-32 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-center text-sm text-slate-500">
                   <div>
@@ -597,9 +622,9 @@ export default function MissionControlDashboard() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
             <div>
-              <p className="text-xs font-semibold text-amber-300">Intent save and explicit scheduler release are live; consequential downstream controls remain gated.</p>
+              <p className="text-xs font-semibold text-amber-300">The control plane is connected; the governed runtime is not yet executable.</p>
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                Approval decisions, runtime provider configuration, spending, deployment, publishing, credentials, and external communication are not simulated here. The existing deterministic mission scheduler handles planning state only after Start mission, and execution still requires a healthy governed runtime.
+                Intent save, explicit scheduler release, live state, and approval decisions are wired through authenticated RLS. Model-provider credentials are not configured in the runtime Edge Function, so the runtime correctly remains offline. Spending, deployment, publishing, credentials, and external communication stay behind downstream approval/tool policy.
               </p>
             </div>
           </div>
