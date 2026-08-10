@@ -51,6 +51,8 @@ This file organizes installed and referenced skills without duplicating or prema
 |---|---|
 | Core agent | `packages/agent/` |
 | Coding agent | `packages/coding-agent/` |
+| Absurd durable workflows | `.pi/skills/absurd/SKILL.md`, `earendil-works/absurd` |
+| Digital Student durable runner | `packages/skool-study-runner/` |
 | Mythos Kernel | package implementation under `packages/` |
 | Masterstack flywheel | `skills/masterstack-flywheel/` |
 | External harness references | `skills/SKILLS_REGISTRY.md` |
