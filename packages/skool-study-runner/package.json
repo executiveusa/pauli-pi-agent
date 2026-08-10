@@ -1,0 +1,15 @@
+{
+  "name": "@pauli/skool-study-runner",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run": "tsx src/cli.ts",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
