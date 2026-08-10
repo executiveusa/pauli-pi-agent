@@ -53,49 +53,73 @@ export async function GET(req: NextRequest) {
 
   const organizationIds = memberships.map((membership) => membership.organization_id)
 
-  const [organizationsResult, agentsResult, missionsResult, approvalsResult, eventsResult] =
-    await Promise.all([
-      supabase
-        .schema('pauli')
-        .from('organizations')
-        .select('id, slug, name, preferred_language, status')
-        .in('id', organizationIds)
-        .order('name'),
-      supabase
-        .schema('pauli')
-        .from('agents')
-        .select('id, organization_id, agent_key, name, role, specialty, status, last_heartbeat_at, updated_at')
-        .in('organization_id', organizationIds)
-        .order('updated_at', { ascending: false })
-        .limit(50),
-      supabase
-        .schema('pauli')
-        .from('missions')
-        .select(
-          'id, organization_id, correlation_id, title, intent_normalized, requested_outcome, required_completion_level, status, priority, autonomous_budget_cents, spent_cents, attempt_count, started_at, completed_at, created_at, updated_at'
-        )
-        .in('organization_id', organizationIds)
-        .order('updated_at', { ascending: false })
-        .limit(50),
-      supabase
-        .schema('pauli')
-        .from('approvals')
-        .select(
-          'id, organization_id, mission_id, task_id, requested_by_agent_id, decided_by, action_class, risk_class, scope, max_uses, uses, max_spend_cents, status, rationale, expires_at, created_at, decided_at'
-        )
-        .in('organization_id', organizationIds)
-        .order('created_at', { ascending: false })
-        .limit(50),
-      supabase
-        .schema('pauli')
-        .from('mission_events')
-        .select(
-          'event_uuid, organization_id, mission_id, task_id, agent_id, correlation_id, causation_id, event_type, source, public_summary, visibility, occurred_at'
-        )
-        .in('organization_id', organizationIds)
-        .order('occurred_at', { ascending: false })
-        .limit(100),
-    ])
+  const [
+    organizationsResult,
+    agentsResult,
+    missionsResult,
+    approvalsResult,
+    eventsResult,
+    providersResult,
+    incidentsResult,
+  ] = await Promise.all([
+    supabase
+      .schema('pauli')
+      .from('organizations')
+      .select('id, slug, name, preferred_language, status')
+      .in('id', organizationIds)
+      .order('name'),
+    supabase
+      .schema('pauli')
+      .from('agents')
+      .select('id, organization_id, agent_key, name, role, specialty, status, last_heartbeat_at, updated_at')
+      .in('organization_id', organizationIds)
+      .order('updated_at', { ascending: false })
+      .limit(50),
+    supabase
+      .schema('pauli')
+      .from('missions')
+      .select(
+        'id, organization_id, correlation_id, title, intent_normalized, requested_outcome, required_completion_level, status, priority, autonomous_budget_cents, spent_cents, attempt_count, started_at, completed_at, created_at, updated_at'
+      )
+      .in('organization_id', organizationIds)
+      .order('updated_at', { ascending: false })
+      .limit(50),
+    supabase
+      .schema('pauli')
+      .from('approvals')
+      .select(
+        'id, organization_id, mission_id, task_id, requested_by_agent_id, decided_by, action_class, risk_class, scope, max_uses, uses, max_spend_cents, status, rationale, expires_at, created_at, decided_at'
+      )
+      .in('organization_id', organizationIds)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .schema('pauli')
+      .from('mission_events')
+      .select(
+        'event_uuid, organization_id, mission_id, task_id, agent_id, correlation_id, causation_id, event_type, source, public_summary, visibility, occurred_at'
+      )
+      .in('organization_id', organizationIds)
+      .order('occurred_at', { ascending: false })
+      .limit(100),
+    supabase
+      .schema('pauli')
+      .from('runtime_providers')
+      .select(
+        'id, provider_key, name, kind, endpoint_ref, capabilities, health_status, cost_profile, metadata, last_healthcheck_at, updated_at'
+      )
+      .order('updated_at', { ascending: false })
+      .limit(50),
+    supabase
+      .schema('pauli')
+      .from('incidents')
+      .select(
+        'id, organization_id, mission_id, agent_id, severity, incident_type, title, summary, status, details_redacted, detected_at, resolved_at'
+      )
+      .in('organization_id', organizationIds)
+      .order('detected_at', { ascending: false })
+      .limit(50),
+  ])
 
   const firstError = [
     organizationsResult.error,
@@ -103,6 +127,8 @@ export async function GET(req: NextRequest) {
     missionsResult.error,
     approvalsResult.error,
     eventsResult.error,
+    providersResult.error,
+    incidentsResult.error,
   ].find(Boolean)
 
   if (firstError) {
@@ -123,6 +149,8 @@ export async function GET(req: NextRequest) {
     missions: missionsResult.data ?? [],
     approvals: approvalsResult.data ?? [],
     events: eventsResult.data ?? [],
+    runtimeProviders: providersResult.data ?? [],
+    incidents: incidentsResult.data ?? [],
     generatedAt: new Date().toISOString(),
   })
 }
