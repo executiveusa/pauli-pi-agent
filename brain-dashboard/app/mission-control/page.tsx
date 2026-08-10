@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import MissionControlDashboard from '@/components/mission-control/MissionControlDashboard'
+import MissionControlAuthGate from '@/components/mission-control/MissionControlAuthGate'
 
 export const metadata = {
-  title: 'Mission Control — Pauli Pi Software Factory',
-  description: 'Real-time dashboard for the Pauli Pi AI Software Factory',
+  title: 'Mission Control — Pauli',
+  description: 'Authenticated control surface for Pauli missions, approvals, agents, evidence, and runtime state',
 }
 
 function DashboardSkeleton() {
@@ -12,7 +13,6 @@ function DashboardSkeleton() {
       className="flex flex-col min-h-screen"
       style={{ background: 'hsl(222,84%,5%)' }}
     >
-      {/* Header skeleton */}
       <div
         className="w-full border-b px-6 py-4"
         style={{
@@ -65,9 +65,7 @@ function DashboardSkeleton() {
         </div>
       </div>
 
-      {/* Content skeleton */}
       <div className="flex-1 px-6 py-6">
-        {/* Agent cards */}
         <div
           className="h-3 w-24 rounded mb-3 animate-pulse"
           style={{ background: 'hsl(222,47%,11%)' }}
@@ -82,7 +80,6 @@ function DashboardSkeleton() {
           ))}
         </div>
 
-        {/* Project cards */}
         <div
           className="h-3 w-28 rounded mb-3 animate-pulse"
           style={{ background: 'hsl(222,47%,11%)' }}
@@ -103,8 +100,10 @@ function DashboardSkeleton() {
 
 export default function MissionControlPage() {
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <MissionControlDashboard />
-    </Suspense>
+    <MissionControlAuthGate>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <MissionControlDashboard />
+      </Suspense>
+    </MissionControlAuthGate>
   )
 }
