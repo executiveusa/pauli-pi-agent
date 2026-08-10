@@ -1,5 +1,27 @@
 export type EvidenceLabel = "SOURCE STATES" | "VISUALLY SHOWN" | "STUDENT INFERENCE" | "UNRESOLVED" | "ACTION PROPOSAL";
 
+export interface CourseManifestLesson {
+  lessonIndex: number;
+  lessonTitle: string;
+  moduleTitle?: string;
+  url: string;
+}
+
+export interface CourseManifest {
+  schemaVersion: "1.0";
+  courseId: string;
+  courseTitle: string;
+  classroomUrl: string;
+  capturedAt: string;
+  lessons: CourseManifestLesson[];
+}
+
+export interface DurableCourseParams {
+  courseId: string;
+  courseTitle: string;
+  classroomUrl: string;
+}
+
 export interface LessonSnapshot {
   courseId: string;
   courseTitle: string;
@@ -29,6 +51,14 @@ export interface KnowledgeUnit {
   failureModes: string[];
 }
 
+export interface LessonProvenance {
+  sourceHash: string;
+  providerBaseUrl: string;
+  model: string;
+  promptVersion: string;
+  generatedAt: string;
+}
+
 export interface LessonResult {
   lessonIndex: number;
   lessonTitle: string;
@@ -37,6 +67,7 @@ export interface LessonResult {
   knowledgeUnits: KnowledgeUnit[];
   actions: string[];
   openQuestions: string[];
+  provenance: LessonProvenance;
 }
 
 export interface CourseCheckpoint {
