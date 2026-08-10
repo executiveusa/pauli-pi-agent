@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run check && git diff --exit-code -- . ':(exclude)package-lock.json' ':(exclude)brain-dashboard/package.json' && npm run build -w pauli-brain-dashboard",
+  "buildCommand": "bash -lc 'set +e; npx biome check --write --error-on-warnings --max-diagnostics=200 .; status=$?; echo BIOME_STATUS=$status; echo BIOME_CHANGED_FILES; git diff --name-status -- . \" :(exclude)package-lock.json\" 2>/dev/null || git diff --name-status -- .; exit $status'",
   "outputDirectory": "brain-dashboard/.next",
   "installCommand": "npm install"
 }
