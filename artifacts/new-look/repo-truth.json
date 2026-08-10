@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "capturedAt": "2026-08-10",
+  "repository": "executiveusa/pauli-pi-agent",
+  "baseline": "0cc2e7b5657dfa4d3da881965c1ce4bb8ffca9b1",
+  "productInference": {
+    "name": "Pauli",
+    "type": "Pi-derived agent operating system and control platform",
+    "primaryOutcome": "Let one operator express outcomes through chat/voice, supervise durable missions, approve consequential actions, inspect evidence, and reuse coding/research/content/memory/browser/integration capabilities from one control surface."
+  },
+  "runtimeOwners": {
+    "agentCore": "packages/agent",
+    "modelLayer": "packages/ai",
+    "codingRuntime": "packages/coding-agent",
+    "terminal": "packages/tui",
+    "hostedCompatibilityChat": "packages/web-ui/example",
+    "candidateMissionControl": "brain-dashboard",
+    "serverControlBridge": "ops/pauli-control",
+    "memoryProcessing": "packages/data-processor",
+    "research": "packages/deep-research",
+    "content": "packages/content-engine",
+    "videoStudy": "skills/video-watch",
+    "secrets": "packages/secrets"
+  },
+  "icm": {
+    "router": "icm/CONTEXT.md",
+    "domains": "icm/domains/",
+    "surfaces": "icm/surfaces/",
+    "integrations": "icm/integrations/",
+    "controlPlaneWorkstream": "icm/workstreams/control-plane/",
+    "audit": "icm/audits/2026-08-10-full-stack-wiring.md"
+  },
+  "verifiedSurfaces": [
+    {
+      "name": "Hosted Pi Web Chat",
+      "owner": "packages/web-ui/example",
+      "deployment": "pauli-pi-agent.vercel.app",
+      "state": "PARTIAL",
+      "reason": "Live generic Pi Web UI example; not a complete Pauli Mission Control."
+    },
+    {
+      "name": "Mission Control",
+      "owner": "brain-dashboard/components/mission-control",
+      "state": "UI_ONLY",
+      "reason": "Current core dashboard uses static demo state and local mutations."
+    },
+    {
+      "name": "Pauli Control Bridge",
+      "owner": "ops/pauli-control",
+      "state": "BACKEND_ONLY",
+      "reason": "Real health/run/status/stop behavior exists but no canonical production UI is proven wired to it."
+    },
+    {
+      "name": "Pi CLI/TUI",
+      "owner": "packages/coding-agent + packages/tui",
+      "state": "COMPLETE",
+      "reason": "Strong local engineering/operator surface; not the intended business cockpit."
+    }
+  ],
+  "criticalTruth": [
+    "Runtime packages must not be physically moved merely to mirror ICM domains.",
+    "Current Vite browser build path can inject .env provider/service credentials into public browser state and is an S0 architectural risk.",
+    "The historical second-brain Vercel deployment and pauli-dashboard are sourced from separate repositories and are not canonical evidence for this repo's Mission Control.",
+    "The current real server control primitive is ops/pauli-control.",
+    "Upstream Pi has crossed package-scope and runtime-version boundaries; selective harvesting is safer than wholesale merge."
+  ]
+}
