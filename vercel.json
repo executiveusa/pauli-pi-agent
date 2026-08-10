@@ -1,9 +1,7 @@
 {
-  "framework": "vite",
-  "buildCommand": "npm run build -w @mariozechner/pi-data-processor -w @mariozechner/pi-tui -w @mariozechner/pi-ai -w @mariozechner/pi-agent-core -w @mariozechner/pi-web-ui && cd packages/web-ui/example && npm run build",
-  "outputDirectory": "packages/web-ui/example/dist",
-  "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build -w pauli-brain-dashboard",
+  "outputDirectory": "brain-dashboard/.next",
+  "installCommand": "npm install"
 }
