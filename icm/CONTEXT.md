@@ -2,43 +2,57 @@
 
 ## Purpose
 
-Route one agent through a small, inspectable context set. Each task should load only the relevant workstream, stage contract, skill category, and evidence files.
+Route one Pauli agent through a small, inspectable context set. Each task loads only the relevant stage, domain, workstream, skills, and evidence.
 
-## Routing table
+## First route by outcome
 
-| Task | Load |
+| Outcome | Load first |
 |---|---|
-| Repository inspection or architecture | `stages/01-inspect/CONTEXT.md`, `skills/categories/repo-intelligence/CONTEXT.md` |
-| Specification or planning | `stages/02-specify/CONTEXT.md`, relevant workstream |
-| Implementation | `stages/03-build/CONTEXT.md`, relevant package README, selected skills only |
-| Browser or authenticated-site work | `stages/03-build/CONTEXT.md`, `skills/categories/browser-learning/CONTEXT.md`, domain policy |
-| Knowledge ingestion or second brain | `stages/04-verify/CONTEXT.md`, `skills/categories/knowledge-memory/CONTEXT.md` |
-| QA, security, or release | `stages/04-verify/CONTEXT.md`, `stages/05-release/CONTEXT.md`, `WORKFLOW.md` |
-| Client or revenue delivery | `stages/02-specify/CONTEXT.md`, `stages/04-verify/CONTEXT.md`, commercial brief |
+| Operate Pauli, missions, approvals, or job state | `domains/01-control-plane/CONTEXT.md`, `surfaces/CONTEXT.md` |
+| Agent/runtime/model/session work | `domains/02-agent-runtime/CONTEXT.md` |
+| Coding or repo change | `domains/03-coding/CONTEXT.md` |
+| Frontend/UI/New Look | `domains/04-design/CONTEXT.md`, `../skills/new-look/SKILL.md` |
+| Story/copy/content | `domains/05-storytelling-content/CONTEXT.md` |
+| Video/media | `domains/06-video-media/CONTEXT.md` |
+| Research/course learning | `domains/07-research-learning/CONTEXT.md` |
+| Memory/second brain/graph | `domains/08-memory-knowledge/CONTEXT.md` |
+| Browser/authenticated workflow | `domains/09-browser-automation/CONTEXT.md`, relevant policy |
+| API/MCP/SaaS connection | `domains/10-integrations/CONTEXT.md`, `integrations/CONTEXT.md` |
+| Vercel/database/secrets/compute | `domains/11-infrastructure-deployment/CONTEXT.md` |
+| QA/security/audit/release | `domains/12-security-governance/CONTEXT.md` |
+| Company/revenue/client delivery | `domains/13-business-revenue/CONTEXT.md` |
+| Restructure architecture into ICM | `../skills/icm-architect/SKILL.md`, `domains/CONTEXT.md` |
+| Diagnose UI↔backend wiring | `../skills/full-stack-wiring-audit/SKILL.md` |
+| Adversarial quality iteration | `../skills/gauntlet-loop/SKILL.md` |
 
 ## Required stage sequence
 
-1. `01-inspect` - record baseline and blast radius.
-2. `02-specify` - define outcome, constraints, proof, rollback, and selected skills.
-3. `03-build` - make the smallest isolated change.
-4. `04-verify` - run independent evidence and safety checks.
-5. `05-release` - prepare handoff; human retains merge and production authority.
+1. `stages/01-inspect/CONTEXT.md` — baseline, references, blast radius.
+2. `stages/02-specify/CONTEXT.md` — outcome, acceptance criteria, risk, rollback.
+3. `stages/03-build/CONTEXT.md` — smallest reversible implementation.
+4. `stages/04-verify/CONTEXT.md` — independent evidence and safety checks.
+5. `stages/05-release/CONTEXT.md` — release evidence and human decision.
 
-Stages may be skipped only when the stage contract explicitly allows it and the reason is recorded in the task handoff.
+A documentation-only inspection can stop after Inspect/Specify when no runtime change is authorized or needed.
 
 ## Context budget
 
 - One active workstream.
 - One active stage.
+- One primary domain; add a secondary domain only for a real edge.
 - Three to seven selected skills maximum.
-- Load summaries and manifests before full source documents.
-- Store intermediate state as files, not hidden conversational memory.
+- Load routers/manifests before full source.
+- Persist intermediate state as files rather than hidden conversational memory.
 
-## Canonical manifests
+## Canonical maps
 
-- `MANIFEST.md` - repository domain map.
-- `skills/CATALOG.md` - installed and referenced skill routing.
-- `workstreams/` - active bounded initiatives.
-- `handoffs/` - durable task state.
-- `evidence/` - verification artifacts and reports.
-- `migration/` - path changes, compatibility notes, and rollback records.
+- `MANIFEST.md` — repository/runtime map.
+- `domains/` — capability graph.
+- `surfaces/` — control/interface graph.
+- `integrations/` — external connection graph.
+- `skills/CATALOG.md` — reusable capability routing.
+- `workstreams/` — bounded initiatives.
+- `audits/` — verified gaps.
+- `history/` — evolution/provenance.
+- `upstream/` — upstream Pi decisions.
+- `migration/` — path/compatibility/rollback records.
