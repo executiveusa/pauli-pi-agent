@@ -7,8 +7,9 @@ This repository uses the Interpretable Context Methodology (ICM): filesystem str
 1. Read `AGENTS.md` for repository-wide engineering rules.
 2. Read `WORKFLOW.md` for delivery gates.
 3. Read `icm/CONTEXT.md` to route the current task.
-4. Read only the stage, domain, and skill context required for the active task.
-5. Do not load the entire skill library into context.
+4. Read `docs/icm/HERMES-PAULIVERSE-ORCHESTRATOR.md` for cross-repository portfolio, ontology, financial-routing, consolidation, or master-brain work.
+5. Read only the stage, domain, and skill context required for the active task.
+6. Do not load the entire skill library into context.
 
 ## Stable architecture
 
@@ -23,6 +24,8 @@ This repository uses the Interpretable Context Methodology (ICM): filesystem str
 ## Operating constraint
 
 The ICM layer organizes and routes existing capabilities. It must not duplicate working implementations, expose secrets, silently change external behavior, or claim a migration is complete without evidence.
+
+Cross-repository work follows the Hermes portfolio charter: inventory before touching, reuse before adding, one authoritative home per fact, explicit human gates for consequential actions, and financial opportunities routed to Pauli's Place rather than embedded ad hoc in source repos.
 
 ## Current active ICM initiative
 
