@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "capturedAt": "2026-08-10",
+  "repository": "executiveusa/pauli-pi-agent",
+  "domains": [
+    {"id":"01-control-plane","icm":"icm/domains/01-control-plane/CONTEXT.md","runtime":["ops/pauli-control","packages/agent","brain-dashboard"],"status":"PARTIAL"},
+    {"id":"02-agent-runtime","icm":"icm/domains/02-agent-runtime/CONTEXT.md","runtime":["packages/agent","packages/ai","packages/coding-agent","packages/tui"],"status":"COMPLETE"},
+    {"id":"03-coding","icm":"icm/domains/03-coding/CONTEXT.md","runtime":["packages/coding-agent","agents/backend","agents/frontend","agents/judge","agents/watcher"],"status":"COMPLETE"},
+    {"id":"04-design","icm":"icm/domains/04-design/CONTEXT.md","runtime":["skills/new-look","skills/ui-intelligence","agents/design","brain-dashboard","packages/web-ui/example"],"status":"PARTIAL"},
+    {"id":"05-storytelling-content","icm":"icm/domains/05-storytelling-content/CONTEXT.md","runtime":["packages/content-engine","companies","factory"],"status":"COMPLETE"},
+    {"id":"06-video-media","icm":"icm/domains/06-video-media/CONTEXT.md","runtime":["skills/video-watch"],"status":"PARTIAL"},
+    {"id":"07-research-learning","icm":"icm/domains/07-research-learning/CONTEXT.md","runtime":["packages/deep-research","packages/skool-study-runner","skills/video-watch"],"status":"PARTIAL"},
+    {"id":"08-memory-knowledge","icm":"icm/domains/08-memory-knowledge/CONTEXT.md","runtime":["packages/data-processor","packages/youtube-kg-agent","brain","brain-dashboard"],"status":"PARTIAL"},
+    {"id":"09-browser-automation","icm":"icm/domains/09-browser-automation/CONTEXT.md","runtime":["agents/browser-qa",".agents/skills/online-shopper"],"status":"PARTIAL"},
+    {"id":"10-integrations","icm":"icm/domains/10-integrations/CONTEXT.md","runtime":["packages/secrets","skills/SKILLS_REGISTRY.md"],"status":"PARTIAL"},
+    {"id":"11-infrastructure-deployment","icm":"icm/domains/11-infrastructure-deployment/CONTEXT.md","runtime":["packages/secrets","packages/pods","vercel.json","ops"],"status":"PARTIAL"},
+    {"id":"12-security-governance","icm":"icm/domains/12-security-governance/CONTEXT.md","runtime":["AGENTS.md","WORKFLOW.md",".claude/agents","agents/judge","agents/watcher","skills/full-stack-wiring-audit","skills/gauntlet-loop"],"status":"COMPLETE"},
+    {"id":"13-business-revenue","icm":"icm/domains/13-business-revenue/CONTEXT.md","runtime":["companies","factory","agents/monetization","packages/content-engine"],"status":"PARTIAL"}
+  ],
+  "primaryGraph": [
+    ["Human","Mission Control"],
+    ["Mission Control","Authenticated Server Routes"],
+    ["Authenticated Server Routes","Permission + Approval"],
+    ["Permission + Approval","Mission/Control Service"],
+    ["Mission/Control Service","Pauli Control Bridge or Durable Worker"],
+    ["Pauli Control Bridge or Durable Worker","Pi Runtime"],
+    ["Pi Runtime","Skills/Tools/Integrations"],
+    ["Skills/Tools/Integrations","Durable State + Evidence"],
+    ["Durable State + Evidence","Mission Control"]
+  ],
+  "supportingSurfaces": ["Pi CLI/TUI","Memory/Search","ICM Graph","Approval Queue","Evidence/Artifacts","Integration Status"],
+  "legacyOrNonCanonical": ["generic Pi Web UI example as standalone product","historical separate brain-dashboard deployment","pauli-dashboard from dashboard-agent-swarm"]
+}
