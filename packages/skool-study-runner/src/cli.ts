@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
-import { Absurd } from "absurd-sdk";
+import { Absurd, type JsonObject } from "absurd-sdk";
 import { registerDigitalStudentCourseTask } from "./durable-task.js";
 import {
   courseTaskIdempotencyKey,
@@ -10,7 +10,7 @@ import {
   manifestEventName,
 } from "./events.js";
 import { parseCourseManifest, parseLessonSnapshot } from "./manifest.js";
-import type { CourseCheckpoint, CourseManifest } from "./types.js";
+import type { CourseManifest } from "./types.js";
 
 const inputDir = process.env.SKOOL_STUDY_INPUT ?? "./skool-study/input";
 const outputDir = process.env.SKOOL_STUDY_OUTPUT ?? "./skool-study/output";
@@ -23,6 +23,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function toJsonObject(value: unknown): JsonObject {
+  const serialized = JSON.parse(JSON.stringify(value)) as unknown;
+  if (!isRecord(serialized)) throw new Error("Absurd event payload must be a JSON object");
+  return serialized as JsonObject;
+}
+
 async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
 }
@@ -30,15 +36,20 @@ async function readJson(path: string): Promise<unknown> {
 async function isCourseComplete(courseId: string): Promise<boolean> {
   try {
     const value = await readJson(join(outputDir, "course-complete-actionable-knowledge.json"));
-    if (!isRecord(value)) return false;
-    return value.courseId === courseId && value.checkpointType === "final" && value.runState !== undefined;
+    if (!isRecord(value) || !isRecord(value.runState)) return false;
+    return (
+      value.courseId === courseId &&
+      value.checkpointType === "final" &&
+      value.runState.courseComplete === true &&
+      value.runState.continueProcessing === false
+    );
   } catch {
     return false;
   }
 }
 
 async function emitManifest(app: Absurd, manifest: CourseManifest): Promise<string> {
-  await app.emitEvent(manifestEventName(manifest.courseId), manifest);
+  await app.emitEvent(manifestEventName(manifest.courseId), toJsonObject(manifest));
   const spawned = await app.spawn(
     DIGITAL_STUDENT_TASK,
     {
@@ -116,7 +127,10 @@ async function main(): Promise<void> {
         if (file === "course-manifest.json" || seen.has(file)) continue;
         try {
           const snapshot = parseLessonSnapshot(await readJson(join(inputDir, file)));
-          await app.emitEvent(lessonEventName(snapshot.courseId, snapshot.lessonIndex), snapshot);
+          await app.emitEvent(
+            lessonEventName(snapshot.courseId, snapshot.lessonIndex),
+            toJsonObject(snapshot),
+          );
           seen.add(file);
           console.log(`Lesson ${snapshot.lessonIndex} submitted durably: ${snapshot.lessonTitle}`);
         } catch (error: unknown) {
