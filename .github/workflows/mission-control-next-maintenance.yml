@@ -1,0 +1,66 @@
+name: Mission Control Next maintenance update
+
+on:
+  push:
+    branches:
+      - feat/mission-control-auth-context
+    paths:
+      - .github/workflows/mission-control-next-maintenance.yml
+      - .github/mission-control-next-maintenance.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-and-check:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Upgrade Mission Control to Next 15.5.21
+        run: npm install next@15.5.21 --workspace=pauli-brain-dashboard --save-exact
+
+      - name: Run repository check
+        run: npm run check
+
+      - name: Refuse unrelated formatter changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          unexpected="$(git diff --name-only -- . ':!brain-dashboard/package.json' ':!package-lock.json')"
+          if [[ -n "$unexpected" ]]; then
+            echo "npm run check modified files outside the dependency update:"
+            echo "$unexpected"
+            echo "Commit those formatting fixes explicitly before retrying this workflow."
+            exit 1
+          fi
+
+      - name: Commit reproducible dependency update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add brain-dashboard/package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(mission-control): upgrade Next.js to 15.5.21"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
