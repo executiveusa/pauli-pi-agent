@@ -109,9 +109,10 @@ function stubNodeOnlyPackages() {
 }
 
 export default defineConfig({
-	// Only variables explicitly named PAULI_PUBLIC_* are allowed into the browser bundle.
-	// Provider keys, service-role keys, tokens, and other server secrets must never use this prefix.
-	envPrefix: "PAULI_PUBLIC_",
+	// Only values intentionally classified as public are allowed into the browser bundle.
+	// VITE_DEEP_RESEARCH_API is a public endpoint URL retained for backward compatibility.
+	// Provider keys, service-role keys, tokens, and other server secrets must never use these prefixes.
+	envPrefix: ["PAULI_PUBLIC_", "VITE_DEEP_RESEARCH_API"],
 	plugins: [
 		stubNodeOnlyPackages(),
 		tailwindcss(),
