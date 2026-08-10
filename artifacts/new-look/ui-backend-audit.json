@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "capturedAt": "2026-08-10",
+  "repository": "executiveusa/pauli-pi-agent",
+  "canonicalTarget": "One chat-first Mission Control backed by authenticated server routes and durable mission state",
+  "findings": [
+    {"surface":"Hosted Pi Web Chat","state":"PARTIAL","severity":"S1","ui":"packages/web-ui/example","backend":"browser-first Pi web runtime with Node-only capability stubs","gap":"Not a full Pauli control plane; server-only data/integration/runtime paths are stubbed.","resolution":"Absorb chat into server-backed Mission Control."},
+    {"surface":"Hosted Pi Web Chat secret boundary","state":"MISWIRED","severity":"S0","ui":"packages/web-ui/example/vite.config.ts","backend":"build-time .env injection to window.__AGENT_ENV__","gap":"Provider/service credentials can be included in public browser artifacts when present.","resolution":"Remove browser credential injection; use authenticated server-side broker; scan built assets."},
+    {"surface":"Mission Control","state":"UI_ONLY","severity":"S1","ui":"brain-dashboard/components/mission-control","backend":"none proven","gap":"Agents, projects, approvals, builds, judge decisions and watcher alerts are static demo/local state.","resolution":"Wire to real mission/control API, approvals, evidence and durable state."},
+    {"surface":"Pauli Control Bridge","state":"BACKEND_ONLY","severity":"S1","ui":"none canonical","backend":"ops/pauli-control","gap":"Real run/status/stop behavior is not exposed through canonical Mission Control.","resolution":"Keep as migration bridge behind authenticated server routes."},
+    {"surface":"Control Bridge restart","state":"PARTIAL","severity":"S2","ui":"n/a","backend":"ops/pauli-control","gap":"Live child-process handles are in memory even though job JSON persists.","resolution":"Use durable workflow/task state for long-running missions and explicit restart recovery."},
+    {"surface":"Second Brain dashboard","state":"MISWIRED","severity":"S1","ui":"brain-dashboard","backend":"historical separate Vercel/repo deployment","gap":"Historical deployment is not sourced from current repo; its /mission-control is missing and live search is broken.","resolution":"Fold useful memory/search views into canonical current-repo Mission Control."},
+    {"surface":"Brain activity log","state":"MISWIRED","severity":"S2","ui":"brain-dashboard/lib/supabase.ts","backend":"public.agent_log RLS migration","gap":"Client uses anon insert while migration grants writes to service_role; errors are swallowed.","resolution":"Server-side authenticated write path with matching RLS/audit error handling."},
+    {"surface":"pauli-dashboard","state":"MISWIRED","severity":"S2","ui":"Vercel pauli-dashboard","backend":"executiveusa/dashboard-agent-swarm","gap":"Separate repo can be mistaken for this agent's canonical control UI.","resolution":"Label sibling/legacy and remove control ownership ambiguity."}
+  ],
+  "designGate": {
+    "newLookCandidatesAllowed": false,
+    "blockedBy": ["S0 browser-secret boundary","canonical authenticated server control contract"],
+    "nextAfterFix": "Generate five divergent Mission Control candidates, then quality gates and Gauntlet comparison."
+  }
+}
