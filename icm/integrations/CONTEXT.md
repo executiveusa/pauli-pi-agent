@@ -6,7 +6,7 @@ Presence in a schema or source file is not proof of a live connection. This inve
 |---|---|---|---|
 | GitHub | repository, control/search code, deployment metadata | `LIVE_VERIFIED` | Canonical source repository is active; historical brain deployment has missing repo env and broken search. |
 | Vercel | `vercel.json`, current deployments | `LIVE_VERIFIED` | `pauli-pi-agent` main and preview deployments verified; several adjacent Pauli Vercel projects are separate repos. |
-| Supabase | `brain-dashboard/`, `packages/secrets/` | `CODE_DECLARED` | Existing brain migration exists; Botanic Creations target must be inspected live before any Pauli schema mutation. |
+| Supabase / Botanic Creations | live project `cyxdevcjycmffhmwxojh`; `pauli` + `pauli_private` | `LIVE_VERIFIED` | Canonical Pauli data plane already exists with organization-scoped RLS, mission/runtime/evidence/memory state, and private role/control helpers. Reuse it; do not create a duplicate project/schema. |
 | OpenAI | `packages/secrets/`, Pi provider stack | `CODE_DECLARED` | Browser injection path must be removed before treating hosted use as safe. |
 | Anthropic | provider stack / secret schema | `CODE_DECLARED` | Live credential state not inferred from code. |
 | OpenRouter | secret schema/router | `CODE_DECLARED` | Used by several repo workflows historically; current live credential state not asserted. |
@@ -30,6 +30,10 @@ Presence in a schema or source file is not proof of a live connection. This inve
 | Latitude | integration registry/history | `CODE_DECLARED` / historical | Current live state unverified. |
 | Infisical | secrets/masterstack code | `CODE_DECLARED` | Browser build stubs this capability; server/local use is separate. |
 | Tailscale | brain/vault history | `LEGACY` / `UNKNOWN` | Historical topology only until live state is reverified. |
+
+## Canonical data-plane edge
+
+Mission Control must treat `icm/integrations/supabase.md` as the live Pauli state contract. Historical `brain-dashboard` public tables are compatibility/legacy assets, not the operating-system source of truth.
 
 ## Required per-integration node
 
