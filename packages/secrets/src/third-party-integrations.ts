@@ -391,7 +391,7 @@ export function formatIntegrationReport(results: IntegrationTestResult[]): strin
 		report += `${status} ${result.provider.toUpperCase()}: ${result.message}${responseTime}\n`;
 	}
 
-	report += `\n${'═'.repeat(70)`;
+	report += `\n${'═'.repeat(70)}`;
 	return report;
 }
 
