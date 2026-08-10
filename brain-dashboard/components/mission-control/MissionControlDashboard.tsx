@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock3,
   Database,
+  Play,
   RefreshCw,
   Send,
   ShieldCheck,
@@ -95,10 +96,10 @@ function riskTone(risk: string): { border: string; text: string; bg: string } {
   if (normalized === 'critical') {
     return { border: 'hsl(0,72%,51%)', text: 'hsl(0,72%,70%)', bg: 'hsl(0,72%,10%)' }
   }
-  if (normalized === 'high') {
+  if (normalized === 'high' || normalized === 'dangerous') {
     return { border: 'hsl(38,92%,50%)', text: 'hsl(38,92%,70%)', bg: 'hsl(38,92%,10%)' }
   }
-  if (normalized === 'medium') {
+  if (normalized === 'medium' || normalized === 'caution') {
     return { border: 'hsl(217,91%,60%)', text: 'hsl(217,91%,70%)', bg: 'hsl(217,91%,10%)' }
   }
   return { border: 'hsl(142,76%,36%)', text: 'hsl(142,76%,60%)', bg: 'hsl(142,76%,10%)' }
@@ -146,10 +147,21 @@ function Metric({
   )
 }
 
-function MissionCard({ mission }: { mission: PauliMission }) {
+function MissionCard({
+  mission,
+  canStart,
+  isStarting,
+  onStart,
+}: {
+  mission: PauliMission
+  canStart: boolean
+  isStarting: boolean
+  onStart: (missionId: string) => void
+}) {
   const tone = missionTone(mission.status)
   const budget = mission.autonomous_budget_cents
   const spent = mission.spent_cents ?? 0
+  const waitingForStart = mission.status.toUpperCase() === 'WAITING_APPROVAL'
 
   return (
     <article className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
@@ -186,6 +198,27 @@ function MissionCard({ mission }: { mission: PauliMission }) {
           <p className="mt-1 text-slate-300">{formatMoney(budget)}</p>
         </div>
       </div>
+
+      {waitingForStart ? (
+        <div className="mt-4 rounded-lg border border-amber-900/60 bg-amber-950/20 p-3">
+          <p className="text-[10px] leading-4 text-amber-200">
+            This intent is held. Pauli's 10-second mission scheduler will ignore it until an authorized human explicitly starts it.
+          </p>
+          {canStart ? (
+            <button
+              type="button"
+              onClick={() => onStart(mission.id)}
+              disabled={isStarting}
+              className="mt-2 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Play className="h-3 w-3" />
+              {isStarting ? 'Starting…' : 'Start mission'}
+            </button>
+          ) : (
+            <p className="mt-2 text-[10px] text-slate-500">Your current role cannot release this mission.</p>
+          )}
+        </div>
+      ) : null}
 
       <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-800 pt-3 text-[10px] text-slate-500">
         <span>{mission.correlation_id ? `corr ${mission.correlation_id.slice(0, 8)}` : 'No correlation id'}</span>
@@ -258,6 +291,7 @@ export default function MissionControlDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [intent, setIntent] = useState('')
   const [isCreatingMission, setIsCreatingMission] = useState(false)
+  const [startingMissionId, setStartingMissionId] = useState<string | null>(null)
   const [missionMessage, setMissionMessage] = useState('')
   const [missionError, setMissionError] = useState('')
 
@@ -270,9 +304,13 @@ export default function MissionControlDashboard() {
     [data.approvals]
   )
   const systemStatus = getSystemStatus(data.agents, data.missions)
+  const activeRole = data.memberships[0]?.role?.toLowerCase() ?? 'member'
+  const canStartMissions = ['owner', 'admin', 'operator'].includes(activeRole)
 
   const agentCards = useMemo<AgentHealthCardProps[]>(() => {
-    const activeMission = activeMissions[0]
+    const activeMission = activeMissions.find(
+      (mission) => mission.status.toUpperCase() !== 'WAITING_APPROVAL'
+    )
     return data.agents.map((agent) => ({
       agentId: agent.agent_key || agent.id,
       name: agent.name,
@@ -329,23 +367,64 @@ export default function MissionControlDashboard() {
       }
 
       if (!response.ok) {
-        throw new Error([body.error, body.detail].filter(Boolean).join(' — ') || 'Mission creation failed.')
+        throw new Error([body.error, body.detail].filter(Boolean).join(' — ') || 'Mission intake failed.')
       }
 
       setIntent('')
       setMissionMessage(
         body.reused
-          ? `Existing mission restored: ${body.mission?.title ?? 'mission intent'}`
-          : `Mission intent created: ${body.mission?.title ?? 'new mission'}`
+          ? `Existing held mission restored: ${body.mission?.title ?? 'mission intent'}`
+          : `Mission intent saved and held: ${body.mission?.title ?? 'new mission'}. Start it from the mission card when ready.`
       )
       if (body.eventRecorded === false && body.eventWarning) {
-        setMissionError(`Mission created, but its event receipt failed: ${body.eventWarning}`)
+        setMissionError(`Mission saved, but its event receipt failed: ${body.eventWarning}`)
       }
       await refresh()
     } catch (err) {
       setMissionError(err instanceof Error ? err.message : String(err))
     } finally {
       setIsCreatingMission(false)
+    }
+  }
+
+  async function handleMissionStart(missionId: string) {
+    setStartingMissionId(missionId)
+    setMissionError('')
+    setMissionMessage('')
+
+    try {
+      const response = await pauliAuthorizedFetch('/api/pauli/missions/start', {
+        method: 'POST',
+        body: JSON.stringify({ missionId }),
+      })
+      const body = (await response.json()) as {
+        mission?: { title?: string; status?: string }
+        eventRecorded?: boolean
+        eventWarning?: string | null
+        error?: string
+        detail?: string
+        currentStatus?: string
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          [body.error, body.detail, body.currentStatus ? `Current status: ${body.currentStatus}` : null]
+            .filter(Boolean)
+            .join(' — ') || 'Mission start failed.'
+        )
+      }
+
+      setMissionMessage(
+        `Mission released: ${body.mission?.title ?? missionId}. The governed scheduler can now plan it.`
+      )
+      if (body.eventRecorded === false && body.eventWarning) {
+        setMissionError(`Mission released, but its event receipt failed: ${body.eventWarning}`)
+      }
+      await refresh()
+    } catch (err) {
+      setMissionError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setStartingMissionId(null)
     }
   }
 
@@ -367,7 +446,7 @@ export default function MissionControlDashboard() {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-400">Pauli</p>
               <h1 className="text-xl font-semibold tracking-tight">Mission Control</h1>
-              <p className="mt-1 text-xs text-slate-500">State and mission intake are now backed by Botanic Creations.</p>
+              <p className="mt-1 text-xs text-slate-500">State and governed mission intake are backed by Botanic Creations.</p>
             </div>
           </div>
 
@@ -376,7 +455,7 @@ export default function MissionControlDashboard() {
               {systemStatus}
             </span>
             <span className="rounded-lg border border-blue-900/60 bg-blue-950/30 px-3 py-1.5 text-[10px] uppercase tracking-wider text-blue-300">
-              Mission intake live
+              Intake + explicit release live
             </span>
             <button
               type="button"
@@ -404,7 +483,7 @@ export default function MissionControlDashboard() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Outcome command</p>
             <h2 className="mt-2 text-lg font-semibold text-slate-100">What do you want Pauli to accomplish?</h2>
             <p className="mt-1 text-xs leading-5 text-slate-400">
-              State the outcome in plain language. This creates an internal mission intent only. It does not spend money, contact anyone, deploy, publish, or execute an external write.
+              State the outcome in plain language. Saving creates a held internal mission with a $0 autonomous budget. Pauli's scheduler will not plan or execute it until an authorized human presses Start mission.
             </p>
 
             <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/80 p-2 focus-within:border-blue-600">
@@ -417,7 +496,7 @@ export default function MissionControlDashboard() {
                 className="w-full resize-none bg-transparent px-2 py-2 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-600"
               />
               <div className="flex flex-col gap-2 border-t border-slate-800 px-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[10px] text-slate-600">New missions start at INTENT with $0 autonomous budget.</span>
+                <span className="text-[10px] text-slate-600">Held state: WAITING_APPROVAL · autonomous budget: $0</span>
                 <button
                   type="button"
                   onClick={() => void handleMissionCreate()}
@@ -425,7 +504,7 @@ export default function MissionControlDashboard() {
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="h-3.5 w-3.5" />
-                  {isCreatingMission ? 'Creating…' : 'Create mission intent'}
+                  {isCreatingMission ? 'Saving…' : 'Save mission intent'}
                 </button>
               </div>
             </div>
@@ -461,7 +540,13 @@ export default function MissionControlDashboard() {
           {data.missions.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
               {data.missions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} />
+                <MissionCard
+                  key={mission.id}
+                  mission={mission}
+                  canStart={canStartMissions}
+                  isStarting={startingMissionId === mission.id}
+                  onStart={(missionId) => void handleMissionStart(missionId)}
+                />
               ))}
             </div>
           ) : (
@@ -512,9 +597,9 @@ export default function MissionControlDashboard() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
             <div>
-              <p className="text-xs font-semibold text-amber-300">Mission intake is live; consequential controls are still gated.</p>
+              <p className="text-xs font-semibold text-amber-300">Intent save and explicit scheduler release are live; consequential downstream controls remain gated.</p>
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                Approval decisions, pause/stop, runtime execution, spending, deployment, publishing, and external communication are not simulated here. They will appear only after their authenticated server endpoints are wired to Pauli RLS, approvals, evidence, and the control bridge.
+                Approval decisions, runtime provider configuration, spending, deployment, publishing, credentials, and external communication are not simulated here. The existing deterministic mission scheduler handles planning state only after Start mission, and execution still requires a healthy governed runtime.
               </p>
             </div>
           </div>
