@@ -153,13 +153,20 @@ export async function POST(req: NextRequest) {
       language,
       requested_outcome: intent,
       required_completion_level: completionLevel,
-      status: 'INTENT',
+      // mission_control_tick() consumes INTENT every 10 seconds. New conversational
+      // intake stays held until an authorized human explicitly releases it.
+      status: 'WAITING_APPROVAL',
       priority,
       autonomous_budget_cents: autonomousBudgetCents,
+      policy_snapshot: {
+        execution_release: 'explicit_human_start',
+        external_writes: 'human-gated',
+      },
       metadata: {
         source: 'mission-control',
         interface: 'chat-first',
         request_id: requestId,
+        intake_state: 'held',
       },
     })
     .select(
@@ -169,12 +176,12 @@ export async function POST(req: NextRequest) {
 
   if (missionError || !mission) {
     return NextResponse.json(
-      { error: 'Unable to create mission intent', detail: missionError?.message ?? 'No mission returned' },
+      { error: 'Unable to save mission intent', detail: missionError?.message ?? 'No mission returned' },
       { status: 500 }
     )
   }
 
-  const eventIdempotencyKey = `mission-created:${requestId}`
+  const eventIdempotencyKey = `mission-intake-saved:${requestId}`
   const { error: eventError } = await supabase
     .schema('pauli')
     .from('mission_events')
@@ -182,14 +189,15 @@ export async function POST(req: NextRequest) {
       organization_id: membership.organization_id,
       mission_id: mission.id,
       correlation_id: mission.correlation_id,
-      event_type: 'MISSION_CREATED',
+      event_type: 'MISSION_INTAKE_SAVED',
       source: 'mission-control',
       idempotency_key: eventIdempotencyKey,
-      public_summary: `Mission intent created: ${mission.title}`,
+      public_summary: `Mission intent saved and held for explicit start: ${mission.title}`,
       visibility: 'tenant',
       payload: {
         requested_outcome: mission.requested_outcome,
         created_by: user.id,
+        execution_release: 'explicit_human_start',
       },
     })
 
