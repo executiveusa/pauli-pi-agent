@@ -29,6 +29,8 @@ Personal MAX memory is private to the personal domain by default. Hermes may rec
 
 ## Operating contract
 
+Read `INTERFACE.md` before implementing or changing the Agent MAXX → Pi worker boundary. It is the stable request/result, blocker, handoff, retry, and privacy contract for MAX Personal.
+
 Input: plain-language user request plus permitted personal context.
 
 Process:
@@ -50,7 +52,7 @@ Output: completed action, concise proof/status, and one clear next action only w
 
 Expected control-plane route values:
 
-- `auto` — control plane infers domain.
+- `auto` — control plane infers domain before worker execution.
 - `personal` — force route to Pi / MAX Personal.
 - `business` — force route to Hermes / MAX Business.
 
