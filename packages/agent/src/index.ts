@@ -21,6 +21,8 @@ export * from "./database/index.js";
 // Mercury Voice Chatbot
 export * from "./mercury/mercury-client.js";
 export type * from "./mercury/mercury-types.js";
+// Orchestration and Terabithia fleet adapter
+export * from "./orchestration/index.js";
 // Proxy utilities
 export * from "./proxy.js";
 export * from "./routes/index.js";
