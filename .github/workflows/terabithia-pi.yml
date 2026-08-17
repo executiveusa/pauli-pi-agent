@@ -12,7 +12,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +20,8 @@ jobs:
           node-version: 22
           cache: npm
       # Root package-lock is already stale for unrelated local workspaces.
-      # Resolve the workspace graph ephemerally so this gate can compile/test
-      # the adapter without pretending the pre-existing lock debt is fixed.
       - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm run build --workspace=@mariozechner/pi-ai
+      - run: npm run build --workspace=@mariozechner/pi-data-processor
       - run: npm run build --workspace=@mariozechner/pi-agent-core
       - run: npm test --workspace=@mariozechner/pi-agent-core -- --run test/terabithia.test.ts
