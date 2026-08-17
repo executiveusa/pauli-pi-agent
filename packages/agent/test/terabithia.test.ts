@@ -8,17 +8,21 @@ import {
 
 function mission(overrides: Partial<TerabithiaMissionEnvelope> = {}): TerabithiaMissionEnvelope {
 	return {
-		missionId: "mis_123",
-		requestId: "req_123",
-		conversationId: "conv_123",
-		traceId: "trace_123",
+		mission_id: "mis_123",
+		request_id: "req_123",
+		conversation_id: "conv_123",
+		trace_id: "trace_123",
+		source: "chatgpt",
+		target: "pi",
 		route: "personal",
-		userIntent: "Organize my appointment notes",
-		desiredOutcome: "A concise appointment brief",
-		contextRefs: ["ctx://personal/appointment-notes"],
+		user_intent: "Organize my appointment notes",
+		desired_outcome: "A concise appointment brief",
+		constraints: [],
+		permissions: [],
+		context_refs: ["ctx://personal/appointment-notes"],
 		approval: { granted: false, scope: [] },
-		idempotencyKey: "idem_123",
-		createdAt: "2026-08-16T00:00:00.000Z",
+		idempotency_key: "idem_123",
+		created_at: "2026-08-16T00:00:00.000Z",
 		...overrides,
 	};
 }
@@ -34,41 +38,46 @@ describe("Terabithia Pi adapter", () => {
 		const result = businessHandoffFromPi(
 			mission({
 				route: "business",
-				userIntent: "Prepare the company migration plan",
-				desiredOutcome: "A business migration plan",
-				contextRefs: ["ctx://business/migration"],
+				user_intent: "Prepare the company migration plan",
+				desired_outcome: "A business migration plan",
+				context_refs: ["ctx://business/migration"],
 			}),
 		);
 
-		expect(result.agentId).toBe("pi");
+		expect(result.agent_id).toBe("pi");
 		expect(result.status).toBe("done");
 		expect(result.handoff?.target).toBe("hermes");
-		expect(result.handoff?.contextRefs).toEqual(["ctx://business/migration"]);
+		expect(result.handoff?.context_refs).toEqual(["ctx://business/migration"]);
 	});
 
 	it("preserves mission and trace identity around personal execution", async () => {
 		const executePersonal = vi.fn(async () => ({
 			status: "done" as const,
 			summary: "Appointment brief prepared.",
+			artifacts: [],
 			evidence: [{ type: "artifact" as const, ref: "artifact://brief/1" }],
-			humanBlocker: null,
+			failures: [],
+			human_blocker: null,
 			handoff: null,
-			nextAction: null,
-			memoryCandidate: {
+			next_action: null,
+			memory_candidate: {
 				type: "state_change" as const,
 				summary: "Appointment brief prepared",
-				contextRefs: ["artifact://brief/1"],
+				context_refs: ["artifact://brief/1"],
+				sensitivity: "private" as const,
 			},
+			completed_at: "2026-08-16T00:01:00.000Z",
 		}));
 		const adapter = new PiTerabithiaAdapter(executePersonal);
 		const result = await adapter.invoke(mission());
 
 		expect(executePersonal).toHaveBeenCalledTimes(1);
-		expect(result.missionId).toBe("mis_123");
-		expect(result.requestId).toBe("req_123");
-		expect(result.traceId).toBe("trace_123");
-		expect(result.agentId).toBe("pi");
+		expect(result.mission_id).toBe("mis_123");
+		expect(result.request_id).toBe("req_123");
+		expect(result.trace_id).toBe("trace_123");
+		expect(result.agent_id).toBe("pi");
 		expect(result.evidence[0]?.ref).toBe("artifact://brief/1");
+		expect(result.memory_candidate?.sensitivity).toBe("private");
 	});
 
 	it("never invokes personal execution for a business route", async () => {
