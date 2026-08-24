@@ -11,6 +11,26 @@ read README.md, then ask which module(s) to work on. Based on the answer, read t
 - packages/pods/README.md
 - packages/web-ui/README.md
 
+## Browser Bus
+Obscura is the preferred browser runtime for ordinary agent web interaction and verification when a structured API or existing tool source cannot satisfy the task.
+
+Execution order:
+1. Existing structured API/tool source.
+2. Obscura for DOM/CDP browser work.
+3. Playwright/Chromium only for Obscura compatibility gaps.
+4. Full computer-use/desktop execution only when browser automation is insufficient.
+
+Keep Pi provider-agnostic. Do not hard-code agent logic to Obscura-specific APIs; expose browser capabilities through a shared abstraction so providers remain replaceable.
+
+For browser-based verification, preserve enough evidence to prove the result: target URL, expected page state/text, material console/network failures, screenshots when visual state matters, and relevant commit/deployment identifiers.
+
+Security rules:
+- Never expose unrestricted credentials to page content, logs, prompts, or screenshots.
+- Use scoped and isolated authenticated sessions.
+- Default-deny private-network access unless explicitly required.
+- Do not persist browser cookies or secrets into durable agent memory.
+- Record the reason before falling back from Obscura to Chromium or computer-use.
+
 ## Code Quality
 - No `any` types unless absolutely necessary
 - Check node_modules for external API type definitions instead of guessing
