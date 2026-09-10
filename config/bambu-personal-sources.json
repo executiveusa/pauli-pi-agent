@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0.0",
+  "owner": "bambu",
+  "visibility": "private",
+  "purpose": "Approved source boundaries for Jeremy / Pi Second Brain ingestion planning.",
+  "connection_state": {
+    "google_drive": "verified_in_chatgpt_connector_not_yet_wired_to_pi_runtime",
+    "gmail": "verified_in_chatgpt_connector_not_yet_wired_to_pi_runtime",
+    "google_calendar": "verified_in_chatgpt_connector_not_yet_wired_to_pi_runtime",
+    "graphify": "repository_verified_not_yet_installed_in_pi_runtime",
+    "second_brain_service": "repository_verified_not_yet_connected_to_pi_runtime"
+  },
+  "rules": {
+    "default_visibility": "private",
+    "crawl_outside_roots": false,
+    "destructive_dedupe": false,
+    "public_projection_default": "deny",
+    "retain_source_provenance": true,
+    "retain_original_archives": true
+  },
+  "google_drive_roots": [
+    {
+      "id": "1RXPst2I_QY3btZ1CbmStDsuGKY4eTcwa",
+      "title": "SECOND BRAIN CHAT GPT EXPORTS",
+      "scope": "approved_root",
+      "sensitivity": "private",
+      "known_direct_children": [
+        {
+          "id": "10oUvZA8StRD6YdeybkNC9rZXeJDGfZ0g",
+          "title": "The Pauli Files",
+          "type": "folder"
+        },
+        {
+          "id": "1ROYv8vrD1VhAQI0uVeceD4HLTqvMA5Ju",
+          "title": "Building-a-Second-Brain-By-Tiago-Forte.pdf",
+          "type": "pdf",
+          "size_bytes": 7307110
+        },
+        {
+          "id": "11N-95S4wMJuz74V5XXd52WtChGDSsEd7",
+          "title": "CHAT GPT EXPORT 11.27.2025.zip",
+          "type": "archive",
+          "size_bytes": 212063588
+        },
+        {
+          "id": "1h8fzGERUNfAkYLBNon98hWhdnm-J_SzX",
+          "title": "CLAUDE EXPORT 09.05.2025.zip",
+          "type": "archive",
+          "size_bytes": 11050081
+        }
+      ],
+      "known_nested_sources": [
+        {
+          "id": "1k182Pt2y-j_EQ8tgCJFvByS9_15y0awx",
+          "title": "The poly files, master source code",
+          "type": "folder"
+        },
+        {
+          "id": "1nvTpxbKMUT-OheF-sGJwFHoHhX8uKRmU",
+          "title": "Images",
+          "type": "folder",
+          "purpose": "candidate private media library; individual assets require editorial selection before public projection"
+        }
+      ]
+    },
+    {
+      "id": "10l7H0layX2UL2u974CtkstF8IIYSpmPY",
+      "title": "MIND MAPPY 2ND BRAIN",
+      "scope": "approved_root",
+      "sensitivity": "private",
+      "known_direct_children": [
+        {
+          "id": "1e4nUuBATezjxzMCY4HuuAfP8K51dysD1",
+          "title": "chat-gpt -snd-brain.zip",
+          "type": "archive",
+          "size_bytes": 3262676992
+        },
+        {
+          "id": "1tRz5vqoqkFJZJtCnhYygvufDpnxsyUF4",
+          "title": "data-2026-02-28-05-03-10-pauli-second-brain-claude",
+          "type": "folder"
+        },
+        {
+          "id": "16DNN2sru97aixD7mqhJ1BN4S2kiKBP7w",
+          "title": "Built To Sell -John Warrillow.pdf",
+          "type": "pdf",
+          "size_bytes": 906478
+        },
+        {
+          "id": "1faa2zwt5XiBlOzrASQPUXIesgEHU6tVD",
+          "title": "MENTAL MODELS.txt",
+          "type": "text",
+          "size_bytes": 98958
+        },
+        {
+          "id": "1yes6dGoLdXjsDc_2zhWpy97-CyqdDeFj",
+          "title": "V2_How Sam Parr Uses ChatGPT As Executive Coach [MFM].pdf",
+          "type": "pdf",
+          "size_bytes": 1786552
+        },
+        {
+          "id": "1AfijLTlsExZRmIBbghIrCIuOy82gIOQb",
+          "title": "_OceanofPDF.com_So_Good_They_Cant_Ignore_You__Why_Skills_-_Cal_Newport.pdf",
+          "type": "pdf",
+          "size_bytes": 922055
+        }
+      ],
+      "known_nested_sources": [
+        {
+          "parent_id": "1tRz5vqoqkFJZJtCnhYygvufDpnxsyUF4",
+          "id": "1TjgRMuE4aiYYTuHyto2CaOtnRtu9K3rp",
+          "title": "conversations.json",
+          "type": "json",
+          "size_bytes": 115570589
+        },
+        {
+          "parent_id": "1tRz5vqoqkFJZJtCnhYygvufDpnxsyUF4",
+          "id": "1jcZQaN7xyJONM2p2glyquBlFa0mrIxE9",
+          "title": "memories.json",
+          "type": "json",
+          "size_bytes": 72603
+        },
+        {
+          "parent_id": "1tRz5vqoqkFJZJtCnhYygvufDpnxsyUF4",
+          "id": "1mDKYYv6_PMyV3vPct86wdVoyH4bmNRss",
+          "title": "projects.json",
+          "type": "json",
+          "size_bytes": 20145692
+        },
+        {
+          "parent_id": "1tRz5vqoqkFJZJtCnhYygvufDpnxsyUF4",
+          "id": "1HH4eCejsKNLzeyNe-F5YNDxZu-Cn9Si3",
+          "title": "users.json",
+          "type": "json",
+          "size_bytes": 156
+        }
+      ]
+    }
+  ],
+  "repositories": {
+    "public_site": "executiveusa/animobambu",
+    "pi_runtime": "executiveusa/pauli-pi-agent",
+    "command_center": "executiveusa/pauli-command-center",
+    "second_brain": "executiveusa/pauli-my-Brain-Is-Full-Crew",
+    "graph_index": "Graphify-Labs/graphify"
+  }
+}
