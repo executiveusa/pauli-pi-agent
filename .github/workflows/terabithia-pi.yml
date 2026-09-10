@@ -1,0 +1,27 @@
+name: Pi Terabithia Adapter CI
+on:
+  pull_request:
+    paths:
+      - "packages/agent/src/orchestration/terabithia.ts"
+      - "packages/agent/src/routes/terabithia-route.ts"
+      - "packages/agent/src/routes/index.ts"
+      - "packages/agent/test/terabithia.test.ts"
+      - ".github/workflows/terabithia-pi.yml"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # Root package-lock is already stale for unrelated local workspaces.
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm run build --workspace=@mariozechner/pi-ai
+      - run: npm run build --workspace=@mariozechner/pi-data-processor
+      - run: npm run build --workspace=@mariozechner/pi-agent-core
+      - run: npm test --workspace=@mariozechner/pi-agent-core -- --run test/terabithia.test.ts
