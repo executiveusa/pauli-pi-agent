@@ -1,0 +1,12 @@
+{
+  "name": "context-mesh",
+  "description": "Shared context graph and durable agent memory for Claude Code and any MCP-capable agent.",
+  "version": "0.1.0",
+  "author": {
+    "name": "The Pauli Effect"
+  },
+  "homepage": "https://github.com/executiveusa/pauli-pi-agent/tree/feature/context-mesh-product-v0/products/context-mesh",
+  "repository": "https://github.com/executiveusa/pauli-pi-agent",
+  "license": "MIT",
+  "keywords": ["memory", "knowledge-graph", "mcp", "agents", "graphify", "second-brain"]
+}

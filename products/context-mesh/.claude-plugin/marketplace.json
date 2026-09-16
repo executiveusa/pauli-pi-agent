@@ -1,0 +1,14 @@
+{
+  "name": "context-mesh-marketplace",
+  "owner": {
+    "name": "The Pauli Effect"
+  },
+  "plugins": [
+    {
+      "name": "context-mesh",
+      "source": ".",
+      "description": "Shared context graph and durable agent memory for Claude Code and any MCP-capable agent.",
+      "version": "0.1.0"
+    }
+  ]
+}
