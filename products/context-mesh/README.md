@@ -84,6 +84,38 @@ No Claude-specific code is required.
 - `brain_recent`
 - `brain_remember`
 
+
+## Active Graft code graph
+
+Context Mesh now ships with Graft registered as a second MCP server in the Claude Code plugin.
+
+When the plugin starts, Claude Code can launch Graft through:
+
+```bash
+npx -y @nanonets/graft mcp
+```
+
+This gives the agent a live, repo-local code graph alongside the historical Second Brain graph.
+
+### First build in a repository
+
+Run once at the repository root:
+
+```bash
+npx -y @nanonets/graft init --yes --no-global
+```
+
+That builds the local `graft/` cache and wires supported coding agents. Graft keeps the structural graph fresh on later queries.
+
+### Division of responsibility
+
+- Context Mesh: conversations, projects, people, decisions, events, provenance, temporal memory.
+- Graft: current code structure, APIs, symbols, callers, dependencies, and blast radius.
+- Graphify: structural knowledge graph for the normalized Second Brain corpus.
+- ICM: organization, routing, governance, and one-home-per-fact rules.
+
+Agents should use Graft before broad source-file exploration and Context Mesh before reconstructing historical project context.
+
 ## Graphify workflow
 
 Build or update a graph with Graphify, then point Context Mesh to the result:
