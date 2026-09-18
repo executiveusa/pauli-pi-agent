@@ -6,6 +6,10 @@
       "env": {
         "CONTEXT_MESH_GRAPH": "${CLAUDE_PROJECT_DIR}/graphify-out/graph.json"
       }
+    },
+    "graft": {
+      "command": "npx",
+      "args": ["-y", "@nanonets/graft", "mcp"]
     }
   }
 }
