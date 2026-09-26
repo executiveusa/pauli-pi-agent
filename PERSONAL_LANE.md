@@ -47,8 +47,8 @@ Bambu ──► Command Center /pi ──► pi-adapter (bearer PAULI_PI_AGENT_A
 |---|---|
 | Engineering missions | Terabithia routes `engineering` intents to **BARS**; Pi owns only the `personal` route (terabithia `claude/engineering-to-bars`). |
 | Fleet ingress into Pi | `POST /api/terabithia/invoke` requires `Authorization: Bearer $PI_TERABITHIA_TOKEN` (fails closed if unset) and refuses personal missions whose `source` is another fleet agent (hermes, bars, jarvis, lightning). Business missions are still handed back to Hermes, never executed. |
-| Engineering shell | `ops/pauli-control` is the BARS engineering bridge. Its jobs now get an explicit environment (system basics + `*_API_KEY` provider keys + `JOB_ENV_ALLOW`); the bridge token and other `*_TOKEN`/`*SECRET*` values stay behind. It should move to the BARS repo. |
-| Company doctrine | Stays with the engineering bridge (BARS lane). The personal runtime (`packages/agent` Terabithia route) uses its own personal-only prompt and never loads `company/*.md`. |
+| Engineering shell | Moved out of Pi: `ops/pauli-control` now lives in the BARS repo (`pauli-tars-demo-/engineering/pauli-control`), with an explicit job-env allowlist. |
+| Company doctrine | Travels with the engineering bridge to BARS. Pi's personal runtime (`packages/agent` Terabithia route) uses a personal-only prompt and never loads `company/*.md`. |
 
 Deploy: set the same random value as `PI_TERABITHIA_TOKEN` on Pi and `PI_TOKEN` in Terabithia.
 
