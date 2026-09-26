@@ -5,11 +5,6 @@
 
 export { createWorkflowExecutor, WorkflowExecutor } from "./executor.js";
 export { createWorkflowRouter, WorkflowRouter } from "./router.js";
-export {
-	PiTerabithiaAdapter,
-	businessHandoffFromPi,
-	validateTerabithiaMission,
-} from "./terabithia.js";
 export type {
 	PiTerabithiaHandler,
 	TerabithiaApproval,
@@ -20,6 +15,11 @@ export type {
 	TerabithiaMissionStatus,
 	TerabithiaResultEnvelope,
 	TerabithiaRoute,
+} from "./terabithia.js";
+export {
+	businessHandoffFromPi,
+	PiTerabithiaAdapter,
+	validateTerabithiaMission,
 } from "./terabithia.js";
 export type {
 	ExecutionContext,

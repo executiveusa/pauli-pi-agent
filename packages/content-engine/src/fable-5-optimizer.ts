@@ -4,8 +4,6 @@
  * Yogi Mode: Token-heavy reasoning with full Fable 5 capability
  */
 
-import type { Secrets } from '../../../packages/secrets/src/schema.js';
-
 export interface TokenCost {
 	inputTokensPerRun: number;
 	outputTokensPerRun: number;
@@ -17,14 +15,14 @@ export interface TokenCost {
 }
 
 export interface FableOptimizationStrategy {
-	name: 'normal' | 'caveman' | 'yogi';
+	name: "normal" | "caveman" | "yogi";
 	description: string;
 	outputTokenReduction: number; // percentage
 	codeTokenReduction: number; // percentage
 	inputTokenEstimate: number;
 	outputTokenEstimate: number;
 	codeExplorationEstimate: number;
-	qualityLevel: 'fast' | 'balanced' | 'maximum';
+	qualityLevel: "fast" | "balanced" | "maximum";
 	costPerRun: number; // in cents
 }
 
@@ -52,41 +50,38 @@ const BASELINE_TOKENS = {
  */
 export const FABLE_STRATEGIES: Record<string, FableOptimizationStrategy> = {
 	normal: {
-		name: 'normal',
-		description: 'Standard Fable 5 - full quality, normal token usage',
+		name: "normal",
+		description: "Standard Fable 5 - full quality, normal token usage",
 		outputTokenReduction: 0,
 		codeTokenReduction: 0,
 		inputTokenEstimate: BASELINE_TOKENS.input,
 		outputTokenEstimate: BASELINE_TOKENS.output,
 		codeExplorationEstimate: BASELINE_TOKENS.codeExploration,
-		qualityLevel: 'balanced',
-		costPerRun: calculateCostCents(
-			BASELINE_TOKENS.input,
-			BASELINE_TOKENS.output + BASELINE_TOKENS.codeExploration,
-		),
+		qualityLevel: "balanced",
+		costPerRun: calculateCostCents(BASELINE_TOKENS.input, BASELINE_TOKENS.output + BASELINE_TOKENS.codeExploration),
 	},
 
 	caveman: {
-		name: 'caveman',
-		description: 'Caveman mode (65% output reduction) + jCodeMunch (95% code token reduction)',
+		name: "caveman",
+		description: "Caveman mode (65% output reduction) + jCodeMunch (95% code token reduction)",
 		outputTokenReduction: 65, // 65% fewer output tokens (caveman)
 		codeTokenReduction: 95, // 95% fewer code exploration tokens (jcodemunch)
 		inputTokenEstimate: BASELINE_TOKENS.input,
 		outputTokenEstimate: Math.floor(BASELINE_TOKENS.output * 0.35), // 35% of normal
 		codeExplorationEstimate: Math.floor(BASELINE_TOKENS.codeExploration * 0.05), // 5% of normal
-		qualityLevel: 'fast',
+		qualityLevel: "fast",
 		costPerRun: 0, // Calculated below
 	},
 
 	yogi: {
-		name: 'yogi',
-		description: '🧘 Yogi Mode - Full Fable 5 with extended reasoning (2x-3x tokens for deep analysis)',
+		name: "yogi",
+		description: "🧘 Yogi Mode - Full Fable 5 with extended reasoning (2x-3x tokens for deep analysis)",
 		outputTokenReduction: -150, // 2.5x more output tokens for reasoning
 		codeTokenReduction: 0, // Full code context needed
 		inputTokenEstimate: BASELINE_TOKENS.input * 2, // 2x input for system prompts + reasoning chain
 		outputTokenEstimate: BASELINE_TOKENS.output * 2.5, // 2.5x output for detailed reasoning
 		codeExplorationEstimate: BASELINE_TOKENS.codeExploration, // Full context needed
-		qualityLevel: 'maximum',
+		qualityLevel: "maximum",
 		costPerRun: 0, // Calculated below
 	},
 };
@@ -116,9 +111,7 @@ export function calculateCostCents(inputTokens: number, outputTokens: number): n
  */
 export function getTokenCostBreakdown(strategy: FableOptimizationStrategy): TokenCost {
 	const totalTokensPerRun =
-		strategy.inputTokenEstimate +
-		strategy.outputTokenEstimate +
-		strategy.codeExplorationEstimate;
+		strategy.inputTokenEstimate + strategy.outputTokenEstimate + strategy.codeExplorationEstimate;
 
 	const costPerRun = strategy.costPerRun / 100; // Convert cents to dollars
 
@@ -181,12 +174,12 @@ export function getAnnualAgentSavings(): {
 	totalCostSaved: number;
 	totalCOSaved: number;
 } {
-	const agents = ['hermes', 'vyapari', 'pauli', 'kupuri', 'cheggie', 'cascadia'];
+	const agents = ["hermes", "vyapari", "pauli", "kupuri", "cheggie", "cascadia"];
 	const cavermanBreakdown = getTokenCostBreakdown(FABLE_STRATEGIES.caveman);
-	const normalBreakdown = getTokenCostBreakdown(FABLE_STRATEGIES.normal);
+	const _normalBreakdown = getTokenCostBreakdown(FABLE_STRATEGIES.normal);
 
 	const tokensPerAgent = cavermanBreakdown.monthlyTokens * 12;
-	const costPerAgent = cavermanBreakdown.monthlyCost * 12;
+	const _costPerAgent = cavermanBreakdown.monthlyCost * 12;
 	const savings = calculateTokenSavings(FABLE_STRATEGIES.normal, FABLE_STRATEGIES.caveman);
 
 	return {
@@ -230,7 +223,7 @@ export function formatSavingsComparison(from: string, to: string): string {
 	const fromStrategy = FABLE_STRATEGIES[from as keyof typeof FABLE_STRATEGIES];
 	const toStrategy = FABLE_STRATEGIES[to as keyof typeof FABLE_STRATEGIES];
 
-	if (!fromStrategy || !toStrategy) return 'Invalid strategy';
+	if (!fromStrategy || !toStrategy) return "Invalid strategy";
 
 	const savings = calculateTokenSavings(fromStrategy, toStrategy);
 
@@ -254,24 +247,20 @@ Annual (6 agents):
 /**
  * Get Fable 5 model ID with optimization
  */
-export function getFable5ModelId(
-	strategy: 'normal' | 'caveman' | 'yogi' = 'caveman',
-): string {
+export function getFable5ModelId(strategy: "normal" | "caveman" | "yogi" = "caveman"): string {
 	switch (strategy) {
-		case 'yogi':
-			return 'claude-fable-5'; // Full Fable 5
-		case 'caveman':
-		case 'normal':
+		case "yogi":
+			return "claude-fable-5"; // Full Fable 5
 		default:
-			return 'claude-fable-5';
+			return "claude-fable-5";
 	}
 }
 
 /**
  * Generate system prompt for strategy
  */
-export function generateFableSystemPrompt(strategy: 'normal' | 'caveman' | 'yogi'): string {
-	if (strategy === 'caveman') {
+export function generateFableSystemPrompt(strategy: "normal" | "caveman" | "yogi"): string {
+	if (strategy === "caveman") {
 		return `You are caveman AI. Talk like caveman.
 - Use short words. Cut filler.
 - Skip explanations. Give code, commands, errors exact.
@@ -281,7 +270,7 @@ export function generateFableSystemPrompt(strategy: 'normal' | 'caveman' | 'yogi
 Example: "inline object = new ref each render → re-render. wrap in useMemo."`;
 	}
 
-	if (strategy === 'yogi') {
+	if (strategy === "yogi") {
 		return `You are Yogi Mode - deep reasoning expert.
 - Engage in extended analysis and thoughtful consideration
 - Explore multiple perspectives and implications

@@ -322,27 +322,27 @@ export function getFreeLLMEndpoint(
 
 		case "mistral-free":
 			if (!secrets.MISTRAL_API_KEY) return null;
-			headers["Authorization"] = `Bearer ${secrets.MISTRAL_API_KEY}`;
+			headers.Authorization = `Bearer ${secrets.MISTRAL_API_KEY}`;
 			return { url: `${provider.baseUrl}/chat/completions`, headers };
 
 		case "cohere-free":
 			if (!secrets.COHERE_API_KEY) return null;
-			headers["Authorization"] = `Bearer ${secrets.COHERE_API_KEY}`;
+			headers.Authorization = `Bearer ${secrets.COHERE_API_KEY}`;
 			return { url: `${provider.baseUrl}/chat`, headers };
 
 		case "cerebras-free":
 			if (!secrets.CEREBRAS_API_KEY) return null;
-			headers["Authorization"] = `Bearer ${secrets.CEREBRAS_API_KEY}`;
+			headers.Authorization = `Bearer ${secrets.CEREBRAS_API_KEY}`;
 			return { url: `${provider.baseUrl}/chat/completions`, headers };
 
 		case "aion-free":
 			if (!secrets.AION_API_KEY) return null;
-			headers["Authorization"] = `Bearer ${secrets.AION_API_KEY}`;
+			headers.Authorization = `Bearer ${secrets.AION_API_KEY}`;
 			return { url: `${provider.baseUrl}/chat/completions`, headers };
 
 		case "zai-free":
 			if (!secrets.ZAI_API_KEY) return null;
-			headers["Authorization"] = `Bearer ${secrets.ZAI_API_KEY}`;
+			headers.Authorization = `Bearer ${secrets.ZAI_API_KEY}`;
 			return { url: `${provider.baseUrl}/chat/completions`, headers };
 
 		default:

@@ -33,60 +33,63 @@ Rules:
 }`;
 
 function stripCodeFence(value: string): string {
-  return value.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+	return value
+		.trim()
+		.replace(/^```(?:json)?\s*/i, "")
+		.replace(/\s*```$/, "");
 }
 
 export async function compileLesson(snapshot: LessonSnapshot): Promise<LessonResult> {
-  const baseUrl = process.env.LLM_BASE_URL;
-  const apiKey = process.env.LLM_API_KEY;
-  const model = process.env.LLM_MODEL;
+	const baseUrl = process.env.LLM_BASE_URL;
+	const apiKey = process.env.LLM_API_KEY;
+	const model = process.env.LLM_MODEL;
 
-  if (!baseUrl || !apiKey || !model) {
-    throw new Error("LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL are required");
-  }
+	if (!baseUrl || !apiKey || !model) {
+		throw new Error("LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL are required");
+	}
 
-  const evidence = [snapshot.text, snapshot.transcript ? `TRANSCRIPT:\n${snapshot.transcript}` : ""]
-    .filter(Boolean)
-    .join("\n\n");
+	const evidence = [snapshot.text, snapshot.transcript ? `TRANSCRIPT:\n${snapshot.transcript}` : ""]
+		.filter(Boolean)
+		.join("\n\n");
 
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.1,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: JSON.stringify({
-            metadata: {
-              courseId: snapshot.courseId,
-              courseTitle: snapshot.courseTitle,
-              moduleTitle: snapshot.moduleTitle,
-              lessonIndex: snapshot.lessonIndex,
-              lessonTitle: snapshot.lessonTitle,
-              url: snapshot.url,
-            },
-            evidence,
-          }),
-        },
-      ],
-    }),
-  });
+	const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${apiKey}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			model,
+			temperature: 0.1,
+			messages: [
+				{ role: "system", content: SYSTEM_PROMPT },
+				{
+					role: "user",
+					content: JSON.stringify({
+						metadata: {
+							courseId: snapshot.courseId,
+							courseTitle: snapshot.courseTitle,
+							moduleTitle: snapshot.moduleTitle,
+							lessonIndex: snapshot.lessonIndex,
+							lessonTitle: snapshot.lessonTitle,
+							url: snapshot.url,
+						},
+						evidence,
+					}),
+				},
+			],
+		}),
+	});
 
-  if (!response.ok) {
-    throw new Error(`LLM request failed: ${response.status} ${response.statusText}`);
-  }
+	if (!response.ok) {
+		throw new Error(`LLM request failed: ${response.status} ${response.statusText}`);
+	}
 
-  const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = payload.choices?.[0]?.message?.content;
-  if (!content) throw new Error("LLM returned no content");
+	const payload = (await response.json()) as {
+		choices?: Array<{ message?: { content?: string } }>;
+	};
+	const content = payload.choices?.[0]?.message?.content;
+	if (!content) throw new Error("LLM returned no content");
 
-  return JSON.parse(stripCodeFence(content)) as LessonResult;
+	return JSON.parse(stripCodeFence(content)) as LessonResult;
 }

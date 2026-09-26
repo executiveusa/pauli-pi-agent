@@ -11,7 +11,7 @@
     "scrape": "tsx src/scraper/run.ts",
     "score": "tsx src/scorer/run.ts",
     "synthesize": "tsx src/synthesizer/run.ts",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "vitest --run --passWithNoTests"
   },
   "dependencies": {
     "@pauli/secrets": "*"

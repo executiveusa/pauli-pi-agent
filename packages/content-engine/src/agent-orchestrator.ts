@@ -1,10 +1,14 @@
-import { execSync } from 'child_process';
-import { writeFileSync, readFileSync } from 'fs';
-import { join } from 'path';
-import type { AgentId, AgentContext } from '../../../packages/secrets/src/agent-context.js';
-import { loadAgentContext, loadAgentSignals, enforceAgentIsolation } from '../../../packages/secrets/src/agent-context.js';
-import type { Secrets } from '../../../packages/secrets/src/schema.js';
-import { promptModelSelection, getModelEndpoint, getModelId, type ModelChoice } from './model-selector.js';
+import { execSync } from "child_process";
+import { writeFileSync } from "fs";
+import { join } from "path";
+import type { AgentContext, AgentId } from "../../../packages/secrets/src/agent-context.js";
+import {
+	enforceAgentIsolation,
+	loadAgentContext,
+	loadAgentSignals,
+} from "../../../packages/secrets/src/agent-context.js";
+import type { Secrets } from "../../../packages/secrets/src/schema.js";
+import { getModelEndpoint, getModelId, promptModelSelection } from "./model-selector.js";
 
 export interface AgentUpdate {
 	agent: AgentId;
@@ -22,8 +26,8 @@ export class MasterAgentOrchestrator {
 
 	constructor(secrets: Secrets) {
 		this.secrets = secrets;
-		this.isolation = secrets.AGENT_ISOLATION_MODE === 'true';
-		this.autoCommit = secrets.AGENT_COMMIT_UPDATES === 'true';
+		this.isolation = secrets.AGENT_ISOLATION_MODE === "true";
+		this.autoCommit = secrets.AGENT_COMMIT_UPDATES === "true";
 	}
 
 	/**
@@ -41,7 +45,7 @@ export class MasterAgentOrchestrator {
 
 		console.log(`\n🚀 Starting ${agent} agent (${context.company})`);
 		console.log(`📍 Context: ${context.contextPath}`);
-		console.log(`🌍 Geo: ${context.geo} | Platforms: ${context.platforms?.join(', ')}`);
+		console.log(`🌍 Geo: ${context.geo} | Platforms: ${context.platforms?.join(", ")}`);
 
 		// Load agent's PRIVATE signals (no visibility into other companies)
 		const signals = loadAgentSignals(context);
@@ -54,7 +58,7 @@ export class MasterAgentOrchestrator {
 		const postsApproved = this.parseAndSaveContent(context, contentGenerated);
 
 		// Auto-commit updates if enabled
-		let commitHash = '';
+		let commitHash = "";
 		if (this.autoCommit) {
 			commitHash = this.commitAgentUpdate(context, contentGenerated);
 		}
@@ -77,28 +81,28 @@ export class MasterAgentOrchestrator {
 	 */
 	private async invokeAgent(context: AgentContext, signals: string): Promise<string> {
 		// Cascadia: prompt for model selection before running
-		if (context.agent === 'cascadia') {
+		if (context.agent === "cascadia") {
 			return this.invokeCascadiaWithModelSelection(context, signals);
 		}
 
 		// Hermes uses NousResearch API
-		if (context.agent === 'hermes') {
-			const response = await fetch('https://inference-api.nousresearch.com/v1/chat/completions', {
-				method: 'POST',
+		if (context.agent === "hermes") {
+			const response = await fetch("https://inference-api.nousresearch.com/v1/chat/completions", {
+				method: "POST",
 				headers: {
-					'Authorization': `Bearer ${context.apiKey}`,
-					'Content-Type': 'application/json',
+					Authorization: `Bearer ${context.apiKey}`,
+					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
 					model: context.model,
 					max_tokens: 2048,
 					messages: [
 						{
-							role: 'system',
-							content: `You are ${context.company}'s master content agent. Generate viral ${context.platforms?.join('/')} content based on ONLY the signals provided. You have EXCLUSIVE access to ${context.company}'s context only.`,
+							role: "system",
+							content: `You are ${context.company}'s master content agent. Generate viral ${context.platforms?.join("/")} content based on ONLY the signals provided. You have EXCLUSIVE access to ${context.company}'s context only.`,
 						},
 						{
-							role: 'user',
+							role: "user",
 							content: `${signals}\n\nGenerate 3-5 ${context.geo} viral posts. Format as:\n\n## Post 1\n[content]\n\n---`,
 						},
 					],
@@ -110,22 +114,22 @@ export class MasterAgentOrchestrator {
 		}
 
 		// Other agents use Anthropic (Claude)
-		const anthropicUrl = 'https://api.anthropic.com/v1/messages';
+		const anthropicUrl = "https://api.anthropic.com/v1/messages";
 		const response = await fetch(anthropicUrl, {
-			method: 'POST',
+			method: "POST",
 			headers: {
-				'x-api-key': context.apiKey,
-				'Content-Type': 'application/json',
-				'anthropic-version': '2023-06-01',
+				"x-api-key": context.apiKey,
+				"Content-Type": "application/json",
+				"anthropic-version": "2023-06-01",
 			},
 			body: JSON.stringify({
 				model: context.model,
 				max_tokens: 2048,
-				system: `You are ${context.company}'s master content agent (${context.voice || 'English'}). Generate viral ${context.platforms?.join('/')} content ONLY from the signals provided. You ONLY work with ${context.company} data.`,
+				system: `You are ${context.company}'s master content agent (${context.voice || "English"}). Generate viral ${context.platforms?.join("/")} content ONLY from the signals provided. You ONLY work with ${context.company} data.`,
 				messages: [
 					{
-						role: 'user',
-						content: `${signals}\n\nGenerate 3-5 ${context.geo} viral posts for ${context.platforms?.join('/')}. Format clearly.`,
+						role: "user",
+						content: `${signals}\n\nGenerate 3-5 ${context.geo} viral posts for ${context.platforms?.join("/")}. Format clearly.`,
 					},
 				],
 			}),
@@ -138,10 +142,7 @@ export class MasterAgentOrchestrator {
 	/**
 	 * Cascadia special: model selection + cost control
 	 */
-	private async invokeCascadiaWithModelSelection(
-		context: AgentContext,
-		signals: string,
-	): Promise<string> {
+	private async invokeCascadiaWithModelSelection(context: AgentContext, signals: string): Promise<string> {
 		// Prompt user to select model (or use override)
 		const selectedModel = await promptModelSelection(this.secrets);
 
@@ -152,22 +153,22 @@ export class MasterAgentOrchestrator {
 		console.log(`\n🚀 Invoking Cascadia with ${selectedModel}...`);
 
 		const response = await fetch(endpoint.url, {
-			method: 'POST',
+			method: "POST",
 			headers: {
 				...endpoint.headers,
-				'Content-Type': 'application/json',
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
 				model: modelId,
 				max_tokens: 2048,
 				messages: [
 					{
-						role: 'system',
-						content: `You are ${context.company}'s master content agent (${context.voice || 'English'}). Generate demo-first, viral ${context.platforms?.join('/')} content based on ONLY the signals provided. You ONLY work with ${context.company} data. Focus on showing the 3D knowledge galaxy visualization.`,
+						role: "system",
+						content: `You are ${context.company}'s master content agent (${context.voice || "English"}). Generate demo-first, viral ${context.platforms?.join("/")} content based on ONLY the signals provided. You ONLY work with ${context.company} data. Focus on showing the 3D knowledge galaxy visualization.`,
 					},
 					{
-						role: 'user',
-						content: `${signals}\n\nGenerate 3-5 ${context.geo} demo-driven posts for ${context.platforms?.join('/')}. Each post should showcase the 3D knowledge galaxy feature. Format clearly.`,
+						role: "user",
+						content: `${signals}\n\nGenerate 3-5 ${context.geo} demo-driven posts for ${context.platforms?.join("/")}. Each post should showcase the 3D knowledge galaxy feature. Format clearly.`,
 					},
 				],
 			}),
@@ -175,7 +176,7 @@ export class MasterAgentOrchestrator {
 
 		if (!response.ok) {
 			const error = (await response.json()) as any;
-			throw new Error(`Model API error: ${error.error?.message || 'Unknown error'}`);
+			throw new Error(`Model API error: ${error.error?.message || "Unknown error"}`);
 		}
 
 		const data = (await response.json()) as any;
@@ -186,8 +187,8 @@ export class MasterAgentOrchestrator {
 	 * Parse generated content and save to company's approval folder
 	 */
 	private parseAndSaveContent(context: AgentContext, generated: string): number {
-		const approvedDir = join(context.contextPath, 'content', 'approved');
-		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		const approvedDir = join(context.contextPath, "content", "approved");
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 		const filename = `${context.agent}-${timestamp}.md`;
 		const filepath = join(approvedDir, filename);
 
@@ -195,7 +196,7 @@ export class MasterAgentOrchestrator {
 Date: ${new Date().toISOString()}
 Agent: ${context.agent}
 Geo: ${context.geo}
-Platforms: ${context.platforms?.join(', ')}
+Platforms: ${context.platforms?.join(", ")}
 
 ${generated}
 `;
@@ -212,18 +213,18 @@ ${generated}
 	/**
 	 * Auto-commit agent updates back to branch
 	 */
-	private commitAgentUpdate(context: AgentContext, generated: string): string {
+	private commitAgentUpdate(context: AgentContext, _generated: string): string {
 		try {
-			execSync(`cd ${context.contextPath} && git add content/approved/`, { stdio: 'pipe' });
+			execSync(`cd ${context.contextPath} && git add content/approved/`, { stdio: "pipe" });
 			const commitMsg = `chore(${context.agent}): auto-update content for ${context.company}`;
 			const hash = execSync(`git commit -m "${commitMsg}" --quiet && git rev-parse HEAD`, {
-				encoding: 'utf-8',
-				stdio: 'pipe',
+				encoding: "utf-8",
+				stdio: "pipe",
 			}).trim();
 			return hash;
-		} catch (error) {
+		} catch (_error) {
 			console.warn(`⚠️ Could not auto-commit for ${context.agent}`);
-			return '';
+			return "";
 		}
 	}
 
@@ -234,17 +235,17 @@ ${generated}
 	async circulate(updates: AgentUpdate[]): Promise<void> {
 		const circulation = {
 			timestamp: new Date().toISOString(),
-			agents: updates.map(u => ({
+			agents: updates.map((u) => ({
 				agent: u.agent,
 				company: u.company,
 				geo: u.company, // Approximate from company name
 				postsGenerated: u.postsApproved,
-				status: 'completed',
+				status: "completed",
 				commitHash: u.commitHash,
 			})),
 		};
 
-		const circulationPath = 'companies/_circulation/latest.json';
+		const circulationPath = "companies/_circulation/latest.json";
 		writeFileSync(circulationPath, JSON.stringify(circulation, null, 2));
 		console.log(`\n📡 Circulation update: ${updates.length} agents completed`);
 	}
@@ -253,19 +254,19 @@ ${generated}
 	 * Run all master agents in parallel (each isolated)
 	 */
 	async runAllAgents(): Promise<AgentUpdate[]> {
-		const agents: AgentId[] = ['hermes', 'vyapari', 'pauli', 'kupuri', 'cheggie', 'cascadia'];
+		const agents: AgentId[] = ["hermes", "vyapari", "pauli", "kupuri", "cheggie", "cascadia"];
 
 		const updates = await Promise.all(
-			agents.map(agent =>
-				this.runMasterAgent(agent).catch(err => {
+			agents.map((agent) =>
+				this.runMasterAgent(agent).catch((err) => {
 					console.error(`❌ ${agent} failed:`, err.message);
 					return {
 						agent,
 						company: agent,
 						timestamp: new Date().toISOString(),
-						contentGenerated: '',
+						contentGenerated: "",
 						postsApproved: 0,
-						commitHash: '',
+						commitHash: "",
 					};
 				}),
 			),
