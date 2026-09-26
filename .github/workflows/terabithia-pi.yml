@@ -6,6 +6,7 @@ on:
       - "packages/agent/src/routes/terabithia-route.ts"
       - "packages/agent/src/routes/index.ts"
       - "packages/agent/test/terabithia.test.ts"
+      - "packages/agent/test/terabithia-ingress.test.ts"
       - ".github/workflows/terabithia-pi.yml"
 permissions:
   contents: read
@@ -24,4 +25,4 @@ jobs:
       - run: npm run build --workspace=@mariozechner/pi-ai
       - run: npm run build --workspace=@mariozechner/pi-data-processor
       - run: npm run build --workspace=@mariozechner/pi-agent-core
-      - run: npm test --workspace=@mariozechner/pi-agent-core -- --run test/terabithia.test.ts
+      - run: npm test --workspace=@mariozechner/pi-agent-core -- test/terabithia.test.ts test/terabithia-ingress.test.ts
