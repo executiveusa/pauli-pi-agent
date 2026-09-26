@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-	PiTerabithiaAdapter,
 	businessHandoffFromPi,
-	validateTerabithiaMission,
+	PiTerabithiaAdapter,
 	type TerabithiaMissionEnvelope,
+	validateTerabithiaMission,
 } from "../src/orchestration/terabithia.js";
 
 function mission(overrides: Partial<TerabithiaMissionEnvelope> = {}): TerabithiaMissionEnvelope {

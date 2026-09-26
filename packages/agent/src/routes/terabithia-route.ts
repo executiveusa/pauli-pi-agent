@@ -1,8 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Context } from "@mariozechner/pi-ai";
 import { PiTerabithiaAdapter, type TerabithiaMissionEnvelope } from "../orchestration/terabithia.js";
-import { streamMercury } from "./mercury-routes.js";
 import type { ApiRequest, ApiResponse } from "./index.js";
+import { streamMercury } from "./mercury-routes.js";
 
 function textDelta(event: unknown): string {
 	if (!event || typeof event !== "object") return "";
