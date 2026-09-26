@@ -156,7 +156,7 @@ describe("SecretsLoader", () => {
 			const result = loader.validate();
 
 			expect(result.valid).toBe(true);
-			expect(result.warnings).toContain(expect.stringContaining("No primary LLM API key configured"));
+			expect(result.warnings).toContainEqual(expect.stringContaining("No primary LLM API key configured"));
 		});
 
 		it("warns when GITHUB_TOKEN is missing", () => {
@@ -166,7 +166,7 @@ describe("SecretsLoader", () => {
 			const result = loader.validate();
 
 			expect(result.valid).toBe(true);
-			expect(result.warnings).toContain(expect.stringContaining("GITHUB_TOKEN not configured"));
+			expect(result.warnings).toContainEqual(expect.stringContaining("GITHUB_TOKEN not configured"));
 		});
 
 		it("warns in production when Supabase credentials incomplete", () => {
@@ -180,7 +180,7 @@ describe("SecretsLoader", () => {
 			const result = loader.validate();
 
 			expect(result.valid).toBe(true);
-			expect(result.warnings).toContain(expect.stringContaining("Supabase credentials incomplete"));
+			expect(result.warnings).toContainEqual(expect.stringContaining("Supabase credentials incomplete"));
 		});
 	});
 
@@ -301,7 +301,7 @@ describe("SecretsLoader", () => {
 			const result = loader.validate();
 
 			expect(result.valid).toBe(true);
-			expect(result.warnings).not.toContain(expect.stringContaining("No primary LLM API key"));
+			expect(result.warnings).not.toContainEqual(expect.stringContaining("No primary LLM API key"));
 		});
 
 		it("loads complete production configuration", () => {

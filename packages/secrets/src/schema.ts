@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+const emptyIsUnset = <T extends z.ZodTypeAny>(schema: T) =>
+	z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
+
 export const SecretsSchema = z
 	.object({
 		// LLM Proxy
@@ -11,30 +14,30 @@ export const SecretsSchema = z
 			.optional(),
 
 		// API Keys - LLM Providers
-		OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required").optional(),
-		GEMINI_API_KEY: z.string().min(1).optional(),
-		GOOGLE_GEMINI_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
-		GROQ_API_KEY: z.string().min(1).optional(),
-		MISTRAL_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
-		ZAI_API_KEY: z.string().min(1).optional(), // Z AI / Zhipu free tier
-		COHERE_API_KEY: z.string().min(1).optional(), // Free trial tier
-		CEREBRAS_API_KEY: z.string().min(1).optional(), // Free tier from awesome-free-llm-apis
-		AION_API_KEY: z.string().min(1).optional(), // Aion Labs permanent free tier
-		ANTHROPIC_API_KEY: z.string().min(1).optional(),
-		OPENAI_API_KEY: z.string().min(1).optional(),
+		OPENROUTER_API_KEY: emptyIsUnset(z.string().min(1, "OPENROUTER_API_KEY is required")),
+		GEMINI_API_KEY: emptyIsUnset(z.string().min(1)),
+		GOOGLE_GEMINI_API_KEY: emptyIsUnset(z.string().min(1)), // Free tier from awesome-free-llm-apis
+		GROQ_API_KEY: emptyIsUnset(z.string().min(1)),
+		MISTRAL_API_KEY: emptyIsUnset(z.string().min(1)), // Free tier from awesome-free-llm-apis
+		ZAI_API_KEY: emptyIsUnset(z.string().min(1)), // Z AI / Zhipu free tier
+		COHERE_API_KEY: emptyIsUnset(z.string().min(1)), // Free trial tier
+		CEREBRAS_API_KEY: emptyIsUnset(z.string().min(1)), // Free tier from awesome-free-llm-apis
+		AION_API_KEY: emptyIsUnset(z.string().min(1)), // Aion Labs permanent free tier
+		ANTHROPIC_API_KEY: emptyIsUnset(z.string().min(1)),
+		OPENAI_API_KEY: emptyIsUnset(z.string().min(1)),
 
 		// API Keys - Infrastructure & Services
-		GITHUB_TOKEN: z.string().min(1).optional(),
-		CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
-		CLOUDFLARE_ACCOUNT_ID: z.string().min(1).optional(),
-		HUGGINGFACE_TOKEN: z.string().min(1).optional(),
-		FIRECRAWL_API_KEY: z.string().min(1).optional(),
-		NOTION_API_TOKEN: z.string().min(1).optional(),
-		SUPABASE_ACCESS_TOKEN: z.string().min(1).optional(),
-		VERCEL_TOKEN: z.string().min(1).optional(),
+		GITHUB_TOKEN: emptyIsUnset(z.string().min(1)),
+		CLOUDFLARE_API_TOKEN: emptyIsUnset(z.string().min(1)),
+		CLOUDFLARE_ACCOUNT_ID: emptyIsUnset(z.string().min(1)),
+		HUGGINGFACE_TOKEN: emptyIsUnset(z.string().min(1)),
+		FIRECRAWL_API_KEY: emptyIsUnset(z.string().min(1)),
+		NOTION_API_TOKEN: emptyIsUnset(z.string().min(1)),
+		SUPABASE_ACCESS_TOKEN: emptyIsUnset(z.string().min(1)),
+		VERCEL_TOKEN: emptyIsUnset(z.string().min(1)),
 
 		// ArchonX Mercury Voice Agent
-		INCEPTION_API_KEY: z.string().min(1).optional(),
+		INCEPTION_API_KEY: emptyIsUnset(z.string().min(1)),
 		MERCURY_MODEL: z.string().default("mercury-2"),
 		MERCURY_BASE_URL: z.string().url().default("https://api.inceptionlabs.ai/v1"),
 		MERCURY_DEFAULT_REASONING: z.enum(["low", "medium", "high"]).default("low"),
