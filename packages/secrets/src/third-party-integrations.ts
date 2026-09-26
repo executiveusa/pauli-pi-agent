@@ -223,7 +223,7 @@ export const AGENT_INTEGRATION_MAP: Record<string, AgentIntegrationSettings> = {
 export async function testIntegration(
 	provider: IntegrationProvider,
 	apiKey: string,
-	endpoint?: string,
+	_endpoint?: string,
 ): Promise<IntegrationTestResult> {
 	const timestamp = new Date().toISOString();
 

@@ -66,7 +66,10 @@ export async function handleChat(req: ApiRequest): Promise<ApiResponse> {
 			if (m.role === "assistant" && typeof m.content === "string") msg.content = [{ type: "text", text: m.content }];
 			return msg;
 		});
-		const context: Context = { systemPrompt: systemPrompt || "You are a helpful assistant.", messages: normalizedMessages };
+		const context: Context = {
+			systemPrompt: systemPrompt || "You are a helpful assistant.",
+			messages: normalizedMessages,
+		};
 		return {
 			statusCode: 200,
 			body: {
@@ -90,7 +93,8 @@ export async function handleTranscribe(req: ApiRequest): Promise<ApiResponse> {
 		const { tenantId, audio, language } = req.body as { tenantId: string; audio: string; language?: string };
 		if (!tenantId || !audio) return { statusCode: 400, body: { error: "Missing required fields: tenantId, audio" } };
 		const tenant = getTenantConfig(tenantId);
-		if (!canUseFeature(tenant, "voice")) return { statusCode: 403, body: { error: "Voice feature not available for this tenant plan" } };
+		if (!canUseFeature(tenant, "voice"))
+			return { statusCode: 403, body: { error: "Voice feature not available for this tenant plan" } };
 		return {
 			statusCode: 200,
 			body: await handleVoiceTranscribe({ audio, language, apiKey: process.env.OPENAI_API_KEY }),
@@ -106,10 +110,15 @@ export async function handleSpeak(req: ApiRequest): Promise<ApiResponse> {
 		const { tenantId, text, voiceName } = req.body as { tenantId: string; text: string; voiceName?: string };
 		if (!tenantId || !text) return { statusCode: 400, body: { error: "Missing required fields: tenantId, text" } };
 		const tenant = getTenantConfig(tenantId);
-		if (!canUseFeature(tenant, "voice")) return { statusCode: 403, body: { error: "Voice feature not available for this tenant plan" } };
+		if (!canUseFeature(tenant, "voice"))
+			return { statusCode: 403, body: { error: "Voice feature not available for this tenant plan" } };
 		return {
 			statusCode: 200,
-			body: await handleVoiceSpeak({ text, voiceName: voiceName || tenant.branding?.voiceName || "shimmer", apiKey: process.env.OPENAI_API_KEY }),
+			body: await handleVoiceSpeak({
+				text,
+				voiceName: voiceName || tenant.branding?.voiceName || "shimmer",
+				apiKey: process.env.OPENAI_API_KEY,
+			}),
 			headers: { "Content-Type": "audio/mpeg" },
 		};
 	} catch (error) {
@@ -120,13 +129,22 @@ export async function handleSpeak(req: ApiRequest): Promise<ApiResponse> {
 /** POST /v1/agent/tool-call */
 export async function handleToolCall(req: ApiRequest): Promise<ApiResponse> {
 	try {
-		const { tenantId, toolName, approvalToken } = req.body as { tenantId: string; toolName: string; approvalToken?: string };
-		if (!tenantId || !toolName) return { statusCode: 400, body: { error: "Missing required fields: tenantId, toolName" } };
+		const { tenantId, toolName, approvalToken } = req.body as {
+			tenantId: string;
+			toolName: string;
+			approvalToken?: string;
+		};
+		if (!tenantId || !toolName)
+			return { statusCode: 400, body: { error: "Missing required fields: tenantId, toolName" } };
 		const tenant = getTenantConfig(tenantId);
 		if (toolName === "money-movement" && moneyMovementRequiresApproval(tenant) && !approvalToken) {
-			return { statusCode: 202, body: { result: null, toolName, status: "pending", message: "Approval required for money movement" } };
+			return {
+				statusCode: 202,
+				body: { result: null, toolName, status: "pending", message: "Approval required for money movement" },
+			};
 		}
-		if (!canExecuteTool(tenant, toolName)) return { statusCode: 403, body: { error: `Tool '${toolName}' not permitted for this tenant` } };
+		if (!canExecuteTool(tenant, toolName))
+			return { statusCode: 403, body: { error: `Tool '${toolName}' not permitted for this tenant` } };
 		return { statusCode: 200, body: { result: null, toolName, status: "executed" } };
 	} catch (error) {
 		return { statusCode: 500, body: { error: error instanceof Error ? error.message : String(error) } };
@@ -179,5 +197,5 @@ export async function routeRequest(req: ApiRequest): Promise<ApiResponse> {
 }
 
 export { streamMercury } from "./mercury-routes.js";
-export { handleVoiceSpeak, handleVoiceTranscribe } from "./voice-routes.js";
 export { getTerabithiaHealth, handleTerabithiaInvoke } from "./terabithia-route.js";
+export { handleVoiceSpeak, handleVoiceTranscribe } from "./voice-routes.js";
