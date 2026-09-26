@@ -24,7 +24,7 @@ business agent, not a fleet orchestrator, and not the first mate (that is Hermes
 - Any other agent's keys. Pi has exactly one credential: `PAULI_PI_AGENT_API_KEY`
   (Command Center → Pi adapter). It never falls back to, or is accepted as, any other key.
 
-## Enforcement (target; see "Not yet enforced" below)
+## Enforcement
 
 1. Run the Pi runtime and `pi-adapter` as a dedicated OS user (`pauli-pi`) that cannot read
    `/opt/pauli-effect/*`, `/etc/pauli-starnet.env`, or `/root/.hermes`.
@@ -41,22 +41,16 @@ Bambu ──► Command Center /pi ──► pi-adapter (bearer PAULI_PI_AGENT_A
 (no arrows from Hermes, Terabithia, StarNet or any business agent into this lane)
 ```
 
-## Not yet enforced (open, as of 2026-09-26)
+## Split status (owner decision 2026-09-26: personal Pi, engineering to BARS)
 
-This charter is the decision, not proof that the lane is sealed. Today's code still does
-three things that contradict it:
+| Item | Status |
+|---|---|
+| Engineering missions | Terabithia routes `engineering` intents to **BARS**; Pi owns only the `personal` route (terabithia `claude/engineering-to-bars`). |
+| Fleet ingress into Pi | `POST /api/terabithia/invoke` requires `Authorization: Bearer $PI_TERABITHIA_TOKEN` (fails closed if unset) and refuses personal missions whose `source` is another fleet agent (hermes, bars, jarvis, lightning). Business missions are still handed back to Hermes, never executed. |
+| Engineering shell | Moved out of Pi: `ops/pauli-control` now lives in the BARS repo (`pauli-tars-demo-/engineering/pauli-control`), with an explicit job-env allowlist. |
+| Company doctrine | Travels with the engineering bridge to BARS. Pi's personal runtime (`packages/agent` Terabithia route) uses a personal-only prompt and never loads `company/*.md`. |
 
-| Gap | Where | Needed |
-|---|---|---|
-| Fleet ingress into Pi | `packages/agent/src/routes/index.ts` serves `POST /api/terabithia/invoke`; `orchestration/terabithia.ts` accepts missions from `hermes`, `terabithia`, `bars`, ... | The personal runtime must not mount this route. |
-| Whole environment passed to jobs | `ops/pauli-control/server.js` spawns jobs with `...process.env` | Build an explicit env allowlist (only `PAULI_PI_AGENT_API_KEY` + personal connector keys). |
-| Company doctrine injected | `ops/pauli-control/server.js` prompt tells the agent to read `company/*.md`; `PAULI.md` is revenue-driven | The personal runtime gets its own prompt with no company doctrine. |
-
-These all exist because this runtime currently also serves as the **engineering lead** that
-Terabithia routes coding missions to (Command Center `docs/CONTROL_TOWER.md`). Sealing the
-personal lane therefore means splitting it into two runtimes: a personal Pi (this charter)
-and a separate engineering agent that keeps the Terabithia ingress. That split is an owner
-decision and is not done by this document.
+Deploy: set the same random value as `PI_TERABITHIA_TOKEN` on Pi and `PI_TOKEN` in Terabithia.
 
 The multi-company engineering material in this repo (`companies/`, `factory/`, `COSMOS.md`)
 predates this charter. It should move to a business repo; until it does, the Pi runtime must

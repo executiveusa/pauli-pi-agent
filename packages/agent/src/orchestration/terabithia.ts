@@ -98,7 +98,14 @@ export function validateTerabithiaMission(mission: TerabithiaMissionEnvelope): v
 
 	if (mission.route === "business") return;
 	if (mission.route !== "personal") throw new Error(`Pi cannot execute route '${mission.route}'`);
+	// Personal missions come from the owner (via Terabithia), never from another fleet agent.
+	// Otherwise Hermes, BARS, Jarvis or Lightning could read private context back out of Pi.
+	if (FLEET_AGENT_SOURCES.has(mission.source)) {
+		throw new Error(`Pi does not accept personal missions from fleet agent '${mission.source}'`);
+	}
 }
+
+const FLEET_AGENT_SOURCES = new Set<string>(["hermes", "bars", "jarvis", "lightning"]);
 
 export function businessHandoffFromPi(mission: TerabithiaMissionEnvelope): TerabithiaResultEnvelope {
 	return {

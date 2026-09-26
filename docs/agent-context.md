@@ -10,7 +10,7 @@ Pi-mono fork (from `badlogic/pi`) extended into **THE PAULI EFFECT** — a facel
 - **Agent core:** `@mariozechner/pi-agent-core` (pi-coding-agent CLI)
 - **Web UI:** Lit + Tailwind + Vite (`packages/web-ui`)
 - **Brain:** Self-hosted Supabase (Postgres + pgvector) on VPS `pauli-vps` (Tailscale `100.122.224.55:8001`), local Fuse fallback
-- **Control:** `ops/pauli-control/` Express bridge on port 8787 (mode-gated: plan/read/write/ship)
+- **Control:** moved to BARS (`pauli-tars-demo-/engineering/pauli-control`, 2026-09-26); Pi is personal-only
 - **Knowledge vaults:** `E:\MENTAL MODELS`, `E:\OBSIDIAN SECOND BRAIN`
 - **Secrets:** `E:\THE PAULI FILES\Cosmos_Vault.env` (gitignored, never committed)
 
@@ -21,7 +21,7 @@ Pi-mono fork (from `badlogic/pi`) extended into **THE PAULI EFFECT** — a facel
 - `brain/` — knowledge layer (`search.mjs` → Supabase + local vaults)
 - `skills/` — ICM skills library
 - `scripts/` — notion-sync, library-catalog, repo inventory
-- `ops/pauli-control/` — control bridge (server.js, openapi.yaml)
+- `ops/PAULI_CONTROL_MOVED.md` — pointer to the bridge's new home in BARS
 - `packages/agent/` — pi-agent-core (server, uses fetch/Response)
 - `packages/web-ui/` — browser UI (Lit + Tailwind)
 - `packages/data-processor/` — postgres importer (Node-only, breaks browser bundle)
