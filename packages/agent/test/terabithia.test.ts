@@ -28,6 +28,13 @@ function mission(overrides: Partial<TerabithiaMissionEnvelope> = {}): Terabithia
 }
 
 describe("Terabithia Pi adapter", () => {
+	it("refuses personal missions sent by other fleet agents", () => {
+		for (const source of ["hermes", "bars", "jarvis", "lightning"] as const) {
+			expect(() => validateTerabithiaMission(mission({ source }))).toThrow("from fleet agent");
+		}
+		expect(() => validateTerabithiaMission(mission({ source: "terabithia" }))).not.toThrow();
+	});
+
 	it("rejects non-Pi routes before execution", () => {
 		expect(() => validateTerabithiaMission(mission({ route: "operator" }))).toThrow(
 			"Pi cannot execute route 'operator'",

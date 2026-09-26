@@ -1,4 +1,6 @@
-﻿import "dotenv/config";
+// Engineering lane (BARS). This control bridge runs coding-agent jobs in repos. Since the
+// 2026-09-26 split it belongs to BARS, not to the personal Pi lane; see PERSONAL_LANE.md.
+import "dotenv/config";
 import express from "express";
 import fs from "node:fs";
 import path from "node:path";
@@ -29,12 +31,34 @@ fs.mkdirSync(JOB_DIR, { recursive: true });
 
 const running = new Map();
 
+function tokenMatches(provided) {
+  const a = crypto.createHash("sha256").update(String(provided)).digest();
+  const b = crypto.createHash("sha256").update(TOKEN).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
 function requireAuth(req, res, next) {
   const auth = req.headers.authorization || "";
-  if (auth !== `Bearer ${TOKEN}`) {
+  if (!auth.startsWith("Bearer ") || !tokenMatches(auth.slice(7))) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
+}
+
+// Jobs get an explicit environment, never this bridge's whole process.env. System basics and model
+// provider keys (*_API_KEY) pass; the bridge token and any other *_TOKEN / *SECRET* stay behind.
+// JOB_ENV_ALLOW="NAME1,NAME2" adds specific names when a job truly needs them.
+const JOB_ENV_BASE = ["PATH", "HOME", "USER", "LANG", "LC_ALL", "TERM", "TMPDIR", "SHELL", "NODE_OPTIONS", "NODE_ENV"];
+function jobEnv() {
+  const extra = String(process.env.JOB_ENV_ALLOW || "").split(",").map((v) => v.trim()).filter(Boolean);
+  const env = { PI_TELEMETRY: "0" };
+  for (const [name, value] of Object.entries(process.env)) {
+    if (value === undefined) continue;
+    const provider = /_API_KEY$/.test(name) && !/(TOKEN|SECRET)/.test(name);
+    if (JOB_ENV_BASE.includes(name) || provider || extra.includes(name)) env[name] = value;
+  }
+  delete env.PAULI_CONTROL_TOKEN;
+  return env;
 }
 
 function safeRepoPath(repoInput = ".") {
@@ -231,10 +255,7 @@ app.post("/run", requireAuth, (req, res) => {
     const child = spawn(command, args, {
       cwd: repoPath,
       shell: true,
-      env: {
-        ...process.env,
-        PI_TELEMETRY: "0"
-      }
+      env: jobEnv()
     });
 
     running.set(id, child);

@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import type { Context } from "@mariozechner/pi-ai";
 import { PiTerabithiaAdapter, type TerabithiaMissionEnvelope } from "../orchestration/terabithia.js";
 import { streamMercury } from "./mercury-routes.js";
@@ -53,7 +54,39 @@ async function executePersonal(mission: TerabithiaMissionEnvelope) {
 
 const adapter = new PiTerabithiaAdapter(executePersonal);
 
+function headerValue(headers: Record<string, string> | undefined, name: string): string {
+	if (!headers) return "";
+	const key = Object.keys(headers).find((k) => k.toLowerCase() === name);
+	return key ? String(headers[key] ?? "") : "";
+}
+
+function secretMatches(provided: string, expected: string): boolean {
+	if (!provided || !expected) return false;
+	const a = createHash("sha256").update(provided).digest();
+	const b = createHash("sha256").update(expected).digest();
+	return timingSafeEqual(a, b);
+}
+
+/** Only Terabithia, holding PI_TERABITHIA_TOKEN, may hand Pi a mission. Unset token fails closed. */
+export function authorizeTerabithia(req: ApiRequest): ApiResponse | null {
+	const expected = (process.env.PI_TERABITHIA_TOKEN || "").trim();
+	if (expected.length < 16) {
+		return {
+			statusCode: 503,
+			body: { error: "PiIngressNotConfigured", message: "PI_TERABITHIA_TOKEN must be set (16+ chars)." },
+		};
+	}
+	const auth = headerValue(req.headers, "authorization");
+	const provided = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+	if (!secretMatches(provided, expected)) {
+		return { statusCode: 401, body: { error: "Unauthorized" } };
+	}
+	return null;
+}
+
 export async function handleTerabithiaInvoke(req: ApiRequest): Promise<ApiResponse> {
+	const denied = authorizeTerabithia(req);
+	if (denied) return denied;
 	try {
 		const mission = req.body as unknown as TerabithiaMissionEnvelope;
 		const result = await adapter.invoke(mission);
