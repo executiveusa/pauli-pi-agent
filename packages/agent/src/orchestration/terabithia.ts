@@ -20,7 +20,7 @@ export interface TerabithiaMissionEnvelope {
 	request_id: string;
 	conversation_id: string;
 	trace_id: string;
-	source: "chatgpt" | "hermes" | "pi" | "bars" | "jarvis" | "lightning" | "system" | "terabithia";
+	source: "chatgpt" | "hermes" | "pi" | "bars" | "jarvis" | "lightning" | "starnet" | "instinct" | "command-center" | "system" | "terabithia";
 	target: "pi";
 	route: TerabithiaRoute;
 	user_intent: string;
@@ -99,13 +99,13 @@ export function validateTerabithiaMission(mission: TerabithiaMissionEnvelope): v
 	if (mission.route === "business") return;
 	if (mission.route !== "personal") throw new Error(`Pi cannot execute route '${mission.route}'`);
 	// Personal missions come from the owner (via Terabithia), never from another fleet agent.
-	// Otherwise Hermes, BARS, Jarvis or Lightning could read private context back out of Pi.
+	// Otherwise Hermes, BARS, Jarvis, Lightning or the StarNet city could read private context back out of Pi.
 	if (FLEET_AGENT_SOURCES.has(mission.source)) {
 		throw new Error(`Pi does not accept personal missions from fleet agent '${mission.source}'`);
 	}
 }
 
-const FLEET_AGENT_SOURCES = new Set<string>(["hermes", "bars", "jarvis", "lightning"]);
+const FLEET_AGENT_SOURCES = new Set<string>(["hermes", "bars", "jarvis", "lightning", "starnet"]);
 
 export function businessHandoffFromPi(mission: TerabithiaMissionEnvelope): TerabithiaResultEnvelope {
 	return {

@@ -29,7 +29,7 @@ function mission(overrides: Partial<TerabithiaMissionEnvelope> = {}): Terabithia
 
 describe("Terabithia Pi adapter", () => {
 	it("refuses personal missions sent by other fleet agents", () => {
-		for (const source of ["hermes", "bars", "jarvis", "lightning"] as const) {
+		for (const source of ["hermes", "bars", "jarvis", "lightning", "starnet"] as const) {
 			expect(() => validateTerabithiaMission(mission({ source }))).toThrow("from fleet agent");
 		}
 		expect(() => validateTerabithiaMission(mission({ source: "terabithia" }))).not.toThrow();
