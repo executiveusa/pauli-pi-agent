@@ -6,6 +6,8 @@ Context Mesh is the shared memory interface for this product.
 
 Query the brain before crawling large archives or reconstructing old project history manually.
 
+For the September 2026 Second Brain recovery corpus, do not graph or normalize opaque source bytes until `skills/second-brain-forensic-reconstruction/SKILL.md` reaches its plaintext proof gate. Read `RECOVERY-KNOWLEDGE.md` first.
+
 For codebase questions, query Graft before manually exploring the repository.
 
 ## Tool routing
