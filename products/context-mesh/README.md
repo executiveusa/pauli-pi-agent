@@ -24,6 +24,29 @@ Agents should not repeatedly crawl Google Drive, reread giant chat exports, or r
 - temporal agent memory
 - callable agent context
 
+## Second Brain recovery gate
+
+The September 2026 OpenAI Privacy Center corpus is currently gated by encrypted/opaque Transcend source objects.
+
+Before Graphify or ICM normalization, read:
+
+- `RECOVERY-KNOWLEDGE.md`
+- `RECOVERY-RECEIPT-2026-10-01.md`
+- `skills/second-brain-forensic-reconstruction/SKILL.md`
+
+Recovery utilities:
+
+```bash
+node bin/archive-probe.mjs <file> [file...]
+PENUMBRA_KEY=... PENUMBRA_IV=... PENUMBRA_AUTH_TAG=... \
+  node bin/penumbra-decrypt.mjs <ciphertext> [output]
+```
+
+The decryptor is AES-256-GCM authenticated decryption compatible with the Penumbra model. It writes to a temporary file and commits the plaintext only when authentication succeeds.
+
+**Do not graph ciphertext.** Bulk ingestion begins only after one real historical conversation is recovered from source bytes with provenance.
+
+
 ## Current MVP storage
 
 - Structural graph: `graphify-out/graph.json`
