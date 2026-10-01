@@ -115,6 +115,75 @@ Google Drive remains a source/archive. It is not the live query database.
 
 ---
 
+# PHASE -1 — Transcend/Penumbra recovery gate
+
+## Target
+
+Recover one authentic plaintext object from the encrypted/opaque source corpus before treating any archive as extractable.
+
+## Why this phase exists
+
+The September 2026 Drive corpus contains high-entropy objects that do not present normal ZIP/JSON headers. Current evidence is consistent with Transcend's client-side decryption architecture:
+
+- Penumbra decrypts authorized remote resources in the browser.
+- Conflux can stream decrypted resources into a ZIP.
+- Penumbra uses a key, IV, and detached authentication tag.
+- The saved transfer notebook did not add encryption and its recorded signed-URL attempts failed with HTTP 403.
+
+A raw `streaming.transcend.io` object can therefore be ciphertext that was supposed to pass through Penumbra before becoming the user-visible file.
+
+## Recovery skill
+
+Use:
+
+`skills/second-brain-forensic-reconstruction/SKILL.md`
+
+Use the probe:
+
+```bash
+node bin/archive-probe.mjs <file> [file...]
+```
+
+## Required loop
+
+```text
+HASH
+→ DEDUPLICATE
+→ IDENTIFY FORMAT/ENCRYPTION
+→ RECOVER LEGITIMATE DECRYPTION METADATA
+→ DECRYPT ONE FILE
+→ VALIDATE PLAINTEXT
+→ RECOVER ONE CONVERSATION
+→ PROVE SOURCE
+```
+
+## Duplicate rule
+
+Do not assume `up_*.zip` files are independent chunks.
+
+Confirmed duplicate pair:
+
+- `up_932ff7025aa2.zip`
+- `User Profile_Payments Customer Profile.json`
+
+Both are 1,427 bytes and share SHA-256:
+
+`42bda6f94701f7f164c808a321c2ad63b6fb67e41c16958f28f644367f86bac0`
+
+All source accounting must therefore deduplicate by cryptographic hash before coverage calculations.
+
+## Exit gate
+
+Do not advance to bulk archive extraction until one real source object decrypts successfully and one authentic historical conversation can be traced from plaintext back to its ciphertext source hash.
+
+If key/IV/authTag cannot be legitimately recovered, stop with:
+
+`BLOCKED_DECRYPTION_METADATA`
+
+That is a real human/authentication gate. Do not substitute concatenation guesses or brute force.
+
+---
+
 # PHASE 0 — Truth ledger and corpus manifest
 
 ## Target
